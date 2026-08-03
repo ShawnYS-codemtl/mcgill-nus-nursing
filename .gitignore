@@ -1,0 +1,72 @@
+# --- Dependencies ---
+node_modules/
+.pnp/
+.pnp.js
+
+# --- Build output ---
+dist/
+.output/
+
+# --- Astro generated types / cache ---
+# NOT the same thing as .cache/notion/ — see the note at the bottom.
+.astro/
+
+# --- Host / tooling ---
+.netlify/
+.vercel/
+
+# --- Secrets ---
+# NOTION_TOKEN lives here. Never commit it.
+# .env.example IS committed (see MAINTENANCE.md setup steps) — hence the negation.
+.env
+.env.*
+!.env.example
+
+# --- Logs & debug ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# --- AI agent harness config & installed skills ---
+# The same `impeccable` skill, installed once per harness, plus local hook
+# config and question logs. Reinstallable from the plugin; not part of the
+# site. Keep this repo about the site — CLAUDE.md at the root stays committed
+# and is the only agent-facing file a successor needs.
+.agents/
+.claude/
+.codex/
+.cursor/
+.impeccable/
+
+
+# =====================================================================
+# DELIBERATELY NOT IGNORED — read before "cleaning this up"
+# =====================================================================
+#
+# .cache/notion/*.json
+#   Looks like generated junk. It is not. It is the last-known-good copy
+#   of all Notion content, and the build falls back to it when the Notion
+#   API is unreachable or the token has expired. Ignoring it means an API
+#   hiccup years from now takes the whole site down instead of serving
+#   slightly stale content. A stale site beats a broken one.
+#
+# src/assets/notion/**
+#   Images downloaded from Notion at build time. Also looks generated.
+#   Netlify builds from a clean git checkout, so if these are not in the
+#   repo, a fallback build (Notion down / token expired) resolves the
+#   cached local image paths to files that do not exist and the build
+#   fails — defeating the whole point of committing the cache.
+#
+# Both are covered in MAINTENANCE.md → Landmines.
+# =====================================================================
