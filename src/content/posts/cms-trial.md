@@ -1,6 +1,6 @@
 ---
 title: test news
-published: false
+published: true
 date: 2026-10-13
 slug: cms-trial
 summary: first test news post
