@@ -50,7 +50,7 @@ The site is **English only** — no locale prefixes, no language switcher. See `
 
 Notes on the shape:
 
-- **The six informational routes are Notion-backed, but their paths are not.** `/about/`, `/about/fees/`, `/about/governance/`, `/about/ison/`, `/about/elections/`, and `/contact/` each have an explicit route file in `src/pages/` that pulls its content from the Pages DB by `Key`. There is no catch-all route. An exec can rewrite any of these pages from Notion; nobody can move one, rename one, or add a seventh without a code change. See `notion-schema.md` §6 and `CLAUDE.md` decision 12a.
+- **The six informational routes are CMS-editable, but their paths are not.** `/about/`, `/about/fees/`, `/about/governance/`, `/about/ison/`, `/about/elections/`, and `/contact/` each have an explicit route file in `src/pages/` that reads its content from `src/content/pages/<name>.md` (`about`, `fees`, `governance`, `ison`, `elections`, `contact`). There is no catch-all route. An exec can rewrite any of these pages in Pages CMS; nobody can move one, rename one, or add a seventh without a code change. See `content-schema.md` §2 and `CLAUDE.md` decision 12a.
 - **Governance consolidates three thin pages.** Constitution, by-laws, and meeting minutes were three separate pages that are mostly links to PDFs and Drive folders. One page serves better.
 - **Elections moves under About.** It's a governance function, not a "more" item.
 - **Fees moves under About.** It explains what the society is and how it's funded.
@@ -67,15 +67,15 @@ Primary nav — five items, no third level:
 
 Footer: contact block, office address, social links, listserv submission link, land acknowledgement (short form linking to the full text).
 
-**UI strings** — nav labels, button text, form labels — live in a single config or constants file in the repo, not scattered through components and not in Notion. The boundary: if an exec should be able to change it, it belongs in Notion; if changing it could break navigation, it belongs in the repo. Keeping these centralised also means a future French version is a second file rather than a hunt through the codebase.
+**UI strings** — nav labels, button text, form labels — live in a single config or constants file in the repo, not scattered through components and not in the CMS. The boundary: if an exec should be able to change it, it belongs in the CMS; if changing it could break navigation, it belongs in the repo. Keeping these centralised also means a future French version is a second file rather than a hunt through the codebase.
 
-**Footer contents are not UI strings.** The office address, office hours, contact email, and social links come from the Settings DB so they aren't developer-only, and fall back to repo defaults if a key goes missing. The labels around them stay in the repo. Same file, different sources — see `notion-schema.md` §8.
+**Footer contents are not UI strings.** The office address, office hours, contact email, and social links come from Site settings (`src/content/settings.json`, edited in the CMS) so they aren't developer-only, and fall back to repo defaults if a value is blank. The labels around them stay in the repo. Same file, different sources — see `content-schema.md` §7.
 
 ---
 
 ## Redirect map
 
-The Wix site has been live for years and these URLs are indexed and linked from McGill pages, Instagram bios, and old emails. All redirects are **301**, configured in `netlify.toml` or `public/_redirects`.
+The Wix site has been live for years and these URLs are indexed and linked from McGill pages, Instagram bios, and old emails. All redirects are **301**, configured in `public/_redirects`.
 
 | Old path | New path |
 |---|---|
@@ -92,7 +92,7 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/nur1-301-pharmacology-for-nursing-2` | `/resources/` |
 | `/programs` | `/about/elections/` |
 | `/fees` | `/about/fees/` |
-| `/sponsors` | `/sponsors/` |
+| `/sponsors` | `/` — the page is archived, see decision 11 |
 | `/listserv` | `/submit/` |
 | `/calendar` | `/news/` |
 | `/contact` | `/contact/` |
@@ -120,4 +120,4 @@ Also serve a **404 page** offering search or the main sections. Wix generated UR
 - `sitemap.xml` via `@astrojs/sitemap`.
 - `<html lang="en">` set explicitly.
 - `Organization` and `NewsArticle` JSON-LD on the relevant page types.
-- Canonical URLs on `mcgillnus.ca`, not the Netlify subdomain.
+- Canonical URLs on `mcgillnus.ca`, not the Cloudflare Pages subdomain.

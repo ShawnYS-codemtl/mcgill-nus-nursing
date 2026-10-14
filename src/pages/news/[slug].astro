@@ -1,0 +1,43 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getPostsWithPages, type Post } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPostsWithPages();
+  return posts.map((post) => ({ params: { slug: post.data.slug }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Post };
+const { data } = post;
+const { Content } = await render(post);
+
+const dateFormat = new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Base title={`${data.title} — McGill NUS`} description={data.summary}>
+  <article>
+    <h1>{data.title}</h1>
+    <p>
+      <time datetime={data.date.toISOString().slice(0, 10)}>{dateFormat.format(data.date)}</time>
+      {data.authorRole && <> · {data.authorRole}</>}
+    </p>
+
+    {
+      /* src/lib/content.ts has already dropped a cover with no description. */
+      data.cover && data.coverAlt && (
+        <Image src={data.cover} alt={data.coverAlt} widths={[400, 800, 1200]} sizes="(max-width: 42rem) 100vw, 42rem" />
+      )
+    }
+
+    <Content />
+  </article>
+
+  <p><a href="/">Back to news</a></p>
+</Base>

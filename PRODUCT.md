@@ -8,7 +8,9 @@ web
 
 ## Stack
 
-Astro (static output), Tailwind CSS, npm, hosted on Netlify's free tier. Content comes from a Notion workspace via `@notionhq/client`, fetched at build time only. Decided before this record was written and documented with rationale in `CLAUDE.md` §5 and §8; not an open question. No scaffold exists yet — this project is pre-code.
+Astro (static output), Tailwind CSS, npm, hosted on **Cloudflare Pages** free tier. Content is Markdown/YAML/JSON in the repo, edited by council members through **Pages CMS** (a free hosted form editor that commits on Save). Documented with rationale in `CLAUDE.md` §5 and §8; not an open question. The CMS was Notion until 2026-10-11 (decision 1) and the host was Netlify until 2026-09-29 (decision 3); both reversals are explained there.
+
+Phase 0 is scaffolded: the Astro project, the content collections, the Pages CMS config, and the post index and detail pages exist. Styling does not — Tailwind is not installed yet, and Phase 0 is deliberately unstyled.
 
 Hard architectural constraint: the output is static files. No database, no backend server, no serverless functions, no site auth. A feature that appears to need a server is an escalation, not a build.
 
@@ -27,7 +29,7 @@ The jobs they arrive with:
 
 **Secondary audiences:** prospective students judging whether McGill nursing has a real community; ISoN faculty; sponsors.
 
-**A second user class with different needs entirely: the editors.** Council execs are non-technical nursing students who will never see a terminal, a git commit, or a markdown file. They publish from Notion. The entire council turns over annually.
+**A second user class with different needs entirely: the editors.** Council execs are non-technical nursing students who will never see a terminal, a git commit, or a markdown file. They publish from Pages CMS, which shows them forms, never files. The entire council turns over annually.
 
 ## Product Purpose
 
@@ -39,7 +41,7 @@ The incumbent site fails in three specific, documented ways, and every requireme
 2. **There is no reason to return.** It is a static brochure whose "Events & Announcements" module literally reads "None for now!!"
 3. **It is not a useful resource.** The most-wanted information is locked in a PDF.
 
-**Success is not a launch.** Success is the site still being current two years after the person who built it has graduated. The operational definition, from `CLAUDE.md` §12: a non-technical nursing exec can publish an update in under five minutes, from a tool they already use, without asking for help. Everything else is secondary to that.
+**Success is not a launch.** Success is the site still being current two years after the person who built it has graduated. The operational definition, from `CLAUDE.md` §12: a non-technical nursing exec can publish an update in under five minutes, from a plain web form, without asking for help. Everything else is secondary to that.
 
 ## Positioning
 
@@ -47,19 +49,19 @@ Not a faculty page and not an Instagram substitute — the student society's own
 
 Two things a neighbouring student-club site could not truthfully copy:
 
-- **The publish loop is the product.** Notion is the admin UI; there is no CMS of our own, no dashboard, and no per-exec GitHub account. Publishing is: set `Status: Published`, optionally click a "Publish now" bookmark that hits a Netlify deploy hook. There is no other publishing path.
-- **It is built to survive neglect, not just to launch.** Every Notion fetch is cached to `.cache/notion/*.json` and that cache is committed to the repo, so the build falls back to cache and warns loudly rather than hard-failing when a token expires or a database is deleted. Nothing depends on a specific person's account, knowledge, or goodwill.
+- **The publish loop is the product.** Pages CMS is the admin UI; there is no CMS of our own, no dashboard, and no per-exec GitHub account (editors are invited by email). Publishing is: switch on **Published**, press **Save**. That commit is the build. There is no other publishing path and no second step.
+- **It is built to survive neglect, not just to launch.** The content lives in the club's own repo, so the build has no API, token or external service to lose. If the editor ever disappears, the content doesn't. A bad edit drops one value with a warning rather than failing, and a failed build leaves the last good site up. Nothing depends on a specific person's account, knowledge, or goodwill.
 
 ## Operating Context
 
-- **Annual turnover of the entire council.** Every artifact — repo, Notion workspace, Netlify account, Google Drive folders — must end up NUS-owned rather than sitting in a graduating student's personal account.
+- **Annual turnover of the entire council.** Every artifact — repo, the Pages CMS install, Cloudflare account, Google Drive folders — must end up NUS-owned rather than sitting in a graduating student's personal account.
 - **Zero budget.** Free tiers only, and only free tiers that don't quietly expire or require a card on file.
 - **Solo developer, October deadline.** The Wix site stays live during the build, so there is no pressure to ship half a site — but there is pressure to ship a complete small one.
-- **Content lives in eight Notion databases:** Posts, Council, Resources, Committees, Pages, Gallery, Settings, Electives. Schema in `docs/notion-schema.md`. Pages, Gallery, and Settings exist so that informational prose, homepage photos, and club details are editable by execs rather than by a developer — see `CLAUDE.md` decision 12.
+- **Content lives in the repo, in seven collections:** Posts, Council, Resources, Committees, Pages, Gallery, Settings (Electives to follow). Schema in `docs/content-schema.md`. Pages, Gallery, and Settings exist so that informational prose, homepage photos, and club details are editable by execs rather than by a developer — see `CLAUDE.md` decision 12.
 - **Load-bearing external dependencies that stay external:** Google Drive (textbook PDFs, financial-aid documents, meeting minutes, the EN-FR dictionary, the by-laws PDF), Microsoft Forms (the student mistreatment report), Facebook (textbook marketplace), and the McGill listserv `nus.nursing@mail.mcgill.ca` for newsletter distribution.
 - **Newsletter distribution stays on McGill infrastructure.** A published post also renders an email-safe version an exec copies into the existing listserv. Running an independent subscriber list would put CASL obligations on a rotating student council for no marginal reach.
 - **Physical office:** 680 Rue Sherbrooke Ouest, Suite 1923, Montreal, QC, H3A 0B8. Office hours vary.
-- **Domain:** `mcgillnus.ca`, GoDaddy registrar and GoDaddy DNS. Netlify was chosen specifically because apex-domain support via an A record works with GoDaddy DNS unchanged — no nameserver migration, no club approval needed.
+- **Domain:** `mcgillnus.ca`, GoDaddy registrar. DNS is served by **Wix**, not GoDaddy — so a nameserver move is required no matter which host is used, and it moves to Cloudflare. **The domain expires 2026-11-01.** There is a live `MX` record that must survive the move or club email breaks.
 
 ### How decisions get made on this project
 
@@ -72,15 +74,15 @@ This has one sharp consequence. The riskiest assumption in the project — that 
 ### Confirmed scope — must ship by October
 
 - Homepage built as a newsletter: latest post, recent posts, featured links block, land acknowledgement in full.
-- News/post system from Notion: index, detail pages, dates, author attributed by **role, not person**, optional cover image.
-- Council roster from Notion, filtered to the current term, Executive and General Council sections. 23 people, photo/name/program/role/fun fact/email each.
-- Resources directory from Notion — 15 entries across five suggested categories (Academic, Financial, Wellbeing & Safety, Clinical & Professional, Governance).
-- Get Involved: 10–11 committee/club cards from Notion, with detail pages where real content exists.
-- Informational pages from Notion: About, Fees, Governance (Constitution & By-Laws), ISoN, Elections, Contact. Editable by execs; the six routes are a fixed allowlist in the repo, so content changes cannot move a URL or break the nav.
-- Homepage photo gallery from Notion, so the event photo library stays current rather than freezing at launch.
-- Site settings from Notion — office hours, address, contact email, social links — degrading to repo defaults rather than failing a build.
+- News/post system, editable in the CMS: index, detail pages, dates, author attributed by **role, not person**, optional cover image.
+- Council roster, editable in the CMS, filtered to the current term, Executive and General Council sections. 23 people, photo/name/program/role/fun fact/email each.
+- Resources directory, editable in the CMS — 15 entries across five suggested categories (Academic, Financial, Wellbeing & Safety, Clinical & Professional, Governance).
+- Get Involved: 10–11 committee/club cards, editable in the CMS, with detail pages where real content exists.
+- Informational pages, editable in the CMS: About, Fees, Governance (Constitution & By-Laws), ISoN, Elections, Contact. Editable by execs; the CMS can edit the six but cannot add, rename or delete one, so content changes cannot move a URL or break the nav.
+- Homepage photo gallery, editable in the CMS, so the event photo library stays current rather than freezing at launch.
+- Site settings, editable in the CMS — office hours, address, contact email, social links — degrading to repo defaults rather than failing a build.
 - 301 redirects from all old Wix URLs (`docs/information-architecture.md`).
-- An editor's guide, written in Notion, in plain language, for the incoming exec.
+- An editor's guide, in plain language, for the incoming exec (a Google Doc in the NUS-owned Drive by default).
 
 ### Confirmed fast-follow
 
@@ -105,14 +107,14 @@ These are facts about the real data, not hypotheticals:
 
 ### Technical constraints with a failure mode attached
 
-- **Notion file URLs are signed S3 links that expire in about an hour.** Images must be downloaded at build time and passed through Astro's image pipeline. Emitting a Notion URL into the HTML is the single most common way this architecture breaks silently a week after launch.
+- **Uploaded image paths must stay relative** (`../../assets/uploads/…`). Astro only optimises a Markdown-body image with a relative path; one starting with `/` ships unprocessed and broken, with no build error. `npm run verify` catches it. See `MAINTENANCE.md` Landmine 4.
 - **Minimal JavaScript.** One interactive island (the electives filter). Assume poor hospital wifi.
 - **Free assets only.** System font stacks or a properly licensed open font. No paid icon sets, no stock photography.
-- **The `Key` property is retained on every Notion database** even though French is out of scope — one unused column now is the difference between adding French later being a content job rather than a migration.
+- **Every entry's filename is its permanent key** and cannot be renamed in the CMS, even though French is out of scope. That is the difference between adding French later being a content job rather than a migration (decision 5a).
 
 ### Open decisions — record, do not invent
 
-- Whether the NUS has or will create an **organisation-owned GitHub account and Notion workspace**. The build proceeds on personal accounts; transfer is a launch blocker, not a nice-to-have.
+- Whether the NUS has or will create an **organisation-owned GitHub account**, which owns the repo (and so all content) and installs Pages CMS. The build proceeds on personal accounts; transfer is a launch blocker, not a nice-to-have.
 - Whether an exec will **commit in writing to maintaining an events calendar**. If nobody owns it, it does not get built. The previous one died in 2024.
 - **Source and shape of the electives data**, to be confirmed before the explorer is built.
 - Confirmation that the club can **use the McGill listserv** for newsletter distribution as described above.
@@ -166,7 +168,7 @@ These are facts about the real data, not hypotheticals:
 
 **WCAG 2.1 AA minimum, treated as a requirement rather than a goal.** This is a healthcare-adjacent student body, and some of them are studying accommodation in their own coursework — shipping an inaccessible site to this audience is a substantive failure, not a technical one.
 
-Concretely: semantic HTML, real focus states, full keyboard navigation, AA contrast, and no colour-only signalling. Alt text is enforced at the Notion schema level so editors cannot publish an image without it.
+Concretely: semantic HTML, real focus states, full keyboard navigation, AA contrast, and no colour-only signalling. Image descriptions are required in the CMS form, and the build drops any image that arrives without one, so editors cannot publish an image without alt text.
 
 The council structure diagram is a specific known failure: currently a large raster image, unreadable on mobile and invisible to screen readers.
 

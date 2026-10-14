@@ -1,0 +1,46 @@
+# Runs `npm run verify` — typecheck, build, image check, and the tests in
+# tests/ — on every pull request and every push to main. It is exactly what a
+# maintainer runs locally, so a green check here means the same thing as a
+# green run on your laptop.
+#
+# The job is named `verify`, and that name is the required status check in
+# the "Protect main" ruleset (Settings → Rules). Renaming the job silently
+# un-requires it, so if you rename it, update the ruleset in the same change.
+#
+# Content saved through Pages CMS lands on main directly (the CMS has no
+# pull-request mode) and is NOT blocked by this check, by design: see
+# CLAUDE.md decision 16. This workflow still runs on those pushes, so a bad
+# content commit shows up here as a red X.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # A new push to a PR makes the old run pointless. Never cancel runs on main,
+  # so every commit there gets a result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run verify

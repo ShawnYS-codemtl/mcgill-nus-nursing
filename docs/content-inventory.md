@@ -19,8 +19,8 @@ Source: `https://nusnursing.wixsite.com/website` (live on `mcgillnus.ca`), crawl
 | **Commitment to Truth & Reconciliation** | MIGRATE **verbatim** | References Joyce's Principle and systemic inequities in Indigenous health outcomes. Same rule — exact text only. |
 | "Website Contents" wayfinding block | ARCHIVE | A four-item explanation of the nav menu. If the new nav needs explaining, the nav is wrong. |
 | "Events & Announcements" module | REWRITE | Currently empty — literally says "None for now!! / Nursing School is rough sometimes so we will update you soon!" Replaced by the Posts system. |
-| "LINKS" featured block | MIGRATE (as a component) | Four featured items → detail pages. This block is the club's existing hand-rolled newsletter; it becomes the homepage featured-links component driven by Notion. |
-| Photo gallery (~14 images) | MIGRATE → **Gallery DB** | Event photos. Re-source originals if possible; Wix CDN versions are compressed and cropped. Loading them into the Gallery DB rather than committing them as files is what keeps the homepage from freezing at launch — execs can add photos after each event. |
+| "LINKS" featured block | MIGRATE (as a component) | Four featured items → detail pages. This block is the club's existing hand-rolled newsletter; it becomes the homepage featured-links component, driven by the `featured` flag on posts. |
+| Photo gallery (~14 images) | MIGRATE → **Gallery** | Event photos. Re-source originals if possible; Wix CDN versions are compressed and cropped. Loading them through the CMS's Homepage photos list, rather than hard-coding them into a page, is what keeps the homepage from freezing at launch — execs can add photos after each event. |
 | Social icons | MIGRATE | Instagram `@mcgillnus`, TikTok `@mcgillnus`, Facebook `McGillNUS`, LinkedIn `company/mcgillnus`. |
 | Instagram feed embed | ARCHIVE (→ Later) | Fragile. See CLAUDE.md §7. |
 | Contact block + form | MIGRATE | Folded into the Contact page; homepage keeps a short contact CTA. |
@@ -30,9 +30,9 @@ Source: `https://nusnursing.wixsite.com/website` (live on `mcgillnus.ca`), crawl
 | Old URL | Content | Disposition |
 |---|---|---|
 | `/general-9` | **Nursing 21st Century Fund** — new fund providing NUS financial support for student research | MIGRATE → becomes a Post or a static page |
-| `/general-8-1` | **NUS Equity Committee** — signup, Instagram `@equitynus`, Microsoft Forms signup link | MIGRATE → Committees DB |
+| `/general-8-1` | **NUS Equity Committee** — signup, Instagram `@equitynus`, Microsoft Forms signup link | MIGRATE → Committees |
 | `/general-8` | **Student Mistreatment Policy** (2024) — reporting policy and form. Contact: `nusequitycommissioner@mail.mcgill.ca` | MIGRATE, form stays external |
-| — | **NUS Athletic Committee** — links to an Instagram post, no page of its own | REWRITE → give it a real Committees DB entry |
+| — | **NUS Athletic Committee** — links to an Instagram post, no page of its own | REWRITE → give it a real Committees entry |
 | — | **EN-FR Nursing Dictionary** (collab with UdeM) — Google Drive PDF | MIGRATE → featured link. Note: an active project, cover-art contest ran August 2026. |
 
 ---
@@ -43,12 +43,12 @@ Source: `https://nusnursing.wixsite.com/website` (live on `mcgillnus.ca`), crawl
 |---|---|---|---|
 | `/about` | A Bit About Us | MIGRATE | Mandate: liaison between faculty and students, contact with campus orgs and national nursing groups. Organises extracurriculars (Nursing-Engineering parties, Nursing Auctions, CNSA, Nursing Games, apparel). Explains class representatives. Still accurate. |
 | `/constitution-by-laws` | Constitution & By-Laws | MIGRATE | Thin page; the substance is a PDF at `mcgillnus.ca/_files/ugd/0a9b8d_6c6e7a950bb946b382f21e47eec111e3.pdf`. **Download this file before the Wix site is decommissioned.** |
-| `/nus-council` | NUS Council 2025–26 | MIGRATE → **Council DB** | The single highest-churn page. Full roster below. |
-| `/past-nus-councils` | Past Councils | Fast-follow | Same DB, filtered by `Term`. |
+| `/nus-council` | NUS Council 2025–26 | MIGRATE → **Council** | The single highest-churn page. Full roster below. |
+| `/past-nus-councils` | Past Councils | Fast-follow | Same collection, filtered by `term`. |
 | `/nus-council-meetings` | Meeting Minutes | Fast-follow | Explains any nursing student may attend and access minutes. Links to four Google Drive folders: Fall 2024, Winter 2025, Fall 2025, Winter 2026. Contact `nus.nursing@mail.mcgill.ca` to attend. |
 | `/ingram-school-of-nursing-ison` | About ISoN | MIGRATE | Verify content is current against mcgill.ca/nursing. |
 
-### Council roster — 2025–26 (source data for the Council DB)
+### Council roster — 2025–26 (source data for the Council collection)
 
 **Executive Council** — "governs the NUS in a manner consistent with the policies set out by the NUS General Council"
 
@@ -95,9 +95,9 @@ Also on the page: a **NUS Council Structure diagram** (PNG, ~1545×1996). Reused
 
 | Old URL | Page | Disposition | Notes |
 |---|---|---|---|
-| `/get-involved-1` | Ways to Get Involved | MIGRATE → **Committees DB** | Card grid, 10 entries. |
-| `/helpful-resources` | Helpful Resources | MIGRATE → **Resources DB** | 15 entries. Best-structured content on the site. |
-| *(external)* | Elective Courses for U3 | REWRITE → **Electives DB** | Currently one Google Drive PDF. Becomes the filterable explorer. |
+| `/get-involved-1` | Ways to Get Involved | MIGRATE → **Committees** | Card grid, 10 entries. |
+| `/helpful-resources` | Helpful Resources | MIGRATE → **Resources** | 15 entries. Best-structured content on the site. |
+| *(external)* | Elective Courses for U3 | REWRITE → **Electives** | Currently one Google Drive PDF. Becomes the filterable explorer. |
 | `/ntc` + 2 subpages | Note-Taking Club | ARCHIVE | NUR1 300 Pharmacology 1 (Fall 2019 only), NUR1 301 Pharmacology 2 (Winter 2018 only). Seven years stale. |
 | *(external)* | Textbook Marketplace | LINK | Facebook group `349210685468204`. |
 
@@ -119,7 +119,7 @@ Also on the page: a **NUS Council Structure diagram** (PNG, ~1545×1996). Reused
 
 ### Helpful Resources entries — all 15
 
-Each has a title, a descriptive paragraph, and a "Learn More" link. Fields map cleanly onto the Resources DB.
+Each has a title, a descriptive paragraph, and a "Learn More" link. Fields map cleanly onto the Resources collection.
 
 1. **Nursing Textbook Resources** — shared Drive folder of textbook PDFs
 2. **Nursing Student Handbook** — mcgill.ca/nursing/students/student-handbooks (grading, GPA, Minerva course selection, professionalism)
@@ -156,12 +156,12 @@ Suggested categories for the new directory: *Academic*, *Financial*, *Wellbeing 
 
 ## Cross-cutting notes
 
-**Where the `MIGRATE` prose actually lands.** The six informational pages — About, Constitution & By-Laws (→ Governance), ISoN, Elections, Fees, Contact — are loaded into the **Pages DB**, not written into the repo as hardcoded prose. Migration is therefore a content-entry job in Notion, and every one of these pages stays editable by a council exec afterwards. This matters most for Elections (date-bound, rewritten annually) and Fees (changes by referendum). See `notion-schema.md` §6.
+**Where the `MIGRATE` prose actually lands.** The six informational pages — About, Constitution & By-Laws (→ Governance), ISoN, Elections, Fees, Contact — are entered through the CMS's **Pages** list, not hard-coded into route files. Migration is therefore a content-entry job in Pages CMS, and every one of these pages stays editable by a council exec afterwards. This matters most for Elections (date-bound, rewritten annually) and Fees (changes by referendum). See `content-schema.md` §2.
 
-**External dependencies to preserve.** Several Google Drive links are load-bearing: textbook folder, financial aid PDF, elective courses PDF, EN-FR dictionary PDF, four meeting-minutes folders. Confirm these live in an **NUS-owned** Drive, not a graduating student's personal account. This is the same handover risk as the GitHub and Notion accounts.
+**External dependencies to preserve.** Several Google Drive links are load-bearing: textbook folder, financial aid PDF, elective courses PDF, EN-FR dictionary PDF, four meeting-minutes folders. Confirm these live in an **NUS-owned** Drive, not a graduating student's personal account. This is the same handover risk as the GitHub account and the Pages CMS install.
 
 **Assets to extract before decommissioning Wix.** The by-laws PDF, the council structure diagram, the logo (several variants: `NUS LOGO v2 transparent`, a wordmark used in the header at 400×120), and the homepage gallery photos. Wix CDN URLs stop working when the site comes down.
 
-**Contact emails follow a pattern** — `{role}.nus@mail.mcgill.ca` — with exceptions for cohort reps (personal McGill addresses) and SSMU roles (`@ssmu.ca`). Worth noting in the Council DB guidance so future execs keep the convention.
+**Contact emails follow a pattern** — `{role}.nus@mail.mcgill.ca` — with exceptions for cohort reps (personal McGill addresses) and SSMU roles (`@ssmu.ca`). Written into the Council email field's help text in the CMS so future execs keep the convention.
 
 **Tone.** The existing copy is warm and unpolished — fun facts about raccoons and instant ramen, a coordinator calling herself the "Sponsor-Rizzer." That voice is an asset and the reason students read the page at all. Preserve it. Do not professionalise this site into a corporate brochure.
