@@ -275,6 +275,7 @@ Four things that will actually take the site down. Understand these before chang
 | A post vanished after someone edited it | Its web address now matches another post's | The build log warns `was left out: its web address … is already used by …`. Change one |
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
+| Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
 | Nobody can add a new editor | The GitHub account that installed Pages CMS is gone | See Landmine 3 |
 | Editors' saves fail in Pages CMS, for everyone | Pages CMS is no longer on the ruleset's bypass list (or was reinstalled) | Settings → Rules → "Protect main" → Bypass list → add Pages CMS. See Landmine 3 |
 | A PR can't be merged | The required `verify` check is failing or hasn't run | See [When CI fails](#when-ci-fails) |

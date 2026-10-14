@@ -85,6 +85,20 @@ test('every image is processed by Astro (no raw upload paths reach the HTML)', (
   }
 });
 
+test('every image scales down to fit its column instead of showing at full size', () => {
+  // Found in the Pages CMS trial: a 2556px cover rendered 2556px wide.
+  // image.layout + responsiveStyles in astro.config.mjs fix it; this keeps it fixed.
+  for (const [file, html] of allHtml()) {
+    const images = [...html.matchAll(/<img[^>]*>/g)].map(([tag]) => tag);
+    for (const tag of images) {
+      assert.match(tag, /data-astro-image="constrained"/, `an image in ${file} isn't constrained: ${tag}`);
+    }
+    if (images.length) {
+      assert.match(html, /\[data-astro-image=constrained\]\)\{max-width:100%\}/, `${file} is missing the rule that keeps images inside the column`);
+    }
+  }
+});
+
 test('a pinned post is listed first, ahead of newer posts', () => {
   const links = [...read('').matchAll(/<li>\s*<a href="([^"]+)"/g)].map(([, href]) => href);
   assert.equal(links[0], '/news/pinned-bad-link/', `list order was: ${links.join(', ')}`);
