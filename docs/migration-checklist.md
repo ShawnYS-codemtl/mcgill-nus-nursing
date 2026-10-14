@@ -8,7 +8,10 @@
 - [x] Scaffold Astro; render the post index and detail pages, unstyled — **done 2026-09-29, moved to content collections 2026-10-13**
 - [ ] Deploy to a `*.pages.dev` subdomain on Cloudflare Pages, building on push to `main`
 - [ ] Turn on Cloudflare's **Deployment failed** email notification, to `nus.nursing@mail.mcgill.ca`
-- [ ] **Pages CMS spike:** install the GitHub App, invite a test email collaborator, and confirm sign-in, the relative image path and its preview, that the six pages can't be created or deleted, that rich text saves as Markdown, and how a council rollover goes without bulk duplicate. See `CLAUDE.md` §9.
+- [x] **Pages CMS spike:** passed **2026-10-14** on the `pages-cms` branch (PR #1). Findings are in `CLAUDE.md` §9.
+- [x] **"Protect main" ruleset** turned on 2026-10-14: deletion and force-push blocked, PR required, Pages CMS on the bypass list
+- [ ] Add **Require status checks → `verify`** to the ruleset, so a PR can't merge with CI red
+- [ ] After PR #1 merges: save one edit in Pages CMS on `main` and confirm the commit lands with the ruleset active
 - [ ] **Sit a council member down and have them publish a post without help.** If they stumble, change the CMS approach now — it costs almost nothing at this stage and is very expensive later.
   - Book this early. It needs the single council contact, so it cannot be arranged on demand.
   - Watch for hesitation, not just success. Where they pause is the finding.

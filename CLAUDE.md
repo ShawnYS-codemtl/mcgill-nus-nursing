@@ -193,20 +193,19 @@ The requirement was "one post publishes to the web and generates the email." Spl
 - ~~**To decide:** Which content gets cut.~~ **Resolved 2026-08-03:** Sponsors, Note-Taking Club, and Calendar are all archived. See §8 decision 11.
 - ~~**To confirm:** Access to the original logo files and a photo asset folder.~~ **Resolved 2026-08-03:** both confirmed in hand — vector logo originals and the event photo library. Design may commit to real imagery.
 - **To decide:** Whether the NUS has, or will create, an organisation-owned GitHub account. It now matters more than before: it owns the repo, which holds all the content, **and** it installs Pages CMS, which controls who can edit (`MAINTENANCE.md` Landmine 3). Build proceeds on personal accounts; transfer is a launch blocker, not a nice-to-have.
-- **Pages CMS spike — partly done 2026-10-14.** Confirmed:
-  - the app installs and loads `.pages.yml` on the `pages-cms` branch;
-  - a cover image is saved as `../../assets/uploads/…` and builds;
-  - email-collaborator edits commit;
-  - CI passed on every CMS commit.
-
-  Found:
-  - **no duplicate action**, so the council rollover is manual (runbook updated);
-  - **date fields auto-fill today's date** unless `default: ""` is set (fixed and now tested).
-
-  Still open:
-  - an inline image in a post body (not yet tried);
-  - whether the **Published** toggle is easy to miss. The trial post was saved as a draft and didn't appear. That is the exact hesitation step 5 exists to catch, so watch for it.
-- **Original spike checklist, for reference:** that email-collaborator sign-in works end to end; that the CMS writes the relative image path `../../assets/uploads/…` as configured and previews it; that `operations` really prevents creating or deleting the six pages; that rich text saves as Markdown; and how a council rollover works without a bulk-duplicate action. If any fails badly, the fallback is the `notion-phase0` branch: the complete, working Notion publish loop as it stood on 2026-09-29.
+- ~~**To verify: the Pages CMS spike.**~~ **Passed 2026-10-14** on the `pages-cms` branch (PR #1).
+  - **Confirmed:**
+    - the app installs and reads `.pages.yml` from a branch;
+    - a post saves with its cover as `../../assets/uploads/…` and builds;
+    - the six pages can't be created or deleted;
+    - an email-only collaborator (no GitHub account) can sign in and edit;
+    - CI passed on every CMS commit.
+  - **Found and fixed:** date fields auto-filled today's date (now `default: ""`, enforced by the contract test); a large cover rendered at full width (now `image.layout: 'constrained'`, enforced by the build test).
+  - **Found, worked around:** no duplicate action, so the council rollover is entered by hand (runbook updated).
+  - **Not exercised:** an image inserted *inside* post text through the CMS editor. The build handles it (`tests/build.test.mjs`), but check the path the editor writes the first time someone uses it.
+  - **Watch for in step 5:** the trial post was first saved as a draft and didn't appear. Whether the **Published** toggle is easy to miss is exactly the hesitation step 5 exists to catch.
+  - The `notion-phase0` branch stays as a record of the alternative; it is no longer the fallback plan.
+- **To confirm after PR #1 merges:** one save in Pages CMS on `main` lands as a commit while the "Protect main" ruleset is active (turned on 2026-10-14, with Pages CMS, GitHub App id `866529`, on the bypass list). It is the one path the trial couldn't test from a branch.
 - **To decide:** Whether an exec will commit *in writing* to maintaining an events calendar. Decision 11 archives the dead 2024–25 page; it does not authorise a replacement. Still governed by §7 — if nobody owns it, don't build it.
 - **To confirm:** That the council is content shipping English-only, given the Quebec context and that some BNI content and the club's own dictionary project are francophone-facing. Not a blocker — just make sure it's a decision they've made rather than one they inherit.
 - **To confirm:** That the club can use the McGill listserv for newsletter distribution as described in §6.
@@ -254,7 +253,7 @@ If they get stuck, the CMS choice is wrong and it's cheap to change now. If it w
 
 Do not skip step 5.
 
-### Status — 2026-10-13
+### Status — 2026-10-14
 
 **Switched from Notion to Pages CMS** (decision 1). Steps 1 and 2 are **built and verified locally**: all MVP collections are defined in `src/content.config.ts` and `.pages.yml`, plus the index and `/news/[slug]`. Typecheck is clean and the build needs no environment variables. `npm run verify` passed against throwaway fixtures (since removed) covering:
 
@@ -268,6 +267,8 @@ Do not skip step 5.
 
 **CI added 2026-10-13** (decision 16). `npm run verify` now also runs `tests/`: a contract test between `.pages.yml` and the schemas, and a build test against `tests/fixtures/content/`. Each was proven to catch a deliberate regression.
 
-Steps 3, 4 and 5 need accounts and a person, and are **not done**: the Cloudflare project, the Pages CMS install and spike (§9), and the session with a council member. Until step 5 happens, Phase 0 has not answered its question. The machine working is not the same as the bet being validated.
+**Step 4 done 2026-10-14:** Pages CMS is installed, and the trial passed (§9).
+
+Steps 3 and 5 are **not done**: the Cloudflare project, and the session with a council member. Until step 5 happens, Phase 0 has not answered its question. The machine working is not the same as the bet being validated.
 
 **Unrelated to code and more urgent than any of it:** `mcgillnus.ca` expires **2026-11-01**. See §9.

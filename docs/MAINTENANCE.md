@@ -23,8 +23,8 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 | Thing | Who owns it | Where the credentials live | What it's for |
 |---|---|---|---|
-| GitHub repo | _TODO — must be an NUS-owned account or org_ | _TODO_ | The code **and all the content** |
-| Pages CMS | Installed as a GitHub App by the account above | Signs in with that GitHub account | The editor council members use |
+| GitHub repo | `ShawnYS-codemtl` — **the developer's personal account; must move to an NUS-owned account or org before launch** | _TODO_ | The code **and all the content** |
+| Pages CMS | Installed as a GitHub App by the account above (app id `866529`, also the ruleset's bypass entry) | Signs in with that GitHub account | The editor council members use |
 | Pages CMS collaborators | _TODO — list the current editors here_ | Managed inside Pages CMS, **not** in the repo | Who can edit |
 | Cloudflare account | _TODO_ | _TODO_ | Hosting, builds **and DNS** |
 | GoDaddy (domain) | _TODO_ | _TODO_ | `mcgillnus.ca`, and **renewal matters, see Landmines** |
