@@ -1,0 +1,7 @@
+# /publish is the "Publish now" button for council editors. It is not secret,
+# but it is not content either — keep it out of search results.
+User-agent: *
+Disallow: /publish
+
+# No Sitemap: line yet — @astrojs/sitemap is deliberately out of scope for
+# Phase 0. Add it here when the sitemap ships (docs/information-architecture.md).

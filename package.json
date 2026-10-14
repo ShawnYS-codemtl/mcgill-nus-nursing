@@ -1,0 +1,32 @@
+{
+  "name": "mcgill-nus-nursing",
+  "type": "module",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "verify:images": "! grep -rlE 'src=\"(\\.\\.?/|/?src/)' dist/ || (echo '\\n[FAIL] Unprocessed image paths found in dist/ — these are broken images. See MAINTENANCE.md → Troubleshooting' && exit 1)",
+    "verify": "npm run check && npm run build && npm run verify:images && npm test",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.3.5"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "description": "Website for the McGill Nursing Undergraduate Society",
+  "private": true,
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.6.3",
+    "typescript": "^6.0.3",
+    "yaml": "^2.9.1"
+  }
+}

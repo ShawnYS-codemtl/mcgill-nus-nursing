@@ -1,0 +1,422 @@
+# Pages CMS configuration — what council editors see at https://app.pagescms.org
+# Docs: https://pagescms.org/docs/configuration/
+#
+# This file is the editor-facing half of the content contract. The other half
+# is src/content.config.ts, which validates the same fields at build time.
+# Field names here and there MUST match. Change one, change the other, then
+# update docs/content-schema.md. See MAINTENANCE.md → "Adding a field".
+# tests/cms-contract.test.mjs fails CI if they drift.
+#
+# Editors cannot change this file — Pages CMS only lets GitHub users with
+# repository access touch .pages.yml, and council editors are email-invited
+# collaborators without GitHub accounts. That is what keeps nav, URLs and the
+# page allowlist out of their reach (CLAUDE.md decisions 6 and 12a).
+
+media:
+  input: src/assets/uploads
+  # Deliberately a RELATIVE path. Astro only optimises an image written into a
+  # Markdown body if its path is relative; a path starting with "/" is treated
+  # as a file in public/ and ships unresized — or not at all. "../../" works
+  # because every content file that can hold an image sits exactly two levels
+  # below src/ (src/content/<collection>/<file>). Keep that true.
+  # See MAINTENANCE.md → Landmines.
+  output: ../../assets/uploads
+  categories: [image]
+  rename: safe
+
+content:
+  # ---------------------------------------------------------------------------
+  - name: posts
+    label: News posts
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    # The filename is the post's permanent key (CLAUDE.md decision 5a). It is
+    # set once from the web address and never changes, even if the web address
+    # later does — hence rename: false.
+    filename: "{fields.slug}.md"
+    operations:
+      rename: false
+    view:
+      fields: [title, published, date]
+      primary: title
+      sort: [date, title]
+      search: [title, summary]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: published
+        label: Published
+        type: boolean
+        default: false
+        description: Switch this on when the post is ready, then press Save. The website updates by itself in about two minutes.
+      - name: date
+        label: Date
+        type: date
+        required: true
+        description: Newest posts appear first. You can backdate a post, or set a future date.
+        options:
+          format: yyyy-MM-dd
+      - name: slug
+        label: Web address
+        type: string
+        required: true
+        description: "The end of the post's link: mcgillnus.ca/news/… Keep it short — frosh-2026, not frosh-2026-sign-ups-are-now-open."
+        pattern:
+          regex: "^[a-z0-9]+(-[a-z0-9]+)*$"
+          message: Lowercase letters, numbers and hyphens only — for example frosh-2026
+      - name: summary
+        label: Summary
+        type: text
+        required: true
+        description: One or two sentences. Shown on the homepage and when the link is shared.
+      - name: category
+        label: Category
+        type: select
+        options:
+          values: [Announcement, Event, Opportunity, Governance, Newsletter]
+      - name: cover
+        label: Cover image
+        type: image
+        description: Optional. If you add one, describe it in the next box — the image is left out without a description.
+      - name: coverAlt
+        label: Cover image description
+        type: string
+        description: What the photo shows, for students using a screen reader. For example, "Six nursing students in scrubs laughing at the clinical skills lab."
+      - name: featured
+        label: Featured on the homepage
+        type: boolean
+        default: false
+        description: Up to four posts can be featured at once.
+      - name: authorRole
+        label: Written by (role)
+        type: string
+        description: A role, not a person — for example "Director of Internal Affairs".
+      - name: externalLink
+        label: Link somewhere else instead
+        type: string
+        description: Optional. If set, the post links straight to this address (an Instagram post, a form) and gets no page of its own. Must start with https://
+      - name: pinnedUntil
+        label: Keep at the top until
+        type: date
+        description: Optional. Keeps a time-sensitive post at the top until this date.
+        options:
+          format: yyyy-MM-dd
+      - name: body
+        label: Post
+        type: rich-text
+        options:
+          format: markdown
+
+  # ---------------------------------------------------------------------------
+  # The six informational pages. Editors change what a page SAYS; they cannot
+  # add, remove or rename one — that is decision 12a, enforced right here by
+  # operations rather than by code. The filename is the route join: about.md
+  # is /about/, and so on (see docs/content-schema.md).
+  - name: pages
+    label: Pages
+    type: collection
+    path: src/content/pages
+    format: yaml-frontmatter
+    operations:
+      create: false
+      rename: false
+      delete: false
+    view:
+      fields: [title, lastReviewed]
+      primary: title
+    fields:
+      - name: title
+        label: Page heading
+        type: string
+        required: true
+      - name: metaDescription
+        label: Search engine description
+        type: text
+        required: true
+        description: One sentence describing the page. Shown in Google results.
+      - name: lastReviewed
+        label: Last checked
+        type: date
+        description: Set this to today whenever you've read the page through and it's still correct.
+        options:
+          format: yyyy-MM-dd
+      - name: body
+        label: Page content
+        type: rich-text
+        options:
+          format: markdown
+
+  # ---------------------------------------------------------------------------
+  - name: council
+    label: Council
+    type: collection
+    path: src/content/council
+    format: yaml
+    # Keyed by term and role, never by person: pages outlive people
+    # (PRODUCT.md principle 4). e.g. 2026-2027-president.yml
+    filename: "{fields.term}-{fields.role}.yml"
+    operations:
+      rename: false
+    view:
+      fields: [role, name, term, published]
+      primary: role
+      sort: [term, order, role]
+      search: [role, name, term]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: role
+        label: Role
+        type: string
+        required: true
+      - name: term
+        label: Term
+        type: string
+        required: true
+        description: For example 2026-2027. The site shows the term set in Site settings.
+        pattern:
+          regex: "^[0-9]{4}-[0-9]{4}$"
+          message: Use the form 2026-2027
+      - name: council
+        label: Council
+        type: select
+        required: true
+        options:
+          values: [Executive, General]
+      - name: vacant
+        label: Position is vacant
+        type: boolean
+        default: false
+        description: Shows a "position open" card linking to Elections instead of a person.
+      - name: name
+        label: Name
+        type: string
+      - name: program
+        label: Program
+        type: string
+        description: For example "U3 BScN" or "U2 BNI Online".
+      - name: email
+        label: Email
+        type: string
+        description: Use the role address where there is one, e.g. president.nus@mail.mcgill.ca
+      - name: photo
+        label: Photo
+        type: image
+      - name: roleDescription
+        label: What this role does
+        type: text
+      - name: funFact
+        label: Fun fact
+        type: text
+      - name: order
+        label: Order
+        type: number
+        required: true
+        description: Lower numbers come first. Leave gaps (10, 20, 30) so you can slot people in later.
+      - name: published
+        label: Show on the site
+        type: boolean
+        default: true
+
+  # ---------------------------------------------------------------------------
+  - name: resources
+    label: Resources
+    type: collection
+    path: src/content/resources
+    format: yaml
+    filename: "{primary}.yml"
+    operations:
+      rename: false
+    view:
+      fields: [title, category, lastVerified]
+      primary: title
+      sort: [category, order, title]
+      search: [title, description]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: category
+        label: Category
+        type: select
+        required: true
+        options:
+          values: [Academic, Financial, Wellbeing & Safety, Clinical & Professional, Governance]
+      - name: description
+        label: Description
+        type: text
+        required: true
+      - name: link
+        label: Link
+        type: string
+        required: true
+        pattern:
+          regex: "^(https?://|/)"
+          message: Must start with https:// (or / for a page on this site)
+      - name: linkLabel
+        label: Link text
+        type: string
+        description: Defaults to "Learn more".
+      - name: lastVerified
+        label: Link last checked
+        type: date
+        description: Set this to today whenever you've clicked the link and it still works.
+        options:
+          format: yyyy-MM-dd
+      - name: order
+        label: Order
+        type: number
+        required: true
+        description: Lower numbers come first within a category.
+      - name: published
+        label: Show on the site
+        type: boolean
+        default: true
+
+  # ---------------------------------------------------------------------------
+  - name: committees
+    label: Committees & clubs
+    type: collection
+    path: src/content/committees
+    format: yaml-frontmatter
+    filename: "{fields.slug}.md"
+    operations:
+      rename: false
+    view:
+      fields: [name, acceptingMembers, published]
+      primary: name
+      sort: [order, name]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: name
+        label: Name
+        type: string
+        required: true
+      - name: slug
+        label: Web address
+        type: string
+        required: true
+        description: "The end of the link: mcgillnus.ca/involved/…"
+        pattern:
+          regex: "^[a-z0-9]+(-[a-z0-9]+)*$"
+          message: Lowercase letters, numbers and hyphens only — for example equity-committee
+      - name: shortDescription
+        label: Short description
+        type: text
+        required: true
+        description: Shown on the card.
+      - name: logo
+        label: Logo
+        type: image
+      - name: logoAlt
+        label: Logo description
+        type: string
+        description: Usually just the committee's name, e.g. "NUS Equity Committee logo". The logo is left out without one.
+      - name: externalLink
+        label: Link somewhere else instead
+        type: string
+        description: Optional. If set, the card links straight here and the committee gets no page of its own.
+      - name: instagram
+        label: Instagram link
+        type: string
+      - name: contactEmail
+        label: Contact email
+        type: string
+      - name: acceptingMembers
+        label: Recruiting now
+        type: boolean
+        default: false
+      - name: order
+        label: Order
+        type: number
+        required: true
+      - name: published
+        label: Show on the site
+        type: boolean
+        default: true
+      - name: body
+        label: Committee page
+        type: rich-text
+        options:
+          format: markdown
+
+  # ---------------------------------------------------------------------------
+  - name: gallery
+    label: Homepage photos
+    type: file
+    path: src/content/gallery/gallery.json
+    format: json
+    list: true
+    fields:
+      - name: image
+        label: Photo
+        type: image
+        required: true
+      - name: alt
+        label: Photo description
+        type: string
+        required: true
+        description: What the photo shows, for students using a screen reader.
+      - name: caption
+        label: Caption
+        type: string
+      - name: term
+        label: Term
+        type: string
+        description: For example 2026-2027.
+
+  # ---------------------------------------------------------------------------
+  # Facts about the club that appear site-wide. Labels, button text and nav
+  # copy do NOT belong here — they stay in the repo (CLAUDE.md decision 6).
+  # The test: if changing it changes what a control SAYS, it's the repo's.
+  # If it changes what the club IS, it's here.
+  - name: settings
+    label: Site settings
+    type: file
+    path: src/content/settings.json
+    format: json
+    operations:
+      delete: false
+    fields:
+      - name: currentTerm
+        label: Current council term
+        type: string
+        required: true
+        description: The council page shows members from this term. Change it once the new council is entered.
+        pattern:
+          regex: "^[0-9]{4}-[0-9]{4}$"
+          message: Use the form 2026-2027
+      - name: contactEmail
+        label: Contact email
+        type: string
+      - name: officeAddress
+        label: Office address
+        type: text
+      - name: officeHours
+        label: Office hours
+        type: text
+      - name: instagramUrl
+        label: Instagram link
+        type: string
+      - name: tiktokUrl
+        label: TikTok link
+        type: string
+      - name: facebookUrl
+        label: Facebook link
+        type: string
+      - name: linkedinUrl
+        label: LinkedIn link
+        type: string
