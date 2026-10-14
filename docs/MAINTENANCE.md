@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-14
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -168,7 +168,7 @@ Every spring, and whenever someone joins or leaves the council:
 
 The single most predictable task. Happens every spring after elections. It is a **Pages CMS** job, not a code job.
 
-1. In **Council**, create one entry per position for the new term (e.g. `2026-2027`). Fill in name, program, photo, role description, fun fact and email. Copy the role descriptions across from last year's entries where the role hasn't changed.
+1. In **Council**, create one entry per position for the new term (e.g. `2026-2027`). Fill in name, program, photo, role description, fun fact and email. Pages CMS has **no duplicate button** (checked 2026-10-14), so open last year's entry in a second tab and copy the role description across where the role hasn't changed.
 2. Switch on **Position is vacant** for any position not yet filled. It renders a "position open" card instead of a blank person.
 3. **Do not delete last year's entries.** They become the Past Councils page.
 4. In **Site settings**, change **Current council term** to the new term. This is what flips the site over. Until you do it, the old council keeps showing.

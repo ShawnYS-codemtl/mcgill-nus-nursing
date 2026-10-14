@@ -24,6 +24,11 @@ media:
   categories: [image]
   rename: safe
 
+# Optional date fields set `default: ""`. Without it, Pages CMS fills every
+# date field with today's date when an entry is created, so a new post would
+# arrive "pinned until today" and a new resource "verified today" without
+# anyone checking anything. tests/cms-contract.test.mjs enforces this.
+
 content:
   # ---------------------------------------------------------------------------
   - name: posts
@@ -104,6 +109,7 @@ content:
       - name: pinnedUntil
         label: Keep at the top until
         type: date
+        default: ""
         description: Optional. Keeps a time-sensitive post at the top until this date.
         options:
           format: yyyy-MM-dd
@@ -143,6 +149,7 @@ content:
       - name: lastReviewed
         label: Last checked
         type: date
+        default: ""
         description: Set this to today whenever you've read the page through and it's still correct.
         options:
           format: yyyy-MM-dd
@@ -271,6 +278,7 @@ content:
       - name: lastVerified
         label: Link last checked
         type: date
+        default: ""
         description: Set this to today whenever you've clicked the link and it still works.
         options:
           format: yyyy-MM-dd

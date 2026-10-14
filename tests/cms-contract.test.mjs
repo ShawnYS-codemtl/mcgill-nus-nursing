@@ -130,6 +130,21 @@ test('select options in the CMS match the values the build accepts', () => {
   }
 });
 
+test('optional date fields start empty instead of filling in today', () => {
+  // Pages CMS gives every date field today's date on a new entry unless the
+  // field sets its own default. Found in the Pages CMS trial (2026-10-14): a
+  // new post arrived "pinned until today" without anyone choosing that.
+  for (const entry of entries) {
+    for (const field of entry.fields.filter((candidate) => candidate.type === 'date' && !candidate.required)) {
+      assert.equal(
+        field.default,
+        '',
+        `${entry.name}.${field.name} is an optional date without default: "" — Pages CMS will fill it with today's date on every new entry.`
+      );
+    }
+  }
+});
+
 test('uploaded image paths stay relative, and every file that can hold an image sits two folders below src/', () => {
   // MAINTENANCE.md Landmine 4. A "/" path, or a file at another depth, gives
   // broken images with no build error.

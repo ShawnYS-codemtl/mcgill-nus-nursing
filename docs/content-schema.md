@@ -36,6 +36,7 @@ Until 2026-10-11 the plan was Notion. That changed. See `CLAUDE.md` decision 1 f
 | **Order** | A number; lower comes first. Leave gaps (10, 20, 30). | Insert without renumbering. |
 | **Image paths are relative** | The CMS writes `../../assets/uploads/<file>`. Every content file that can hold an image sits exactly two folders below `src/` (`src/content/<collection>/<file>`). | Astro only optimises a Markdown-body image if its path is relative. A path starting with `/` ships unresized, or broken. `npm run verify` fails if one reaches `dist/`. |
 | **Blank means absent** | An optional field saved as `""` or `null` is treated as not set. | The CMS can write either for a field nobody touched. |
+| **Optional dates start empty** | Every optional `date` field in `.pages.yml` sets `default: ""`. | Otherwise Pages CMS fills it with today's date on every new entry: a post arrives "pinned until today" and a resource "verified today" with no one having checked. Found in the trial (2026-10-14); the contract test enforces it. |
 
 ---
 

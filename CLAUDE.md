@@ -193,7 +193,20 @@ The requirement was "one post publishes to the web and generates the email." Spl
 - ~~**To decide:** Which content gets cut.~~ **Resolved 2026-08-03:** Sponsors, Note-Taking Club, and Calendar are all archived. See §8 decision 11.
 - ~~**To confirm:** Access to the original logo files and a photo asset folder.~~ **Resolved 2026-08-03:** both confirmed in hand — vector logo originals and the event photo library. Design may commit to real imagery.
 - **To decide:** Whether the NUS has, or will create, an organisation-owned GitHub account. It now matters more than before: it owns the repo, which holds all the content, **and** it installs Pages CMS, which controls who can edit (`MAINTENANCE.md` Landmine 3). Build proceeds on personal accounts; transfer is a launch blocker, not a nice-to-have.
-- **To verify (Pages CMS spike, before step 5):** that email-collaborator sign-in works end to end; that the CMS writes the relative image path `../../assets/uploads/…` as configured and previews it; that `operations` really prevents creating or deleting the six pages; that rich text saves as Markdown; and how a council rollover works without a bulk-duplicate action. If any fails badly, the fallback is the `notion-phase0` branch: the complete, working Notion publish loop as it stood on 2026-09-29.
+- **Pages CMS spike — partly done 2026-10-14.** Confirmed:
+  - the app installs and loads `.pages.yml` on the `pages-cms` branch;
+  - a cover image is saved as `../../assets/uploads/…` and builds;
+  - email-collaborator edits commit;
+  - CI passed on every CMS commit.
+
+  Found:
+  - **no duplicate action**, so the council rollover is manual (runbook updated);
+  - **date fields auto-fill today's date** unless `default: ""` is set (fixed and now tested).
+
+  Still open:
+  - an inline image in a post body (not yet tried);
+  - whether the **Published** toggle is easy to miss. The trial post was saved as a draft and didn't appear. That is the exact hesitation step 5 exists to catch, so watch for it.
+- **Original spike checklist, for reference:** that email-collaborator sign-in works end to end; that the CMS writes the relative image path `../../assets/uploads/…` as configured and previews it; that `operations` really prevents creating or deleting the six pages; that rich text saves as Markdown; and how a council rollover works without a bulk-duplicate action. If any fails badly, the fallback is the `notion-phase0` branch: the complete, working Notion publish loop as it stood on 2026-09-29.
 - **To decide:** Whether an exec will commit *in writing* to maintaining an events calendar. Decision 11 archives the dead 2024–25 page; it does not authorise a replacement. Still governed by §7 — if nobody owns it, don't build it.
 - **To confirm:** That the council is content shipping English-only, given the Quebec context and that some BNI content and the club's own dictionary project are francophone-facing. Not a blocker — just make sure it's a decision they've made rather than one they inherit.
 - **To confirm:** That the club can use the McGill listserv for newsletter distribution as described in §6.
