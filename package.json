@@ -1,0 +1,31 @@
+{
+  "name": "mcgill-nus-nursing",
+  "type": "module",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "verify:no-notion-urls": "! grep -rlE 'amazonaws\\.com|notion-static|prod-files-secure' dist/ || (echo '\\n[FAIL] Expiring Notion URLs found in dist/ — see MAINTENANCE.md Landmine 2' && exit 1)",
+    "verify": "npm run build && npm run verify:no-notion-urls"
+  },
+  "dependencies": {
+    "@notionhq/client": "^5.27.0",
+    "astro": "^7.3.5"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "description": "Website for the McGill Nursing Undergraduate Society",
+  "private": true,
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.6.3",
+    "typescript": "^6.0.3"
+  }
+}

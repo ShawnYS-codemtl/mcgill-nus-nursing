@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, type Post } from '../../lib/notion/posts';
+
+export async function getStaticPaths() {
+  const { posts } = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Post };
+
+const dateFormat = new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Base title={`${post.title} — McGill NUS`}>
+  <article>
+    <h1>{post.title}</h1>
+    <p>
+      <time datetime={post.publishedDate}>{dateFormat.format(new Date(post.publishedDate))}</time>
+    </p>
+
+    {/*
+      Already escaped in src/lib/notion/blocks.ts — every string from Notion goes
+      through escapeHtml before any tag is wrapped around it, so this is markup
+      the renderer built, not markup an editor typed.
+    */}
+    <Fragment set:html={post.bodyHtml} />
+  </article>
+
+  <p><a href="/">Back to news</a></p>
+</Base>

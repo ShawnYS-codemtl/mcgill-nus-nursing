@@ -1,0 +1,61 @@
+# Rebuilds the site on a schedule so content published in Notion appears even if
+# nobody presses "Publish now" at /publish.
+#
+# Why this lives in GitHub Actions rather than the host: Cloudflare Pages has no
+# built-in cron. All this job does is POST the deploy hook.
+#
+# Build budget: Cloudflare's free plan allows 500 builds/month. Every 6 hours is
+# ~120/month, which leaves plenty of room for pushes and button presses.
+#
+# !! KNOWN FAILURE MODE !!
+# GitHub silently disables scheduled workflows after 60 days with no repository
+# activity, with no email and no log entry. A student club goes quiet over the
+# summer, so this WILL eventually trigger. The `keepalive` job below exists only
+# to prevent it. If the site ever stops refreshing on its own, check the Actions
+# tab first — the workflow is probably just switched off.
+name: Scheduled rebuild
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  # Lets a maintainer force a rebuild from the Actions tab without a local checkout.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare Pages deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::CLOUDFLARE_DEPLOY_HOOK secret is not set. Add it in Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "$DEPLOY_HOOK"
+          echo "Deploy triggered."
+
+  keepalive:
+    # Runs monthly. Its only purpose is to count as repository activity so the
+    # schedule above does not get switched off. Do not delete it.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *'
+    steps:
+      - uses: actions/checkout@v5
+      - name: Touch the repo once a month
+        run: |
+          # Only act on the 1st of the month, in the 00:00 run.
+          if [ "$(date -u +%d)" != "01" ] || [ "$(date -u +%H)" != "00" ]; then
+            echo "Not the monthly slot; nothing to do."
+            exit 0
+          fi
+          date -u +"%Y-%m-%d" > .github/last-keepalive
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/last-keepalive
+          git commit -m "chore: keepalive so scheduled builds stay enabled" || exit 0
+          git push

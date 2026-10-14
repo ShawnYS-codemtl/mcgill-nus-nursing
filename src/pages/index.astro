@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPosts } from '../lib/notion/posts';
+
+const { posts, fromCache } = await getPosts();
+
+const dateFormat = new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Base title="McGill NUS — News" description="News and announcements from the McGill Nursing Undergraduate Society.">
+  <h1>News</h1>
+
+  {
+    posts.length === 0 ? (
+      // The empty state is a real state, not an edge case: "nothing posted in a
+      // month" will happen. See PRODUCT.md → Product Principles.
+      <p>No posts yet. Once something is published in Notion, it shows up here.</p>
+    ) : (
+      <ul>
+        {posts.map((post) => (
+          <li>
+            <a href={`/news/${post.slug}/`}>{post.title}</a>
+            <br />
+            <time datetime={post.publishedDate}>
+              {dateFormat.format(new Date(post.publishedDate))}
+            </time>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    fromCache && (
+      <p>
+        <small>
+          Showing cached content — the build could not reach Notion. Check the deploy log.
+        </small>
+      </p>
+    )
+  }
+
+  <hr />
+  <p><a href="/publish/">Publish now</a></p>
+</Base>

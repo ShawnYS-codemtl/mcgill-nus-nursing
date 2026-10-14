@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Why this page exists at all:
+//
+// A Cloudflare deploy hook only answers POST requests, and clicking a link in
+// Notion sends a GET. Notion's own "send webhook" button is a paid feature.
+// So the shortest path an exec can actually click is a page with a button on
+// it, which is this.
+//
+// The hook URL reaches the browser, so treat it as public. Anyone who opens
+// this page can read it and start builds. That is a deliberate, bounded
+// trade-off: the worst case is a used-up build allowance and a site that stops
+// updating, never a site that goes offline. Regenerate the hook in Cloudflare
+// if it is ever abused. See CLAUDE.md decision 15.
+const deployHook = import.meta.env.PUBLIC_DEPLOY_HOOK;
+const configured = Boolean(deployHook);
+---
+
+<Base title="Publish now — McGill NUS" noindex>
+  <h1>Publish now</h1>
+
+  {
+    configured ? (
+      <>
+        <p>
+          Finished editing in Notion? Press the button. The website will catch up with your
+          changes in about two minutes.
+        </p>
+        <p>
+          You only need this if you are in a hurry — the site refreshes on its own every few
+          hours anyway.
+        </p>
+
+        <button id="publish" type="button">Publish now</button>
+
+        {/* Announced to screen readers when it changes, not just shown. */}
+        <p id="status" role="status" aria-live="polite"></p>
+
+        <p>
+          <small>
+            Nothing changed after five minutes? The post may still be set to <strong>Draft</strong>
+            in Notion. If it says Published and still has not appeared, tell whoever looks after
+            the website.
+          </small>
+        </p>
+      </>
+    ) : (
+      <p>
+        This button is not set up yet. Whoever maintains the site needs to set{' '}
+        <code>PUBLIC_DEPLOY_HOOK</code> — see <code>.env.example</code>.
+      </p>
+    )
+  }
+
+  <p><a href="/">Back to news</a></p>
+</Base>
+
+<script>
+  const hook = import.meta.env.PUBLIC_DEPLOY_HOOK;
+  const button = document.querySelector<HTMLButtonElement>('#publish');
+  const status = document.querySelector<HTMLParagraphElement>('#status');
+
+  // Astro hoists and bundles this script whether or not the button rendered, so
+  // bail out explicitly rather than letting an undefined hook reach fetch().
+  if (hook && button) button.addEventListener('click', async () => {
+    button.disabled = true;
+    if (status) status.textContent = 'Starting…';
+
+    try {
+      // `no-cors` on purpose. Cloudflare does not document CORS headers on
+      // deploy hooks, and a plain POST that gets blocked still *sends* — so
+      // retrying afterwards would trigger a second build and quietly burn two
+      // of the month's allowance per click. One request, fire and forget.
+      //
+      // The cost is that we cannot read the response, so we cannot truly
+      // confirm success. The copy below says "started", not "done", because
+      // that is all we actually know.
+      await fetch(hook, { method: 'POST', mode: 'no-cors' });
+
+      if (status) {
+        status.textContent = 'Started. Give it about two minutes, then reload the site.';
+      }
+    } catch {
+      if (status) {
+        status.textContent = 'That did not go through. Check your connection and try again.';
+      }
+      button.disabled = false;
+    }
+  });
+</script>
