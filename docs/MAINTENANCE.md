@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-14
+**Last reviewed:** 2026-10-19
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -160,7 +160,7 @@ If a council member says "I saved it and it's not showing up," check in this ord
 Every spring, and whenever someone joins or leaves the council:
 
 1. Sign in to Pages CMS with the **NUS-owned GitHub account**.
-2. Open the repo's collaborators settings and invite the new editor's McGill email. They get an email invite and **don't need a GitHub account**.
+2. Open the repo's collaborators settings and invite the new editor's McGill email. They get an email invite and **don't need a GitHub account**. **Always invite editors this way, even ones who happen to have GitHub.** An email collaborator saves as the Pages CMS app, which the ruleset lets through; someone signed in with GitHub saves as themselves, and is blocked (see Landmine 3).
 3. Remove anyone who has left the council.
 4. Update the collaborator row in the [Access inventory](#access-inventory). Pages CMS keeps this list in its own database, not in the repo, so this file is the only place it's written down.
 
@@ -257,6 +257,8 @@ Four things that will actually take the site down. Understand these before chang
 
 **And never remove Pages CMS from the bypass list of the "Protect main" ruleset.** The ruleset requires a pull request for every change to `main`, and Pages CMS can't make pull requests. Without the bypass, every editor's Save fails, and publishing stops for everyone. The same happens if the app is reinstalled: re-add it to the bypass list straight away.
 
+**Only email collaborators get through, not people signed in with GitHub.** Pages CMS writes with the *app's* identity for collaborators invited by email, and with the *person's own* GitHub identity for anyone signed in with GitHub, including you and the NUS-owned account. The ruleset exempts only the app, so a GitHub sign-in is blocked from saving to `main` with *"This repository requires changes through a pull request"*. That's deliberate: GitHub users are maintainers, and their changes go through a PR. To edit content yourself, either use a collaborator login (invite your own McGill email and sign in with it in a private window), or choose *save to a different branch* in the CMS and open a PR. **Never have council editors sign in with GitHub**, or their saves fail the same way.
+
 **4. Image paths must stay relative.** The CMS writes uploaded image paths as `../../assets/uploads/<file>`. That only works because every content file that can hold an image sits exactly two folders below `src/` (`src/content/<collection>/<file>`). Astro only optimises a Markdown-body image with a relative path. A path starting with `/` is treated as a file in `public/` and ships unprocessed, or as a broken image. Nothing in the build complains: the site looks fine and the images 404. So:
 
 - Don't change `media.output` in `.pages.yml`.
@@ -277,6 +279,7 @@ Four things that will actually take the site down. Understand these before chang
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
 | Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
 | Nobody can add a new editor | The GitHub account that installed Pages CMS is gone | See Landmine 3 |
+| Pages CMS says "This repository requires changes through a pull request" for one person | They're signed in to Pages CMS with GitHub, so they save as themselves, which the ruleset blocks. Email collaborators save as the app and aren't affected | Editors: invite them by email and have them sign in that way. Maintainers: use a collaborator login, or save to a branch and open a PR. See Landmine 3 |
 | Editors' saves fail in Pages CMS, for everyone | Pages CMS is no longer on the ruleset's bypass list (or was reinstalled) | Settings → Rules → "Protect main" → Bypass list → add Pages CMS. See Landmine 3 |
 | A PR can't be merged | The required `verify` check is failing or hasn't run | See [When CI fails](#when-ci-fails) |
 | CI stopped being required | The job in `ci.yml` was renamed, so the ruleset waits on a check that never reports | Make the ruleset's required check match the job name |

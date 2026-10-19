@@ -22,7 +22,7 @@ Until 2026-10-11 the plan was Notion. That changed. See `CLAUDE.md` decision 1 f
 ## Setup
 
 - The **Pages CMS GitHub App** is installed on this repo by the **NUS-owned GitHub account**, never a personal one. Whoever installs it controls who can edit.
-- Council editors are added as **collaborators by email** in Pages CMS. They need **no GitHub account**. Collaborators can edit content and media; they cannot touch `.pages.yml` or manage other collaborators.
+- Council editors are added as **collaborators by email** in Pages CMS, and must sign in that way. They need **no GitHub account**. A collaborator's save is written by the Pages CMS app, which the "Protect main" ruleset exempts; a GitHub sign-in writes as that person, and is blocked. Collaborators can edit content and media; they cannot touch `.pages.yml` or manage other collaborators.
 - **The collaborator list lives in Pages CMS's own database, not in this repo.** Keep a copy of who has access in `MAINTENANCE.md` → Access inventory.
 - No API tokens, no environment variables. The build needs no secrets.
 
