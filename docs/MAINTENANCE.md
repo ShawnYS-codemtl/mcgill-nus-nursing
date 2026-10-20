@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-14
+**Last reviewed:** 2026-10-20
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -26,7 +26,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 | GitHub repo | `ShawnYS-codemtl` — **the developer's personal account; must move to an NUS-owned account or org before launch** | _TODO_ | The code **and all the content** |
 | Pages CMS | Installed as a GitHub App by the account above (app id `866529`, also the ruleset's bypass entry) | Signs in with that GitHub account | The editor council members use |
 | Pages CMS collaborators | _TODO — list the current editors here_ | Managed inside Pages CMS, **not** in the repo | Who can edit |
-| Cloudflare account | _TODO_ | _TODO_ | Hosting, builds **and DNS** |
+| Cloudflare account | `nus.nursing@mail.mcgill.ca` (NUS-owned) | _TODO — who holds the password_ | Hosting and builds (Pages project `mcgill-nus`, live at https://mcgill-nus.pages.dev). **DNS too, from launch** |
 | GoDaddy (domain) | _TODO_ | _TODO_ | `mcgillnus.ca`, and **renewal matters, see Landmines** |
 | Editor's guide | _TODO — Google Doc in the NUS Drive_ | — | How council members publish |
 | Google Drive (linked PDFs) | _TODO_ | _TODO_ | Minutes, textbooks, financial aid docs |
@@ -160,7 +160,7 @@ If a council member says "I saved it and it's not showing up," check in this ord
 Every spring, and whenever someone joins or leaves the council:
 
 1. Sign in to Pages CMS with the **NUS-owned GitHub account**.
-2. Open the repo's collaborators settings and invite the new editor's McGill email. They get an email invite and **don't need a GitHub account**.
+2. Open the repo's collaborators settings and invite the new editor's McGill email. They get an email invite and **don't need a GitHub account**. **Always invite editors this way, even ones who happen to have GitHub.** An email collaborator saves as the Pages CMS app, which the ruleset lets through; someone signed in with GitHub saves as themselves, and is blocked (see Landmine 3).
 3. Remove anyone who has left the council.
 4. Update the collaborator row in the [Access inventory](#access-inventory). Pages CMS keeps this list in its own database, not in the repo, so this file is the only place it's written down.
 
@@ -220,7 +220,36 @@ Order matters. Do it backwards and the build breaks for everyone:
 
 ### Turning on build-failure emails
 
-Do this once, and again whenever the Cloudflare account changes hands. In Cloudflare: **Notifications → Add → Pages → Deployment failed**, sent to `nus.nursing@mail.mcgill.ca`. It's free. Without it, a failed build is invisible: the old site stays up and nobody knows why changes stopped appearing.
+Set up 2026-10-20; redo it whenever the Cloudflare account changes hands. Without it, a failed build is invisible: the old site stays up and nobody knows why changes stopped appearing.
+
+Cloudflare renamed "Notifications" to **Alerts** in 2026. The direct link `https://dash.cloudflare.com/?to=/:account/notifications` survives menu changes. Then:
+
+1. **Create an Alert** → the Pages alert **Project updates** → **Select**.
+2. Project `mcgill-nus`, event **Deployment failed** only. "Started" and "success" would email on every save.
+3. Deliver to `nus.nursing@mail.mcgill.ca`.
+
+It's free.
+
+### If the Cloudflare project ever has to be recreated
+
+If the project is deleted, the account is lost, or the site moves to a new NUS account, these are the settings. Nothing else is stored in Cloudflare: no environment variables, no secrets.
+
+1. **Workers & Pages → Create application → the Pages tab.** Not the Workers tab. Cloudflare's create screen opens on Workers, which also offers "Import a repository", and a project made there is a Worker at a `.workers.dev` address. It won't appear in the Pages alert list, and it fails every build without extra config. This happened once (2026-10-19).
+2. **Import an existing Git repository**, then connect GitHub with access to **this repository only**.
+3. Use these settings:
+
+   | Setting | Value |
+   |---|---|
+   | Project name | `mcgill-nus` (the address becomes `mcgill-nus.pages.dev`) |
+   | Production branch | `main` |
+   | Framework preset | Astro |
+   | Build command | `npm run build` |
+   | Build output directory | `dist` |
+   | Root directory | blank |
+   | Environment variables | none (the Node version comes from `.nvmrc`) |
+
+4. If the address comes out different, update `site` in `astro.config.mjs` to match, through a PR.
+5. Redo the build-failure alert (above). Once the domain has moved, re-add `mcgillnus.ca` as a custom domain.
 
 ### Once a year: check the repo size
 
@@ -257,6 +286,8 @@ Four things that will actually take the site down. Understand these before chang
 
 **And never remove Pages CMS from the bypass list of the "Protect main" ruleset.** The ruleset requires a pull request for every change to `main`, and Pages CMS can't make pull requests. Without the bypass, every editor's Save fails, and publishing stops for everyone. The same happens if the app is reinstalled: re-add it to the bypass list straight away.
 
+**Only email collaborators get through, not people signed in with GitHub.** Pages CMS writes with the *app's* identity for collaborators invited by email, and with the *person's own* GitHub identity for anyone signed in with GitHub, including you and the NUS-owned account. The ruleset exempts only the app, so a GitHub sign-in is blocked from saving to `main` with *"This repository requires changes through a pull request"*. That's deliberate: GitHub users are maintainers, and their changes go through a PR. To edit content yourself, either use a collaborator login (invite your own McGill email and sign in with it in a private window), or choose *save to a different branch* in the CMS and open a PR. **Never have council editors sign in with GitHub**, or their saves fail the same way.
+
 **4. Image paths must stay relative.** The CMS writes uploaded image paths as `../../assets/uploads/<file>`. That only works because every content file that can hold an image sits exactly two folders below `src/` (`src/content/<collection>/<file>`). Astro only optimises a Markdown-body image with a relative path. A path starting with `/` is treated as a file in `public/` and ships unprocessed, or as a broken image. Nothing in the build complains: the site looks fine and the images 404. So:
 
 - Don't change `media.output` in `.pages.yml`.
@@ -277,9 +308,11 @@ Four things that will actually take the site down. Understand these before chang
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
 | Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
 | Nobody can add a new editor | The GitHub account that installed Pages CMS is gone | See Landmine 3 |
+| Pages CMS says "This repository requires changes through a pull request" for one person | They're signed in to Pages CMS with GitHub, so they save as themselves, which the ruleset blocks. Email collaborators save as the app and aren't affected | Editors: invite them by email and have them sign in that way. Maintainers: use a collaborator login, or save to a branch and open a PR. See Landmine 3 |
 | Editors' saves fail in Pages CMS, for everyone | Pages CMS is no longer on the ruleset's bypass list (or was reinstalled) | Settings → Rules → "Protect main" → Bypass list → add Pages CMS. See Landmine 3 |
 | A PR can't be merged | The required `verify` check is failing or hasn't run | See [When CI fails](#when-ci-fails) |
 | CI stopped being required | The job in `ci.yml` was renamed, so the ruleset waits on a check that never reports | Make the ruleset's required check match the job name |
+| A "Workers Builds" check fails on every commit | A Cloudflare **Worker** is connected to the repo, usually one created by mistake on the Workers tab | Delete that Worker in Cloudflare (its address ends in `.workers.dev`); keep the `.pages.dev` project. See "If the Cloudflare project ever has to be recreated" |
 | Site stopped updating, but is still online | Monthly build allowance used up (500 on the free plan; every Save is one) | It resets monthly. It would take a lot of saving; check for something stuck in a commit loop |
 | A pinned post won't drop off the top | Pins are checked at build time | Any Save triggers a build; it drops off then |
 | An old link from Instagram 404s | Missing redirect | Add it to `public/_redirects`; see `docs/information-architecture.md` |
