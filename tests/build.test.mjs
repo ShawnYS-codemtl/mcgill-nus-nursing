@@ -99,6 +99,25 @@ test('every image scales down to fit its column instead of showing at full size'
   }
 });
 
+test('an image whose description is only a filename is treated as decoration, and the build says so', () => {
+  // Pages CMS gives images pasted into post text their filename as alt text and
+  // offers no way to change it (found 2026-10-20). src/lib/image-alt.mjs empties
+  // it so screen readers skip the image instead of reading "IMG_5310.jpeg".
+  const published = read('news/published');
+  const images = [...published.matchAll(/<img[^>]*>/g)].map(([tag]) => tag);
+
+  assert.ok(!published.includes('IMG_5310.jpeg'), 'the filename reached the page as alt text');
+  assert.ok(
+    images.some((tag) => /\salt=""/.test(tag)),
+    `expected one image with an empty alt, got:\n${images.join('\n')}`
+  );
+  assert.ok(
+    images.some((tag) => tag.includes('alt="A fixture body image"')),
+    'a real description must be left alone'
+  );
+  assert.match(log, /"Fixture: published post": an image in the post text has no description \(only its filename, "IMG_5310\.jpeg"\)/);
+});
+
 test('a pinned post is listed first, ahead of newer posts', () => {
   const links = [...read('').matchAll(/<li>\s*<a href="([^"]+)"/g)].map(([, href]) => href);
   assert.equal(links[0], '/news/pinned-bad-link/', `list order was: ${links.join(', ')}`);

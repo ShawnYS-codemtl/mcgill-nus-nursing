@@ -66,6 +66,8 @@ src/
   lib/
     content.ts           Soft checks: drops one bad value with a warning
                          instead of failing the whole build
+    image-alt.mjs        Images pasted into post text get their filename as
+                         alt text from the CMS; this makes them decorative
   components/            (planned) Reusable UI pieces
   config/                (planned) Nav, UI strings, and the two verbatim
                          Indigenous-relations texts — see "Things not to change"
@@ -304,6 +306,7 @@ Four things that will actually take the site down. Understand these before chang
 | Saved changes stopped appearing, site still up | A build is failing; Cloudflare keeps the last good deploy live | Cloudflare deploy log names the file and field. Usually a hand-edited file or a schema made stricter than `.pages.yml` |
 | Build fails: "data does not match collection schema" | A content file doesn't fit `src/content.config.ts` | Fix the file the error names, or relax the schema to match `.pages.yml` |
 | A post vanished after someone edited it | Its web address now matches another post's | The build log warns `was left out: its web address … is already used by …`. Change one |
+| Build log: "an image in the post text has no description (only its filename …)" | An editor pasted a picture into the post text; Pages CMS can't describe those, so it's shown but skipped by screen readers | Nothing is broken. If the picture matters, ask the editor to make it the Cover image (which takes a description), or to write what it shows in the text |
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
 | Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |

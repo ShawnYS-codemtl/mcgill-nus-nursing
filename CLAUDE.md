@@ -138,7 +138,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
 - `[MVP]` **Site settings, editable in the CMS:** office hours, address, contact email, social links. Degrades to repo defaults, never fails a build.
 - `[MVP]` Contact page: office info, address, email, link to council roster, contact form.
 - `[MVP]` 301 redirects from all old Wix URLs (see `docs/information-architecture.md`).
-- `[MVP]` Accessibility baseline: semantic HTML, WCAG AA contrast, keyboard nav, alt text required in the CMS form, and images without it dropped at build.
+- `[MVP]` Accessibility baseline: semantic HTML, WCAG AA contrast, keyboard nav, alt text required in the CMS form for covers and logos, and images without it dropped at build. Pictures pasted into body text can't be described in the CMS, so they're marked decorative (`alt=""`, `src/lib/image-alt.mjs`).
 - `[MVP]` **Editor's guide**, in plain language, for the incoming exec — a Google Doc in the NUS-owned Drive by default.
 
 ### Fast-follow — after launch, before end of term
@@ -202,7 +202,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
     - CI passed on every CMS commit.
   - **Found and fixed:** date fields auto-filled today's date (now `default: ""`, enforced by the contract test); a large cover rendered at full width (now `image.layout: 'constrained'`, enforced by the build test).
   - **Found, worked around:** no duplicate action, so the council rollover is entered by hand (runbook updated).
-  - **Not exercised:** an image inserted *inside* post text through the CMS editor. The build handles it (`tests/build.test.mjs`), but check the path the editor writes the first time someone uses it.
+  - **Images inside post text (2026-10-20):** the CMS uploads a pasted image to `src/assets/uploads/` and writes a correct relative path, and it builds. But it sets the alt text to the **filename** (`image.png`) with no way for editors to change it. Fixed by treating such images as decorative (`src/lib/image-alt.mjs`, enforced by the build test), and steering meaningful photos to Cover image through the field help text.
   - **Watch for in step 5:** the trial post was first saved as a draft and didn't appear. Whether the **Published** toggle is easy to miss is exactly the hesitation step 5 exists to catch.
   - The `notion-phase0` branch stays as a record of the alternative; it is no longer the fallback plan.
 - **To confirm after PR #1 merges:** one save in Pages CMS on `main` lands as a commit while the "Protect main" ruleset is active (turned on 2026-10-14, with Pages CMS, GitHub App id `866529`, on the bypass list). It is the one path the trial couldn't test from a branch.
