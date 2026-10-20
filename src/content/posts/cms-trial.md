@@ -9,4 +9,7 @@ cover: ../../assets/uploads/img20260813123953079.jpg
 coverAlt: me and my friend
 featured: true
 ---
-AKMSKMSKLMSLSMsasklams,lkasmalsas
+AKMSKMSKLMSLSMsasklams,lkasmalsas  
+
+![image.png](../../assets/uploads/image.png)
+
