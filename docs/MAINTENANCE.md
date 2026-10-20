@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-19
+**Last reviewed:** 2026-10-20
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -26,7 +26,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 | GitHub repo | `ShawnYS-codemtl` — **the developer's personal account; must move to an NUS-owned account or org before launch** | _TODO_ | The code **and all the content** |
 | Pages CMS | Installed as a GitHub App by the account above (app id `866529`, also the ruleset's bypass entry) | Signs in with that GitHub account | The editor council members use |
 | Pages CMS collaborators | _TODO — list the current editors here_ | Managed inside Pages CMS, **not** in the repo | Who can edit |
-| Cloudflare account | _TODO_ | _TODO_ | Hosting, builds **and DNS** |
+| Cloudflare account | `nus.nursing@mail.mcgill.ca` (NUS-owned) | _TODO — who holds the password_ | Hosting and builds (Pages project `mcgill-nus`, live at https://mcgill-nus.pages.dev). **DNS too, from launch** |
 | GoDaddy (domain) | _TODO_ | _TODO_ | `mcgillnus.ca`, and **renewal matters, see Landmines** |
 | Editor's guide | _TODO — Google Doc in the NUS Drive_ | — | How council members publish |
 | Google Drive (linked PDFs) | _TODO_ | _TODO_ | Minutes, textbooks, financial aid docs |
@@ -220,7 +220,36 @@ Order matters. Do it backwards and the build breaks for everyone:
 
 ### Turning on build-failure emails
 
-Do this once, and again whenever the Cloudflare account changes hands. In Cloudflare: **Notifications → Add → Pages → Deployment failed**, sent to `nus.nursing@mail.mcgill.ca`. It's free. Without it, a failed build is invisible: the old site stays up and nobody knows why changes stopped appearing.
+Set up 2026-10-20; redo it whenever the Cloudflare account changes hands. Without it, a failed build is invisible: the old site stays up and nobody knows why changes stopped appearing.
+
+Cloudflare renamed "Notifications" to **Alerts** in 2026. The direct link `https://dash.cloudflare.com/?to=/:account/notifications` survives menu changes. Then:
+
+1. **Create an Alert** → the Pages alert **Project updates** → **Select**.
+2. Project `mcgill-nus`, event **Deployment failed** only. "Started" and "success" would email on every save.
+3. Deliver to `nus.nursing@mail.mcgill.ca`.
+
+It's free.
+
+### If the Cloudflare project ever has to be recreated
+
+If the project is deleted, the account is lost, or the site moves to a new NUS account, these are the settings. Nothing else is stored in Cloudflare: no environment variables, no secrets.
+
+1. **Workers & Pages → Create application → the Pages tab.** Not the Workers tab. Cloudflare's create screen opens on Workers, which also offers "Import a repository", and a project made there is a Worker at a `.workers.dev` address. It won't appear in the Pages alert list, and it fails every build without extra config. This happened once (2026-10-19).
+2. **Import an existing Git repository**, then connect GitHub with access to **this repository only**.
+3. Use these settings:
+
+   | Setting | Value |
+   |---|---|
+   | Project name | `mcgill-nus` (the address becomes `mcgill-nus.pages.dev`) |
+   | Production branch | `main` |
+   | Framework preset | Astro |
+   | Build command | `npm run build` |
+   | Build output directory | `dist` |
+   | Root directory | blank |
+   | Environment variables | none (the Node version comes from `.nvmrc`) |
+
+4. If the address comes out different, update `site` in `astro.config.mjs` to match, through a PR.
+5. Redo the build-failure alert (above). Once the domain has moved, re-add `mcgillnus.ca` as a custom domain.
 
 ### Once a year: check the repo size
 
@@ -283,6 +312,7 @@ Four things that will actually take the site down. Understand these before chang
 | Editors' saves fail in Pages CMS, for everyone | Pages CMS is no longer on the ruleset's bypass list (or was reinstalled) | Settings → Rules → "Protect main" → Bypass list → add Pages CMS. See Landmine 3 |
 | A PR can't be merged | The required `verify` check is failing or hasn't run | See [When CI fails](#when-ci-fails) |
 | CI stopped being required | The job in `ci.yml` was renamed, so the ruleset waits on a check that never reports | Make the ruleset's required check match the job name |
+| A "Workers Builds" check fails on every commit | A Cloudflare **Worker** is connected to the repo, usually one created by mistake on the Workers tab | Delete that Worker in Cloudflare (its address ends in `.workers.dev`); keep the `.pages.dev` project. See "If the Cloudflare project ever has to be recreated" |
 | Site stopped updating, but is still online | Monthly build allowance used up (500 on the free plan; every Save is one) | It resets monthly. It would take a lot of saving; check for something stuck in a commit loop |
 | A pinned post won't drop off the top | Pins are checked at build time | Any Save triggers a build; it drops off then |
 | An old link from Instagram 404s | Missing redirect | Add it to `public/_redirects`; see `docs/information-architecture.md` |

@@ -269,6 +269,8 @@ Do not skip step 5.
 
 **Step 4 done 2026-10-14:** Pages CMS is installed, and the trial passed (§9).
 
-Steps 3 and 5 are **not done**: the Cloudflare project, and the session with a council member. Until step 5 happens, Phase 0 has not answered its question. The machine working is not the same as the bet being validated.
+**Step 3 done 2026-10-20:** the site is live at https://mcgill-nus.pages.dev, from a Cloudflare Pages project in the NUS-owned account (`nus.nursing@mail.mcgill.ca`), with the deploy-failure alert on. The whole loop (an email collaborator saves in Pages CMS → commit to `main` → Cloudflare build → live page) was tested end to end.
+
+Step 5 is **not done**: the session with a council member. Until step 5 happens, Phase 0 has not answered its question. The machine working is not the same as the bet being validated.
 
 **Unrelated to code and more urgent than any of it:** `mcgillnus.ca` expires **2026-11-01**. See §9.

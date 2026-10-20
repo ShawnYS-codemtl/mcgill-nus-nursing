@@ -6,8 +6,8 @@
 
 - [x] Define the content collections and mirror them in `.pages.yml` — **done 2026-10-13**
 - [x] Scaffold Astro; render the post index and detail pages, unstyled — **done 2026-09-29, moved to content collections 2026-10-13**
-- [ ] Deploy to a `*.pages.dev` subdomain on Cloudflare Pages, building on push to `main`
-- [ ] Turn on Cloudflare's **Deployment failed** email notification, to `nus.nursing@mail.mcgill.ca`
+- [x] Deploy to a `*.pages.dev` subdomain on Cloudflare Pages, building on push to `main` — **live at https://mcgill-nus.pages.dev** (2026-10-20). The full chain, from an email collaborator's save to the live page, was tested the same day
+- [x] Turn on Cloudflare's **Deployment failed** alert, to `nus.nursing@mail.mcgill.ca` (2026-10-20)
 - [x] **Pages CMS spike:** passed **2026-10-14** on the `pages-cms` branch (PR #1). Findings are in `CLAUDE.md` §9.
 - [x] **"Protect main" ruleset** turned on 2026-10-14: deletion and force-push blocked, PR required, **`verify` required (from GitHub Actions)**, Pages CMS on the bypass list
 - [x] After PR #1 merges: save one edit in Pages CMS on `main` and confirm the commit lands with the ruleset active — **passed 2026-10-14 as an email collaborator**. A GitHub sign-in is blocked by design (2026-10-19); see `MAINTENANCE.md` Landmine 3
@@ -93,7 +93,7 @@ The dominant failure mode for a student club website is that it dies with the ac
 - [ ] **Pages CMS** installed on the repo by the NUS-owned GitHub account (not the developer's), with the current editors invited as collaborators and listed in `MAINTENANCE.md`
 - [ ] **"Protect main" ruleset** carried over after the repo transfer: PR + required `verify` check, force-push and deletion blocked, **Pages CMS on the bypass list** (check by saving one edit in the CMS)
 - [ ] **GitHub repo** transferred to an NUS-owned account or org. Forking from a personal repo is not sufficient; the canonical repo must be theirs.
-- [ ] **Cloudflare account** owned by an NUS account, holding both the Pages project and DNS, with the repo connected from there
+- [ ] **Cloudflare account** owned by an NUS account, holding both the Pages project and DNS, with the repo connected from there. *Partly done:* the account is `nus.nursing@mail.mcgill.ca` and holds the Pages project. DNS moves at cutover, and the GitHub connection follows the repo when it moves to an NUS-owned account
 - [ ] **Domain** — confirm who holds the GoDaddy login and that renewal doesn't depend on one person's credit card. **A lapsed domain renewal is the single most likely way this site disappears.**
 - [ ] Editor's guide published as a Google Doc in the NUS-owned Drive, and linked from `MAINTENANCE.md` (see `content-schema.md`)
 - [ ] `MAINTENANCE.md` complete — every `_TODO_` filled in, especially the access inventory table and the repo tour. **Test it: hand the repo and this file to someone who wasn't involved and ask them to get it running locally and deploy a change.** If they can't, it isn't finished.
