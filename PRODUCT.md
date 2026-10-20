@@ -168,7 +168,7 @@ These are facts about the real data, not hypotheticals:
 
 **WCAG 2.1 AA minimum, treated as a requirement rather than a goal.** This is a healthcare-adjacent student body, and some of them are studying accommodation in their own coursework — shipping an inaccessible site to this audience is a substantive failure, not a technical one.
 
-Concretely: semantic HTML, real focus states, full keyboard navigation, AA contrast, and no colour-only signalling. Image descriptions are required in the CMS form, and the build drops any image that arrives without one, so editors cannot publish an image without alt text.
+Concretely: semantic HTML, real focus states, full keyboard navigation, AA contrast, and no colour-only signalling. Cover images and logos require a description in the CMS form, and the build drops one that arrives without it. Pictures pasted into body text can't be described in the CMS (it would use the filename), so the build marks them decorative (`alt=""`) and the editor help text steers meaningful photos to the cover. Any information a picture holds must also be in the text.
 
 The council structure diagram is a specific known failure: currently a large raster image, unreadable on mobile and invisible to screen readers.
 

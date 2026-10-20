@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { filenameAltImages } from './image-alt.mjs';
 
 /**
  * Checks that are too soft to fail a build over. src/content.config.ts must
@@ -58,6 +59,15 @@ async function loadPublishedPosts(): Promise<Post[]> {
     if (data.externalLink && !isWebLink(data.externalLink)) {
       warn(`"${data.title}": "${data.externalLink}" ignored — links must start with https://`);
       data.externalLink = undefined;
+    }
+
+    // The image itself still shows; src/lib/image-alt.mjs has already made it
+    // decorative. This just makes the gap visible to whoever reads the log.
+    for (const alt of filenameAltImages(post.body ?? '')) {
+      warn(
+        `"${data.title}": an image in the post text has no description (only its filename, ` +
+          `"${alt}"), so screen readers skip it. If it matters, make it the Cover image instead.`
+      );
     }
 
     kept.push({ ...post, data });

@@ -37,6 +37,7 @@ Until 2026-10-11 the plan was Notion. That changed. See `CLAUDE.md` decision 1 f
 | **Image paths are relative** | The CMS writes `../../assets/uploads/<file>`. Every content file that can hold an image sits exactly two folders below `src/` (`src/content/<collection>/<file>`). | Astro only optimises a Markdown-body image if its path is relative. A path starting with `/` ships unresized, or broken. `npm run verify` fails if one reaches `dist/`. |
 | **Blank means absent** | An optional field saved as `""` or `null` is treated as not set. | The CMS can write either for a field nobody touched. |
 | **Optional dates start empty** | Every optional `date` field in `.pages.yml` sets `default: ""`. | Otherwise Pages CMS fills it with today's date on every new entry: a post arrives "pinned until today" and a resource "verified today" with no one having checked. Found in the trial (2026-10-14); the contract test enforces it. |
+| **Images in body text are decoration** | An image pasted into a rich-text body whose alt text is only a filename gets `alt=""`, and the build log names the post. Covers and logos, which have a required description field, are unaffected. | Pages CMS's editor sets every pasted image's alt text to its filename (`image.png`) and gives editors no way to change it, so a screen reader would read the filename aloud. Empty alt marks the image decorative, so it gets skipped. Done in `src/lib/image-alt.mjs` (found 2026-10-20); `tests/build.test.mjs` enforces it. The field help text in `.pages.yml` tells editors to put the photo that matters in Cover image, and to write any information a picture holds in the text too. |
 
 ---
 
@@ -58,7 +59,7 @@ Drives the homepage, the news index and, later, the email export. The most-used 
 | `authorRole` | Written by (role) | string | | **A role, not a person.** Pages outlive people. |
 | `externalLink` | Link somewhere else instead | string | | If set, the card links out and **no detail page is built**. Must be `http(s)`. |
 | `pinnedUntil` | Keep at the top until | date | | Pinned posts sort first until this date. **It is checked at build time**, so a pin expires at the first build after the date, which in practice means the next Save of anything. |
-| *(body)* | Post | rich text → Markdown | | |
+| *(body)* | Post | rich text → Markdown | | Images pasted here are decorative; see *Images in body text are decoration* above. |
 
 ## 2. Pages — `src/content/pages/{about,fees,governance,ison,elections,contact}.md`
 
@@ -158,7 +159,7 @@ Not yet in `.pages.yml`. Pages CMS has a spreadsheet-style `datagrid` format tha
 A plain-language guide for a nursing student with no technical background. Per `CLAUDE.md` §11 it must never mention git, a terminal or a file path. **Default home: a Google Doc in the NUS-owned Drive**, linked from `MAINTENANCE.md`. The club already keeps its documents in Drive, and editing the guide shouldn't need a developer. It should cover:
 
 - How to log in (the email invite), write a post, and publish it: switch on **Published**, press **Save**, wait about two minutes
-- Why images need a description
+- Why images need a description, and why **the photo that matters goes in Cover image**: pictures pasted into the text can't be described, so screen readers skip them. Anything a picture says (a poster's date, a schedule) has to be in the text too
 - How to edit one of the six pages, and why pages can't be added or deleted
 - How to add a homepage photo
 - How to update office hours, address and social links in Site settings

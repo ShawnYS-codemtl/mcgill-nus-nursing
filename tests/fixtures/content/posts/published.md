@@ -16,3 +16,7 @@ pinnedUntil: null
 Hello **world**. Body image below.
 
 ![A fixture body image](../../assets/uploads/test.png)
+
+Pasted through the CMS editor, which uses the filename as the description:
+
+![IMG_5310.jpeg](../../assets/uploads/test.png)

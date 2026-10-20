@@ -116,6 +116,7 @@ content:
       - name: body
         label: Post
         type: rich-text
+        description: "Pictures added here can't be given a description, so screen readers skip them. Put the photo that matters in Cover image above. If a picture holds information (a poster, a schedule), write that information in the text too."
         options:
           format: markdown
 
@@ -156,6 +157,7 @@ content:
       - name: body
         label: Page content
         type: rich-text
+        description: "Pictures added here can't be given a description, so screen readers skip them. If a picture holds information (a poster, a chart), write that information in the text too."
         options:
           format: markdown
 
@@ -358,6 +360,7 @@ content:
       - name: body
         label: Committee page
         type: rich-text
+        description: "Pictures added here can't be given a description, so screen readers skip them. If a picture holds information (a poster, a schedule), write that information in the text too."
         options:
           format: markdown
 
