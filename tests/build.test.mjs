@@ -4,7 +4,8 @@
 // a bad link or an unprocessed image through, none of which fail a build.
 //
 // Each fixture is one case; the file names in tests/fixtures/content/posts/
-// say which. To cover a new rule, add a fixture and a test here.
+// say which, and each fixture page's text says what it covers. To cover a new
+// rule, add a fixture and a test here.
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -12,12 +13,33 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, before, test } from 'node:test';
+import { parse } from 'yaml';
+import { headingIds } from './lib/headings.mjs';
 
 const outDir = mkdtempSync(path.join(tmpdir(), 'nus-fixture-build-'));
 let log = '';
 
 const read = (route) => readFileSync(path.join(outDir, route, 'index.html'), 'utf8');
 const pageExists = (route) => existsSync(path.join(outDir, route, 'index.html'));
+const imageTags = (html) => [...html.matchAll(/<img[^>]*>/g)].map(([tag]) => tag);
+
+/**
+ * The six informational pages: content file → the folder its page builds to
+ * (CLAUDE.md decision 12a; the addresses are in src/config/routes.ts).
+ */
+const INFO_PAGES = {
+  about: 'about',
+  fees: 'about/fees',
+  governance: 'about/governance',
+  ison: 'about/ison',
+  elections: 'about/elections',
+  contact: 'contact',
+};
+
+const fixturePageFile = (name) => `tests/fixtures/content/pages/${name}.md`;
+const fixturePage = (name) => parse(readFileSync(fixturePageFile(name), 'utf8').match(/^---\n([\s\S]*?)---/)[1]);
+/** Each fixture page's text holds one of these, so the test can tell where it ended up. */
+const marker = (name) => `${name.toUpperCase()}-BODY-MARKER`;
 
 /** Every .html file in the build, as [relative path, contents]. */
 function allHtml(dir = outDir) {
@@ -119,6 +141,94 @@ test('an image whose description is only a filename is treated as decoration, an
 });
 
 test('a pinned post is listed first, ahead of newer posts', () => {
-  const links = [...read('').matchAll(/<li>\s*<a href="([^"]+)"/g)].map(([, href]) => href);
+  const main = read('').match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
+  const links = [...main.matchAll(/<li>\s*<a href="([^"]+)"/g)].map(([, href]) => href);
   assert.equal(links[0], '/news/pinned-bad-link/', `list order was: ${links.join(', ')}`);
+});
+
+test('each informational page builds at its address, with its heading as the only <h1> and its text below it', () => {
+  for (const [name, route] of Object.entries(INFO_PAGES)) {
+    assert.ok(pageExists(route), `/${route}/ wasn't built. Its route file in src/pages/ is missing or misnamed.`);
+    const html = read(route);
+    const { title, metaDescription } = fixturePage(name);
+
+    const h1s = [...html.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/g)].map(([, text]) => text);
+    assert.deepEqual(h1s, [title], `/${route}/ should have exactly one <h1>, the Page heading of ${name}.md`);
+    assert.ok(html.includes(`<title>${title} — McGill NUS</title>`), `/${route}/ has the wrong <title>`);
+    assert.ok(
+      html.includes(`<meta name="description" content="${metaDescription}">`),
+      `/${route}/ should use the Search engine description of ${name}.md as its meta description`
+    );
+    assert.ok(
+      html.indexOf(marker(name)) > html.indexOf('<h1>'),
+      `/${route}/ should show the text of ${name}.md below its heading`
+    );
+  }
+});
+
+test('no other page is built from the Pages collection', () => {
+  // A seventh file in src/content/pages/ isn't a page until someone adds its
+  // route (decision 12a), and each page's text appears only at its own address.
+  for (const [file, html] of allHtml()) {
+    assert.ok(!html.includes(marker('unrouted')), `a page file with no route was built into ${file}`);
+    for (const [name, route] of Object.entries(INFO_PAGES)) {
+      if (html.includes(marker(name))) {
+        assert.equal(file, path.join(route, 'index.html'), `the text of ${name}.md appears in ${file}`);
+      }
+    }
+  }
+  assert.match(log, /pages\/unrouted\.md has no route, so it isn't on the site/);
+});
+
+test('an image in a page\'s text whose description is only a filename is treated as decoration, and the build says so', () => {
+  const fees = read('about/fees');
+  const images = imageTags(fees);
+  assert.equal(images.length, 1, `expected the one pasted image on /about/fees/, got:\n${images.join('\n')}`);
+  assert.match(images[0], /\salt=""/, `the filename reached the page as alt text: ${images[0]}`);
+  assert.match(
+    log,
+    /"Fixture: Fees": an image in the page text has no description \(only its filename, "image\.png"\), so screen readers skip it/
+  );
+});
+
+test('the build log flags pages last checked over a year ago, and lists the never-checked ones in one line', () => {
+  assert.match(log, /"Fixture: ISoN" was last checked on 2024-09-01, over a year ago/);
+
+  const lines = log.split('\n').filter((line) => line.includes('Pages never checked:'));
+  assert.equal(lines.length, 1, `expected the never-checked summary exactly once, got:\n${lines.join('\n')}`);
+  const listed = [...lines[0].matchAll(/"([^"]+)"/g)].map(([, title]) => title).sort();
+  assert.deepEqual(
+    listed,
+    ['Fixture: About', 'Fixture: Contact', 'Fixture: Elections', 'Fixture: Fees', 'Fixture: Governance'],
+    'blank, null and missing Last checked all count as never checked; a dated page and a page with no route do not'
+  );
+});
+
+test('page headings become the anchors redirects point at, the way tests/redirects.test.mjs expects', () => {
+  // public/_redirects sends /nus-council-meetings to /about/governance/#nus-meeting-minutes.
+  const html = read('about/governance');
+  assert.match(html, /<h2 id="nus-meeting-minutes">NUS Meeting Minutes<\/h2>/);
+
+  const built = [...html.matchAll(/<h[2-6] id="([^"]*)"/g)].map(([, id]) => id);
+  assert.deepEqual(
+    built,
+    headingIds(readFileSync(fixturePageFile('governance'), 'utf8')),
+    'Astro now makes heading ids differently from tests/lib/headings.mjs, so the anchor check in ' +
+      'tests/redirects.test.mjs can no longer be trusted. Update tests/lib/headings.mjs to match.'
+  );
+});
+
+test('the nav and the "Page not found" page link only to pages that were built', () => {
+  const built = (href) => pageExists(href.replace(/^\/|\/$/g, ''));
+  const notFound = readFileSync(path.join(outDir, '404.html'), 'utf8');
+  const nav = notFound.match(/<nav[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert.ok(nav, 'every page should have the nav in its header');
+  const suggestions = notFound.match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
+
+  for (const [where, html] of [['the nav', nav], ['the 404 page', suggestions]]) {
+    const hrefs = [...html.matchAll(/<a href="([^"]+)"/g)].map(([, href]) => href);
+    assert.ok(hrefs.length > 0, `${where} has no links`);
+    for (const href of hrefs) assert.ok(built(href), `${where} links to ${href}, which wasn't built`);
+  }
+  assert.match(read('about/fees'), /<a href="\/about\/fees\/" aria-current="page">/, 'the nav should mark the current page');
 });

@@ -1,4 +1,4 @@
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { filenameAltImages } from './image-alt.mjs';
 
 /**
@@ -88,4 +88,86 @@ export function getPublishedPosts(): Promise<Post[]> {
 /** Posts that get their own page. One with an external link points off-site instead. */
 export async function getPostsWithPages(): Promise<Post[]> {
   return (await getPublishedPosts()).filter((post) => !post.data.externalLink);
+}
+
+export type Page = CollectionEntry<'pages'>;
+
+/**
+ * The six informational pages, by filename: src/content/pages/<name>.md. Each
+ * has its own route file in src/pages/ and its address in src/config/routes.ts.
+ * The set is fixed (CLAUDE.md decision 12a). Editors can't add or delete one,
+ * so a missing file is a developer's mistake and fails the build.
+ */
+export const INFO_PAGES = ['about', 'fees', 'governance', 'ison', 'elections', 'contact'] as const;
+export type InfoPageName = (typeof INFO_PAGES)[number];
+
+const isInfoPage = (id: string): id is InfoPageName => (INFO_PAGES as readonly string[]).includes(id);
+
+/** Same as in src/content.config.ts; tests/build.test.mjs points it at fixtures. */
+const CONTENT_DIR = process.env.CONTENT_DIR ?? 'src/content';
+
+const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+
+/**
+ * Build-log notes on the pages, none of which fail the build: a page nobody
+ * has re-read in a year is still better shown than missing. "Last checked" is
+ * compared with the build date, so a page turns stale at the first Save of
+ * anything after its anniversary.
+ */
+async function checkPages(): Promise<void> {
+  const today = new Date();
+  const yearAgo = new Date(Date.UTC(today.getUTCFullYear() - 1, today.getUTCMonth(), today.getUTCDate()));
+  const neverChecked: string[] = [];
+
+  for (const page of await getCollection('pages')) {
+    const { title, lastReviewed } = page.data;
+
+    // Only a developer can add a file here (the CMS can't), so this is
+    // someone halfway through "Adding a new page" in MAINTENANCE.md.
+    if (!isInfoPage(page.id)) {
+      warn(`${CONTENT_DIR}/pages/${page.id}.md has no route, so it isn't on the site. See MAINTENANCE.md → "Adding a new page".`);
+      continue;
+    }
+
+    if (!lastReviewed) {
+      neverChecked.push(`"${title}"`);
+    } else if (lastReviewed < yearAgo) {
+      warn(
+        `"${title}" was last checked on ${isoDate(lastReviewed)}, over a year ago. Someone should read it ` +
+          `through, then set Last checked to today in Pages CMS.`
+      );
+    }
+
+    // As for posts: src/lib/image-alt.mjs has already made the image
+    // decorative. This makes the gap visible in the log.
+    for (const alt of filenameAltImages(page.body ?? '')) {
+      warn(
+        `"${title}": an image in the page text has no description (only its filename, "${alt}"), ` +
+          `so screen readers skip it. If it holds information, write that information in the text too.`
+      );
+    }
+  }
+
+  if (neverChecked.length) {
+    warn(`Pages never checked: ${neverChecked.join(', ')}. Set Last checked in Pages CMS once someone has read a page through.`);
+  }
+}
+
+/** Memoised like getPublishedPosts, so the notes are logged once per build. */
+let pagesChecked: Promise<void> | undefined;
+
+/** One informational page, for src/components/InfoPage.astro. */
+export async function getInfoPage(name: InfoPageName): Promise<Page> {
+  pagesChecked ??= checkPages();
+  await pagesChecked;
+
+  const page = await getEntry('pages', name);
+  if (!page) {
+    throw new Error(
+      `${CONTENT_DIR}/pages/${name}.md is missing. Every informational page needs its file, and editors ` +
+        `can't delete one, so it was removed in the repo. Restore it from git history ` +
+        `(git log -- ${CONTENT_DIR}/pages/${name}.md finds the last version).`
+    );
+  }
+  return page;
 }

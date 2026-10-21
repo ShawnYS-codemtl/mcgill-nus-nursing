@@ -5,20 +5,23 @@
 // the homepage, so broken links look like they work.
 //
 // Old Wix addresses have their own redirects (public/_redirects). This page
-// catches the ones nobody found. Some sections below aren't built yet; the
-// links will work as they arrive. When the nav moves to src/config/, use it here.
+// catches the ones nobody found. Its suggestions are the top level of the nav
+// (src/config/nav.ts), so they only ever link to pages that exist, and a new
+// section appears here as soon as it's added to the nav.
 import Base from '../layouts/Base.astro';
+import { NAV_ITEMS } from '../config/nav';
 ---
 
 <Base title="Page not found — McGill NUS" description="This page doesn't exist." noindex>
   <h1>Page not found</h1>
   <p>Looks like this page called in sick 🤒 Try one of these instead:</p>
   <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/news/">News</a></li>
-    <li><a href="/about/">About</a></li>
-    <li><a href="/involved/">Get Involved</a></li>
-    <li><a href="/resources/">Resources</a></li>
-    <li><a href="/contact/">Contact</a></li>
+    {
+      NAV_ITEMS.map((item) => (
+        <li>
+          <a href={item.href}>{item.label}</a>
+        </li>
+      ))
+    }
   </ul>
 </Base>

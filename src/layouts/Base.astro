@@ -2,6 +2,17 @@
 // Phase 0 shell. Deliberately almost styleless — Phase 0 validates the publish
 // loop, not the design. The visual language arrives later, from the design
 // brief (docs/design-brief.md). Resist decorating this.
+
+// Not decoration: this brings in Astro's small image stylesheet, the rule that
+// keeps an image inside its column (astro.config.mjs → image.responsiveStyles).
+// Astro only adds it to a page that imports astro:assets itself, and a picture
+// in Markdown text (a page's, later a committee's) doesn't count. Without this
+// line such a picture shows at full size (found 2026-10-21).
+// tests/build.test.mjs checks every page that has an image.
+import 'astro:assets';
+import Nav from '../components/Nav.astro';
+import { ROUTES } from '../config/routes';
+
 interface Props {
   title: string;
   description?: string;
@@ -40,7 +51,8 @@ const { title, description, noindex = false } = Astro.props;
   </head>
   <body>
     <header>
-      <a href="/">McGill Nursing Undergraduate Society</a>
+      <a href={ROUTES.home}>McGill Nursing Undergraduate Society</a>
+      <Nav />
     </header>
     <main>
       <slot />

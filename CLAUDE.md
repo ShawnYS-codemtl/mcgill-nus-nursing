@@ -278,6 +278,24 @@ Do not skip step 5.
 
 **Step 3 done 2026-10-20:** the site is live at https://mcgill-nus.pages.dev, from a Cloudflare Pages project in the NUS-owned account (`nus.nursing@mail.mcgill.ca`), with the deploy-failure alert on. The whole loop (an email collaborator saves in Pages CMS → commit to `main` → Cloudflare build → live page) was tested end to end.
 
-Step 5 is **not done**: the session with a council member. Until step 5 happens, Phase 0 has not answered its question. The machine working is not the same as the bet being validated.
+**Step 5: treated as done, by the user's decision on 2026-10-21.** This records a decision, not a session observed in this project: nothing here shows how a council member got on when publishing without help. The decision lifts this section's hold on building components and pages. The machine working is still not the same as the bet being validated, so record the session's findings here when there are some.
+- **Where the council member hesitated:** _TODO. Note especially whether they missed the **Published** toggle (see §9, "Watch for in step 5")._
+
+### Status — 2026-10-21
+
+**The six informational pages are built** (branch `feature/info-pages`):
+
+- **Routes.** One route file each: `src/pages/about/{index,fees,governance,ison,elections}.astro` and `src/pages/contact.astro`. Each only names its content file. `src/components/InfoPage.astro` renders the heading as the only `<h1>`, the search description as the meta description, and the text below. There is no catch-all route (decision 12a).
+- **Nav.** Labels are in `src/config/nav.ts` and addresses in `src/config/routes.ts`. A plain nav in every header shows Home, About (Fees, Governance, ISoN, Elections) and Contact. The 404 page suggests the same top-level links.
+- **Build-log notes**, never failures, from `src/lib/content.ts`:
+  - a page last checked over a year ago;
+  - one line listing pages never checked (all six today);
+  - a filename-only alt text in a page's text, which `src/lib/image-alt.mjs` makes decorative, as in posts;
+  - a page file with no route.
+- **A missing page file** fails the build, naming the file.
+- **Anchors.** `tests/redirects.test.mjs` checks that every `#anchor` redirect to one of the six pages matches a heading. `/nus-council-meetings` depends on Governance's *NUS Meeting Minutes* heading.
+- **Found and fixed:** Astro adds its image stylesheet (the rule that keeps an image inside the column) only to pages that import `astro:assets`. A picture pasted into a page's text would have shown at full size. `src/layouts/Base.astro` now imports it for every page; the committee pages would have hit the same bug.
+
+The page text is the Wix import, unedited. Rewording it is the council's job, in the CMS.
 
 **Unrelated to code and more urgent than any of it:** `mcgillnus.ca` expires **2026-11-01**. See §9.

@@ -39,7 +39,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 Keep this current. A stale map is worse than none.
 
-Directories marked *(planned)* do not exist yet. The site is at Phase 0, which built only the publish loop. Everything unmarked is real and on disk today.
+Directories marked *(planned)* do not exist yet. Phase 0 built the publish loop (posts); the six informational pages and a plain nav followed. Everything unmarked is real and on disk today.
 
 ```
 CLAUDE.md                Project context — read before making structural changes
@@ -61,25 +61,39 @@ src/
   pages/                 Every URL on the site. File path = URL path.
     index.astro          Post list (becomes the real homepage later)
     news/[slug].astro    One page per published post
+    about/index.astro    /about/. Beside it, fees, governance, ison and
+                         elections .astro serve /about/fees/ and so on: the
+                         informational pages. Each names its file in
+                         src/content/pages/ and does nothing else
+    contact.astro        /contact/, the sixth informational page
     404.astro            "Page not found". Don't delete it: without it Cloudflare
                          answers every unknown address with the homepage
   layouts/
-    Base.astro           Page shell
+    Base.astro           Page shell: the header with the nav, then the page.
+                         Also loads the rule that keeps images in the column
+  components/
+    InfoPage.astro       Renders one informational page: heading, then text
+    Nav.astro            The main nav, from src/config/nav.ts
   lib/
     content.ts           Soft checks: drops one bad value with a warning
-                         instead of failing the whole build
-    image-alt.mjs        Images pasted into post text get their filename as
-                         alt text from the CMS; this makes them decorative
+                         instead of failing the whole build. Also loads the
+                         six pages and logs which are overdue a read-through
+    image-alt.mjs        Images pasted into post or page text get their
+                         filename as alt text from the CMS; this makes them
+                         decorative
   config/                Developer-owned text, never exposed in the CMS
+    routes.ts            Every address the code links to, in one place
+    nav.ts               Nav labels (UI strings, decision 6)
     indigenous-relations.ts  The Land Acknowledgement and Commitment to Truth &
                          Reconciliation, verbatim — see "Things not to change"
-                         (nav and UI strings will live here too, once built)
-  components/            (planned) Reusable UI pieces
   styles/                (planned) — Phase 0 is deliberately unstyled
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
-  build.test.mjs         Builds against fixtures; checks drafts, links, images
-  redirects.test.mjs     Every redirect is a valid 301 to a page that exists
+  build.test.mjs         Builds against fixtures; checks drafts, links, images,
+                         the six pages and the nav
+  redirects.test.mjs     Every redirect is a valid 301 to a page (and heading)
+                         that exists
+  lib/headings.mjs       Works out a heading's #anchor the way Astro does
   fixtures/              Deliberately awkward content for build.test.mjs
 public/                  Files served as-is (favicon, robots.txt)
   _redirects             Old Wix addresses → new ones. Read by Cloudflare,
@@ -92,13 +106,13 @@ astro.config.mjs         Framework config
 
 | "Where do I change…" | Look in |
 |---|---|
-| A nav label or button text | `src/config/` |
+| A nav label or button text | `src/config/` (the nav is `src/config/nav.ts`) |
 | Actual page content, including About, Fees, Elections | **Pages CMS** (it edits `src/content/`) |
 | Office hours, address, social links, current council term | **Pages CMS** → Site settings |
 | Homepage event photos | **Pages CMS** → Homepage photos |
 | What fields editors see, and their help text | `.pages.yml` **and** `src/content.config.ts` |
 | The Land Acknowledgement or T&R statement | `src/config/indigenous-relations.ts`, **and read decision 13 first** |
-| A URL / adding a page | `src/pages/` |
+| A URL / adding a page | `src/pages/` and `src/config/routes.ts` (see [Adding a new page](#adding-a-new-page)) |
 | Old-URL redirects | `public/_redirects` |
 | Colours, fonts, spacing | `src/styles/` + `tailwind.config` |
 
@@ -122,8 +136,12 @@ No `.env`, no tokens: the build needs no secrets. `npm run build` produces the r
 The tests check the things a build can't catch on its own:
 
 - **`tests/cms-contract.test.mjs`** checks that `.pages.yml` and `src/content.config.ts` still agree: same fields, no field required by the build but optional in the form, same select options, image paths still relative (Landmine 4), the six pages still locked.
-- **`tests/build.test.mjs`** builds the site against `tests/fixtures/content/`, a set of deliberately awkward posts (a draft, a duplicate web address, a `javascript:` link, a cover with no description). It then checks the HTML: drafts never appear, bad values are dropped, every image is processed.
-- **`tests/redirects.test.mjs`** checks `public/_redirects`: every line is a 301 Cloudflare can read, no old address appears twice, nothing loops, and every redirect to a committee or post lands on one that has a page. That last check reads the real content, so an editor renaming a committee's web address in the CMS turns `main` red. That's the point: the old link would otherwise break silently.
+- **`tests/build.test.mjs`** builds the site against `tests/fixtures/content/`, a set of deliberately awkward content:
+  - posts: a draft, a duplicate web address, a `javascript:` link, a cover with no description;
+  - pages: one never checked, one last checked in 2024, one with a pasted picture, and a seventh file with no route.
+
+  It then checks the HTML: drafts never appear, bad values are dropped, every image is processed, each informational page builds at its own address, and the nav links only to pages that exist.
+- **`tests/redirects.test.mjs`** checks `public/_redirects`: every line is a 301 Cloudflare can read, no old address appears twice, and nothing loops. It also checks that every redirect to a committee or post lands on one that has a page, and that every `#anchor` on an informational page still matches a heading. Those last checks read the real content, so an editor renaming a committee's web address, or the Governance page's *NUS Meeting Minutes* heading, turns `main` red. That's the point: the old link would otherwise break silently.
 
 When a test fails, its message says what to fix.
 
@@ -138,7 +156,7 @@ You need **Node 22** (`.nvmrc`). If `npm install` fails with cryptic errors, a m
 `main` is protected by a ruleset (**Settings → Rules → Rulesets → "Protect main"**). Every code change goes through a pull request, and the PR can only merge once the **`verify`** check (CI) is green:
 
 1. `git switch -c my-change`, make the change, run `npm run verify` locally.
-2. Push the branch and open a PR. CI runs automatically; once Cloudflare is connected, the PR also gets a preview URL.
+2. Push the branch and open a PR. CI runs automatically, and Cloudflare builds a preview: the **Cloudflare Pages** check on the PR links to it, and it also lives at `https://<branch-name>.mcgill-nus.pages.dev`, with any `/` in the branch name turned into `-` (`feature/info-pages` → `feature-info-pages.mcgill-nus.pages.dev`). Redirects work there too, so check old addresses on the preview before merging.
 3. Merge when `verify` is green. Nobody needs to approve it: the check is the gate, not a reviewer, because there's usually only one maintainer.
 
 **Content doesn't go through this.** Pages CMS commits straight to `main` (it has no pull-request option), and it's on the ruleset's bypass list so publishing stays one step. That's safe because the CMS form, the contract test and Cloudflare's keep-the-last-good-deploy behaviour already contain bad content. See `CLAUDE.md` decision 16. CI still runs on those commits, so a bad one shows up as a red X on `main`.
@@ -194,16 +212,28 @@ About, Fees, Governance, ISoN, Elections and Contact are the **Pages** list in P
 
 Editors can't add, delete or rename these pages, on purpose. See the next entry.
 
+Two things worth a line in the editor's guide:
+
+- **Last checked.** Each page has a *Last checked* date. Setting it to today after reading the page through tells the build the page isn't stale. A page not checked for a year gets a warning in the build log, and pages never checked are listed there in one line. Neither ever stops a page publishing.
+- **Some headings are link targets.** The old Wix address `/nus-council-meetings` lands on the *NUS Meeting Minutes* heading of Governance (the `#nus-meeting-minutes` anchor). Renaming that heading moves the anchor, and visitors land at the top of the page instead. `tests/redirects.test.mjs` turns `main` red when that happens, and the error lists the page's anchors so you can update `public/_redirects` to match. Every other heading can be renamed freely.
+
 ### Adding a new page
 
-All in the repo:
+All in the repo. For a page execs can edit, like the six informational pages:
 
-1. Create the route file in `src/pages/`. The file path is the URL: `src/pages/about/fees.astro` serves `/about/fees/`. Copy the shape of `src/pages/news/[slug].astro`.
-2. If execs should be able to edit it, add `src/content/pages/<name>.md` with placeholder text, and have the route read it with `getEntry('pages', '<name>')`. It appears in the CMS **Pages** list automatically.
-3. Add its label to the nav config in `src/config/`.
-4. Add a redirect to `public/_redirects` if it replaces an old Wix URL.
+1. Add `src/content/pages/<name>.md` with a `title`, a `metaDescription` and some placeholder text. It appears in the CMS **Pages** list automatically; `.pages.yml` needs no change.
+2. Add `'<name>'` to `INFO_PAGES` in `src/lib/content.ts`, and its address to `src/config/routes.ts` under the same key.
+3. Create the route file. The file path is the URL: `src/pages/about/<name>.astro` serves `/about/<name>/`. Copy an existing one, such as `src/pages/about/fees.astro`; the whole page is `<InfoPage name="<name>" />`.
+4. Add it to `NAV_ITEMS` in `src/config/nav.ts`, with its label and `ROUTES.<name>` as the link.
+5. Update the tests:
+   - add `'<name>'` to `FIXED_PAGES` in `tests/cms-contract.test.mjs`;
+   - add the page to `INFO_PAGES` in both `tests/build.test.mjs` and `tests/redirects.test.mjs`;
+   - add a fixture page to `tests/fixtures/content/pages/`, with `<NAME>-BODY-MARKER` in its text.
+6. Add a redirect to `public/_redirects` if it replaces an old Wix URL.
 
-*(Step 3 describes `src/config/` and the nav, which don't exist yet.)*
+If step 2 or 3 is missed, the build log says `src/content/pages/<name>.md has no route, so it isn't on the site`. There is deliberately no catch-all route that would publish the file anyway.
+
+A page execs **don't** write, such as a list built from a collection like the council roster, skips steps 1 and 2. Write its route file directly, wrapped in `src/layouts/Base.astro`; copy the shape of `src/pages/news/[slug].astro`. Then add its address to `src/config/routes.ts` and do steps 4 and 6.
 
 **Why execs can't do this themselves:** page routes are a fixed set on purpose (`CLAUDE.md` decision 12a). If any editor could mint a URL, a slug typo would silently 404 their work, and new pages would appear in no nav and no sitemap.
 
@@ -333,10 +363,14 @@ Four things that will actually take the site down. Understand these before chang
 | Saved changes stopped appearing, site still up | A build is failing; Cloudflare keeps the last good deploy live | Cloudflare deploy log names the file and field. Usually a hand-edited file or a schema made stricter than `.pages.yml` |
 | Build fails: "data does not match collection schema" | A content file doesn't fit `src/content.config.ts` | Fix the file the error names, or relax the schema to match `.pages.yml` |
 | A post vanished after someone edited it | Its web address now matches another post's | The build log warns `was left out: its web address … is already used by …`. Change one |
-| Build log: "an image in the post text has no description (only its filename …)" | An editor pasted a picture into the post text; Pages CMS can't describe those, so it's shown but skipped by screen readers | Nothing is broken. If the picture matters, ask the editor to make it the Cover image (which takes a description), or to write what it shows in the text |
+| Build log: "an image in the post text has no description (only its filename …)", or the same for "page text" | An editor pasted a picture into a post's or page's text; Pages CMS can't describe those, so it's shown but skipped by screen readers | Nothing is broken. If the picture matters, ask the editor to write what it shows in the text, or, in a post, to make it the Cover image (which takes a description) |
+| Build log: "… was last checked on …, over a year ago" | Nobody has set that page's **Last checked** date in Pages CMS for a year. The page still publishes | Ask a council member to read the page through in Pages CMS, fix anything out of date, and set Last checked to today |
+| Build log: "Pages never checked: …" | Those pages have no Last checked date. All six arrived from Wix without one (2026-10-21), so expect this line until the council has read them | Same as above. Nothing is broken; the line is there so the gap stays visible |
+| Build log: "src/content/pages/… has no route, so it isn't on the site" | A page file was added in the repo without finishing [Adding a new page](#adding-a-new-page) | Finish steps 2–5, or delete the file |
+| Build fails: "src/content/pages/… is missing" | One of the six page files was deleted or renamed in the repo. The CMS can't do either, so it was a commit | `git log -- <file>` finds the commit that removed it; `git checkout <that commit>~1 -- <file>` brings it back |
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
-| Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
+| Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed, or the `import 'astro:assets'` line in `src/layouts/Base.astro` was. Astro only adds its image stylesheet to pages that import `astro:assets`, so without that line a picture in a page's text shows at full size | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
 | Nobody can add a new editor | The GitHub account that installed Pages CMS is gone | See Landmine 3 |
 | Pages CMS says "This repository requires changes through a pull request" for one person | They're signed in to Pages CMS with GitHub, so they save as themselves, which the ruleset blocks. Email collaborators save as the app and aren't affected | Editors: invite them by email and have them sign in that way. Maintainers: use a collaborator login, or save to a branch and open a PR. See Landmine 3 |
 | Editors' saves fail in Pages CMS, for everyone | Pages CMS is no longer on the ruleset's bypass list (or was reinstalled) | Settings → Rules → "Protect main" → Bypass list → add Pages CMS. See Landmine 3 |
@@ -346,11 +380,11 @@ Four things that will actually take the site down. Understand these before chang
 | Site stopped updating, but is still online | Monthly build allowance used up (500 on the free plan; every Save is one) | It resets monthly. It would take a lot of saving; check for something stuck in a commit loop |
 | A pinned post won't drop off the top | Pins are checked at build time | Any Save triggers a build; it drops off then |
 | An old link from Instagram 404s | Missing redirect | See [Adding a redirect](#adding-a-redirect) |
-| CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished | Update the line in `public/_redirects` (and the redirect map) to the new address, through a PR |
+| CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished. Or it points at a `#anchor` on an informational page whose heading was renamed | Update the line in `public/_redirects` (and the redirect map) to the new address, or to one of the anchors the error lists, through a PR |
 | A mistyped address shows the homepage instead of "Page not found" | `src/pages/404.astro` is gone, so the build has no `404.html` and Cloudflare treats the site as a single-page app | Restore `src/pages/404.astro` |
 | Site loads but is unstyled | Build partially failed or CSS path broke | Check the Cloudflare deploy log first, always |
 
-**Always start with the Cloudflare Pages deploy log.** It answers most questions in under a minute, and the build prints a content summary each run: published and draft counts, plus anything it dropped and why.
+**Always start with the Cloudflare Pages deploy log.** It answers most questions in under a minute, and the build prints a content summary each run: published and draft counts, anything it dropped and why, and which pages are overdue a read-through.
 
 ---
 

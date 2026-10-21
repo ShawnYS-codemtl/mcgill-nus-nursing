@@ -1,0 +1,33 @@
+---
+// The main navigation, from src/config/nav.ts. Unstyled, like the rest of
+// Phase 0: nested lists, with the current page marked for screen readers.
+import { NAV_ITEMS, NAV_LABEL } from '../config/nav';
+
+const here = Astro.url.pathname;
+const current = (href: string) => (href === here ? 'page' : undefined);
+---
+
+<nav aria-label={NAV_LABEL}>
+  <ul>
+    {
+      NAV_ITEMS.map((item) => (
+        <li>
+          <a href={item.href} aria-current={current(item.href)}>
+            {item.label}
+          </a>
+          {item.children && (
+            <ul>
+              {item.children.map((child) => (
+                <li>
+                  <a href={child.href} aria-current={current(child.href)}>
+                    {child.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</nav>
