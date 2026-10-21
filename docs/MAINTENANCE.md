@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-20
+**Last reviewed:** 2026-10-21
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -61,6 +61,8 @@ src/
   pages/                 Every URL on the site. File path = URL path.
     index.astro          Post list (becomes the real homepage later)
     news/[slug].astro    One page per published post
+    404.astro            "Page not found". Don't delete it: without it Cloudflare
+                         answers every unknown address with the homepage
   layouts/
     Base.astro           Page shell
   lib/
@@ -68,15 +70,20 @@ src/
                          instead of failing the whole build
     image-alt.mjs        Images pasted into post text get their filename as
                          alt text from the CMS; this makes them decorative
+  config/                Developer-owned text, never exposed in the CMS
+    indigenous-relations.ts  The Land Acknowledgement and Commitment to Truth &
+                         Reconciliation, verbatim — see "Things not to change"
+                         (nav and UI strings will live here too, once built)
   components/            (planned) Reusable UI pieces
-  config/                (planned) Nav, UI strings, and the two verbatim
-                         Indigenous-relations texts — see "Things not to change"
   styles/                (planned) — Phase 0 is deliberately unstyled
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
   build.test.mjs         Builds against fixtures; checks drafts, links, images
+  redirects.test.mjs     Every redirect is a valid 301 to a page that exists
   fixtures/              Deliberately awkward content for build.test.mjs
-public/                  Files served as-is (favicon, robots.txt, _redirects)
+public/                  Files served as-is (favicon, robots.txt)
+  _redirects             Old Wix addresses → new ones. Read by Cloudflare,
+                         never served as a page
 .github/workflows/ci.yml CI: runs `npm run verify` on every PR and push to main
 astro.config.mjs         Framework config
 ```
@@ -90,7 +97,7 @@ astro.config.mjs         Framework config
 | Office hours, address, social links, current council term | **Pages CMS** → Site settings |
 | Homepage event photos | **Pages CMS** → Homepage photos |
 | What fields editors see, and their help text | `.pages.yml` **and** `src/content.config.ts` |
-| The Land Acknowledgement or T&R statement | `src/config/`, **and read decision 13 first** |
+| The Land Acknowledgement or T&R statement | `src/config/indigenous-relations.ts`, **and read decision 13 first** |
 | A URL / adding a page | `src/pages/` |
 | Old-URL redirects | `public/_redirects` |
 | Colours, fonts, spacing | `src/styles/` + `tailwind.config` |
@@ -116,6 +123,7 @@ The tests check the things a build can't catch on its own:
 
 - **`tests/cms-contract.test.mjs`** checks that `.pages.yml` and `src/content.config.ts` still agree: same fields, no field required by the build but optional in the form, same select options, image paths still relative (Landmine 4), the six pages still locked.
 - **`tests/build.test.mjs`** builds the site against `tests/fixtures/content/`, a set of deliberately awkward posts (a draft, a duplicate web address, a `javascript:` link, a cover with no description). It then checks the HTML: drafts never appear, bad values are dropped, every image is processed.
+- **`tests/redirects.test.mjs`** checks `public/_redirects`: every line is a 301 Cloudflare can read, no old address appears twice, nothing loops, and every redirect to a committee or post lands on one that has a page. That last check reads the real content, so an editor renaming a committee's web address in the CMS turns `main` red. That's the point: the old link would otherwise break silently.
 
 When a test fails, its message says what to fix.
 
@@ -198,6 +206,25 @@ All in the repo:
 *(Step 3 describes `src/config/` and the nav, which don't exist yet.)*
 
 **Why execs can't do this themselves:** page routes are a fixed set on purpose (`CLAUDE.md` decision 12a). If any editor could mint a URL, a slug typo would silently 404 their work, and new pages would appear in no nav and no sitemap.
+
+### Adding a redirect
+
+When an old address turns up that lands on "Page not found" (a Wix link in an old email, an Instagram bio), or when a page moves:
+
+1. Add one line to `public/_redirects`: `/old-address /new-address/ 301`. Fixed addresses go above the wildcard (`*`) lines at the bottom.
+2. Add the same row to the redirect map in `docs/information-architecture.md`.
+3. Run `npm test`. `tests/redirects.test.mjs` says what's wrong if the line won't work.
+4. Open a PR. Once it's merged and deployed, check the old address in a browser.
+
+Things that trip people up:
+
+- **Always write `301`.** Without a code, Cloudflare sends a temporary 302 and search engines keep the old address.
+- **Don't add a rule that only adds a slash** (`/about /about/`). Cloudflare does that by itself once the page exists, and the rule can loop.
+- **Point at the final address,** never at another old address in the file.
+- **An old address only matches exactly as written.** Checked on a preview deploy (2026-10-21): `/nus-council/` and `/NUS-Council` don't match a rule for `/nus-council`, and get "Page not found". Wix never used trailing slashes or capitals, so each Wix address is listed once, as Wix wrote it. Query strings are carried through to the new address.
+- A rule that points at a committee or post (`/involved/…/`, `/news/…/`) depends on that entry's web address. If an editor changes it, the test fails and the redirect needs updating to match.
+
+The limit is 2,000 fixed and 100 wildcard rules; the file is nowhere near either.
 
 ### Adding a photo to the homepage gallery
 
@@ -318,7 +345,9 @@ Four things that will actually take the site down. Understand these before chang
 | A "Workers Builds" check fails on every commit | A Cloudflare **Worker** is connected to the repo, usually one created by mistake on the Workers tab | Delete that Worker in Cloudflare (its address ends in `.workers.dev`); keep the `.pages.dev` project. See "If the Cloudflare project ever has to be recreated" |
 | Site stopped updating, but is still online | Monthly build allowance used up (500 on the free plan; every Save is one) | It resets monthly. It would take a lot of saving; check for something stuck in a commit loop |
 | A pinned post won't drop off the top | Pins are checked at build time | Any Save triggers a build; it drops off then |
-| An old link from Instagram 404s | Missing redirect | Add it to `public/_redirects`; see `docs/information-architecture.md` |
+| An old link from Instagram 404s | Missing redirect | See [Adding a redirect](#adding-a-redirect) |
+| CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished | Update the line in `public/_redirects` (and the redirect map) to the new address, through a PR |
+| A mistyped address shows the homepage instead of "Page not found" | `src/pages/404.astro` is gone, so the build has no `404.html` and Cloudflare treats the site as a single-page app | Restore `src/pages/404.astro` |
 | Site loads but is unstyled | Build partially failed or CSS path broke | Check the Cloudflare deploy log first, always |
 
 **Always start with the Cloudflare Pages deploy log.** It answers most questions in under a minute, and the build prints a content summary each run: published and draft counts, plus anything it dropped and why.

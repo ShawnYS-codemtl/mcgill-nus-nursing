@@ -1,0 +1,51 @@
+# Old Wix addresses → their place on this site. Cloudflare Pages reads this
+# file; it is not served as a page. Keep it in step with the redirect map in
+# docs/information-architecture.md, and see MAINTENANCE.md → "Adding a redirect".
+#
+# One rule per line: old-address new-address 301
+#   - Always write 301. With no code Cloudflare sends a temporary 302.
+#   - A line Cloudflare can't read is skipped without any error, which is why
+#     tests/redirects.test.mjs checks every line.
+#   - /about and /contact need no rule: Cloudflare already sends /about to
+#     /about/ once that page exists, and a rule for it could loop.
+#   - Fixed addresses first, wildcards (*) last.
+# Rules: https://developers.cloudflare.com/pages/configuration/redirects/
+
+# About
+/constitution-by-laws /about/governance/ 301
+/nus-council /about/council/ 301
+/past-nus-councils /about/council/ 301
+/nus-council-meetings /about/governance/#nus-meeting-minutes 301
+/ingram-school-of-nursing-ison /about/ison/ 301
+/programs /about/elections/ 301
+/fees /about/fees/ 301
+
+# Get Involved
+/get-involved-1 /involved/ 301
+/general-8-1 /involved/equity-committee/ 301
+/canadian-nursing-students-associati /involved/cnsa/ 301
+/canadian-black-nurses-alliance-cbna /involved/cbna/ 301
+/swab-the-world /involved/swab-the-world/ 301
+/blank-page /involved/social-committee/ 301
+/blank-page-1 /involved/graduation-committee/ 301
+/mngh /involved/mngh/ 301
+/mcgill-nurses-for-planetary-health-mnph /involved/mnph/ 301
+
+# Resources (the Note-Taking Club is archived, decision 11)
+/helpful-resources /resources/ 301
+/general-8 /resources/#mistreatment 301
+/ntc /resources/ 301
+/ntc-nur1-300 /resources/ 301
+/nur1-301-pharmacology-for-nursing-2 /resources/ 301
+
+# News, and archived pages (decision 11)
+/general-9 /news/21st-century-fund/ 301
+/calendar /news/ 301
+/opportunities /news/ 301
+/general-clean /news/ 301
+/listserv /submit/ 301
+/sponsors / 301
+
+# Wildcards
+/event-details-registration/* /news/ 301
+/_files/* /about/governance/ 301
