@@ -156,7 +156,7 @@ You need **Node 22** (`.nvmrc`). If `npm install` fails with cryptic errors, a m
 `main` is protected by a ruleset (**Settings → Rules → Rulesets → "Protect main"**). Every code change goes through a pull request, and the PR can only merge once the **`verify`** check (CI) is green:
 
 1. `git switch -c my-change`, make the change, run `npm run verify` locally.
-2. Push the branch and open a PR. CI runs automatically; once Cloudflare is connected, the PR also gets a preview URL.
+2. Push the branch and open a PR. CI runs automatically, and Cloudflare builds a preview: the **Cloudflare Pages** check on the PR links to it, and it also lives at `https://<branch-name>.mcgill-nus.pages.dev`, with any `/` in the branch name turned into `-` (`feature/info-pages` → `feature-info-pages.mcgill-nus.pages.dev`). Redirects work there too, so check old addresses on the preview before merging.
 3. Merge when `verify` is green. Nobody needs to approve it: the check is the gate, not a reviewer, because there's usually only one maintainer.
 
 **Content doesn't go through this.** Pages CMS commits straight to `main` (it has no pull-request option), and it's on the ruleset's bypass list so publishing stays one step. That's safe because the CMS form, the contract test and Cloudflare's keep-the-last-good-deploy behaviour already contain bad content. See `CLAUDE.md` decision 16. CI still runs on those commits, so a bad one shows up as a red X on `main`.
