@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-20
+**Last reviewed:** 2026-10-21
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -68,9 +68,11 @@ src/
                          instead of failing the whole build
     image-alt.mjs        Images pasted into post text get their filename as
                          alt text from the CMS; this makes them decorative
+  config/                Developer-owned text, never exposed in the CMS
+    indigenous-relations.ts  The Land Acknowledgement and Commitment to Truth &
+                         Reconciliation, verbatim — see "Things not to change"
+                         (nav and UI strings will live here too, once built)
   components/            (planned) Reusable UI pieces
-  config/                (planned) Nav, UI strings, and the two verbatim
-                         Indigenous-relations texts — see "Things not to change"
   styles/                (planned) — Phase 0 is deliberately unstyled
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
@@ -90,7 +92,7 @@ astro.config.mjs         Framework config
 | Office hours, address, social links, current council term | **Pages CMS** → Site settings |
 | Homepage event photos | **Pages CMS** → Homepage photos |
 | What fields editors see, and their help text | `.pages.yml` **and** `src/content.config.ts` |
-| The Land Acknowledgement or T&R statement | `src/config/`, **and read decision 13 first** |
+| The Land Acknowledgement or T&R statement | `src/config/indigenous-relations.ts`, **and read decision 13 first** |
 | A URL / adding a page | `src/pages/` |
 | Old-URL redirects | `public/_redirects` |
 | Colours, fonts, spacing | `src/styles/` + `tailwind.config` |

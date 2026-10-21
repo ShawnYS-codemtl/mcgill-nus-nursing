@@ -119,7 +119,7 @@ Each page ships in the repo with placeholder text, so the six URLs always have s
 | `shortDescription` | Short description | text | ✓ | Card copy. |
 | `logo` | Logo | image | | |
 | `logoAlt` | Logo description | string | | Needed if `logo` is set; same soft rule as `coverAlt`. |
-| `externalLink` | Link somewhere else instead | string | | If set, no detail page (CNSA, NPMP, VASC). |
+| `externalLink` | Link somewhere else instead | string | | If set, no detail page (NPMP, VASC, the Athletic Committee). |
 | `instagram` | Instagram link | string | | |
 | `contactEmail` | Contact email | string | | |
 | `acceptingMembers` | Recruiting now | boolean | | Drives a "recruiting" badge. |

@@ -19,14 +19,16 @@
 
 Wix CDN URLs stop resolving when the site is decommissioned. Get these while they work:
 
-- [ ] By-laws PDF (`mcgillnus.ca/_files/ugd/0a9b8d_6c6e7a950bb946b382f21e47eec111e3.pdf`)
+- [ ] By-laws PDF, linked from the Elections page. The `mcgillnus.ca` address 404s since the domain broke (2026-10-20); it is still at `nusnursing.wixsite.com/website/_files/ugd/0a9b8d_6c6e7a950bb946b382f21e47eec111e3.pdf`
 - [ ] NUS Council Structure diagram (PNG, ~1545×1996)
 - [ ] Logo variants — transparent PNG and the 400×120 header wordmark. Ask the club for vector originals.
 - [ ] All homepage gallery photos (~14) at the largest available size
 - [ ] Council member photos (23) — ask for originals; the CDN copies are cropped and compressed
 - [ ] Committee logos (~8)
-- [ ] Full text of the land acknowledgement and Truth & Reconciliation commitment, **verbatim**
-- [ ] Re-crawl for any page missed in the initial pass — committee detail pages were only discoverable through card links, and the nav has a truncated "More" item
+- [x] Full text of the land acknowledgement and Truth & Reconciliation commitment, **verbatim** — in `src/config/indigenous-relations.ts` (2026-10-21)
+- [x] Re-crawl for any page missed in the initial pass — done 2026-10-21 from Wix's own `sitemap.xml`. It found two pages the redirect map lacked (`/opportunities`, `/general-clean`, both stale) and seven Wix-hosted PDFs on the Constitution and Elections pages, not one
+- [ ] The **other six PDFs**: NUS Constitution, Role and Governance By-Laws, Financial By-Laws, General Electoral By-Laws, Committees & External Groups By-Laws, and the SSMU-NUS Memorandum of Agreement. All linked from `/constitution-by-laws`, all on Wix's file server. Move them to the NUS Drive with the by-laws PDF above
+- [ ] Past Councils rosters (2017–18 to 2024–25, names and roles) from `/past-nus-councils`. Not imported yet; the page dies with Wix
 
 ## Confirm external dependencies are NUS-owned
 
@@ -43,9 +45,13 @@ Several Google Drive links are load-bearing. If they sit in a graduating student
 ## Content preparation
 
 - [ ] Populate content in Pages CMS: Posts, Council (2025–26 + incoming term), Resources (15), Committees (11), the six Pages, Homepage photos, Site settings
+  - [x] Imported from Wix 2026-10-21, word for word: Council 2025–26 (23), Resources (15), Committees (11), the six Pages, and two Posts from the homepage LINKS block. Gaps are listed in `CLAUDE.md` §9
+  - [ ] Council 2026–27 (then change **Current council term** in Site settings, which is already set to 2026-2027)
+  - [ ] Homepage photos, member photos and logos, from the club's originals
+  - [ ] Drive links on the Governance page, once the PDFs are on Drive
 - [ ] Get new Sponsors copy from Laurence Carrière — the existing page is written in a departed coordinator's voice and lists 2024 events
 - [ ] Confirm with the council which content gets cut (Note-Taking Club, Calendar, and the stale Sponsors content are proposed for archival)
-- [ ] Add the missing NUS Athletic Committee entry
+- [x] Add the missing NUS Athletic Committee entry — added 2026-10-21 with the only thing Wix has for it: one line and a link to a 2024 Instagram post. Ask the council for a real description
 - [ ] Decide whether the events calendar has an owner. If not, don't build it.
 
 ## Pre-launch
