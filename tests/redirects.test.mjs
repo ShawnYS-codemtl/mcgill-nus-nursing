@@ -6,10 +6,12 @@
 // just lands the visitor on the 404 page. Either way the old link in an
 // Instagram bio or a McGill page stops working, and nobody hears about it.
 //
-// The last two tests are the ones content can break. A committee's or a post's
-// web address is editable in Pages CMS, so renaming one, hiding it, or giving it
-// an external link quietly orphans the redirect that points at it. CI runs on
-// every CMS commit, so the red X on main is the warning.
+// The last three tests are the ones content can break. A committee's or a
+// post's web address is editable in Pages CMS, so renaming one, hiding it, or
+// giving it an external link quietly orphans the redirect that points at it.
+// So is every heading on the six informational pages, and a heading is what a
+// "#anchor" redirect lands on. CI runs on every CMS commit, so the red X on
+// main is the warning.
 //
 // Cloudflare's rules: https://developers.cloudflare.com/pages/configuration/redirects/
 
@@ -18,8 +20,19 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import { parse } from 'yaml';
+import { headingIds } from './lib/headings.mjs';
 
 const FILE = 'public/_redirects';
+
+/** The six informational pages, by address (src/config/routes.ts → their content file). */
+const INFO_PAGES = {
+  '/about/': 'about',
+  '/about/fees/': 'fees',
+  '/about/governance/': 'governance',
+  '/about/ison/': 'ison',
+  '/about/elections/': 'elections',
+  '/contact/': 'contact',
+};
 
 /** Every rule in the file, skipping blank lines and # comments. */
 const rules = readFileSync(FILE, 'utf8')
@@ -115,5 +128,25 @@ test('every /news/<slug>/ target is a published post with its own page', () => {
     );
     assert.ok(!post.data.externalLink, `${rule.where} points at /news/${slug}/, but ${post.file} links somewhere else instead, so it has no page.`);
     assert.equal(post.data.published, true, `${rule.where} points at /news/${slug}/, but ${post.file} isn't published.`);
+  }
+});
+
+test('every #anchor on an informational page matches one of its headings', () => {
+  // /nus-council-meetings lands on the "NUS Meeting Minutes" heading of the
+  // Governance page. Renaming that heading in Pages CMS changes its anchor,
+  // and visitors land at the top of the page instead, with no error anywhere.
+  for (const rule of rules) {
+    const [target, anchor] = rule.destination.split('#');
+    const page = INFO_PAGES[target];
+    if (!anchor || !page) continue;
+
+    const file = `src/content/pages/${page}.md`;
+    const ids = headingIds(readFileSync(file, 'utf8'));
+    assert.ok(
+      ids.includes(anchor),
+      `${rule.where} sends visitors to ${rule.destination}, but no heading in ${file} makes the anchor "#${anchor}" ` +
+        `(its headings make ${ids.map((id) => `#${id}`).join(', ') || 'none'}). A heading was probably renamed in ` +
+        `Pages CMS. Point the redirect at the new anchor, or ask the editor to change the heading back.`
+    );
   }
 });

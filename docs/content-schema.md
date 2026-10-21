@@ -37,7 +37,7 @@ Until 2026-10-11 the plan was Notion. That changed. See `CLAUDE.md` decision 1 f
 | **Image paths are relative** | The CMS writes `../../assets/uploads/<file>`. Every content file that can hold an image sits exactly two folders below `src/` (`src/content/<collection>/<file>`). | Astro only optimises a Markdown-body image if its path is relative. A path starting with `/` ships unresized, or broken. `npm run verify` fails if one reaches `dist/`. |
 | **Blank means absent** | An optional field saved as `""` or `null` is treated as not set. | The CMS can write either for a field nobody touched. |
 | **Optional dates start empty** | Every optional `date` field in `.pages.yml` sets `default: ""`. | Otherwise Pages CMS fills it with today's date on every new entry: a post arrives "pinned until today" and a resource "verified today" with no one having checked. Found in the trial (2026-10-14); the contract test enforces it. |
-| **Images in body text are decoration** | An image pasted into a rich-text body whose alt text is only a filename gets `alt=""`, and the build log names the post. Covers and logos, which have a required description field, are unaffected. | Pages CMS's editor sets every pasted image's alt text to its filename (`image.png`) and gives editors no way to change it, so a screen reader would read the filename aloud. Empty alt marks the image decorative, so it gets skipped. Done in `src/lib/image-alt.mjs` (found 2026-10-20); `tests/build.test.mjs` enforces it. The field help text in `.pages.yml` tells editors to put the photo that matters in Cover image, and to write any information a picture holds in the text too. |
+| **Images in body text are decoration** | An image pasted into a rich-text body whose alt text is only a filename gets `alt=""`, and the build log names the post or page. Covers and logos, which have a required description field, are unaffected. | Pages CMS's editor sets every pasted image's alt text to its filename (`image.png`) and gives editors no way to change it, so a screen reader would read the filename aloud. Empty alt marks the image decorative, so it gets skipped. Done in `src/lib/image-alt.mjs` (found 2026-10-20); `tests/build.test.mjs` enforces it. The field help text in `.pages.yml` tells editors to put the photo that matters in Cover image, and to write any information a picture holds in the text too. |
 
 ---
 
@@ -69,12 +69,20 @@ The six informational pages. Without this collection they would be hard-coded pr
 |---|---|---|---|---|
 | `title` | Page heading | string | ✓ | |
 | `metaDescription` | Search engine description | text | ✓ | Unique per page. |
-| `lastReviewed` | Last checked | date | | To be surfaced in the build log; anything over a year old gets flagged. |
-| *(body)* | Page content | rich text → Markdown | | |
+| `lastReviewed` | Last checked | date | | **Surfaced in the build log.** A page last checked more than a year before the build gets a warning naming it. One summary line lists every page never checked (blank, `null` and missing all count). Neither fails the build. Done in `src/lib/content.ts`. |
+| *(body)* | Page content | rich text → Markdown | | Images pasted here are decorative; see *Images in body text are decoration* above. Headings become anchors; see below. |
 
-**The filename is the route join.** `about.md` serves `/about/`, `fees.md` serves `/about/fees/`, and so on (see `information-architecture.md`). In `.pages.yml` this collection has `create`, `rename` and `delete` all switched off, so editors change what a page *says* and cannot add, remove or move one. That is decision 12a, enforced by configuration rather than code. Adding a seventh page is a developer's job: add the file, add the route.
+**The filename is the route join.** `about.md` serves `/about/`, `fees.md` serves `/about/fees/`, and so on (see `information-architecture.md`). Each route file (`src/pages/about/fees.astro` and the rest) only names its file: `<InfoPage name="fees" />`. `src/components/InfoPage.astro` renders the rest:
 
-Each page ships in the repo with placeholder text, so the six URLs always have something to render.
+- `title` as the page's only `<h1>`, and in the browser tab as `<title> — McGill NUS`;
+- `metaDescription` as the meta description;
+- the body below the heading.
+
+In `.pages.yml` this collection has `create`, `rename` and `delete` all switched off, so editors change what a page *says* and cannot add, remove or move one. That is decision 12a, enforced by configuration rather than code. Adding a seventh page is a developer's job; see `MAINTENANCE.md` → *Adding a new page*. A file here with no route isn't published, and the build log says so.
+
+**All six files always exist.** The CMS can't delete one, and `tests/cms-contract.test.mjs` checks all six are there. If one goes missing anyway, the build fails with a message naming the file. Since 2026-10-21 they hold the old Wix site's text, word for word.
+
+**Headings are link targets.** Astro gives each heading an id made from its text: `## NUS Meeting Minutes` becomes `#nus-meeting-minutes`. The old Wix address `/nus-council-meetings` redirects to that anchor on Governance, so renaming that heading quietly sends visitors to the top of the page instead. `tests/redirects.test.mjs` fails if any `#anchor` redirect to one of the six pages no longer matches a heading.
 
 **What must never go in this collection:** the Land Acknowledgement and the Commitment to Truth & Reconciliation. Both are verbatim texts (`PRODUCT.md` → Brand Commitments) and live as constants in `src/config/`, which is never exposed in `.pages.yml`. Decision 13.
 

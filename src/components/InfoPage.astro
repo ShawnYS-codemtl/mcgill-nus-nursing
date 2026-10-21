@@ -1,0 +1,27 @@
+---
+// Renders one of the six informational pages: About, Fees, Governance, ISoN,
+// Elections and Contact. Each has its own route file in src/pages/ that only
+// names its content file. This component does the rest, so the six can't
+// drift apart (CLAUDE.md decision 12a).
+//
+// The words are the council's, edited in Pages CMS → Pages. Nothing here
+// should add to them, reword them or reorder them.
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { getInfoPage, type InfoPageName } from '../lib/content';
+
+interface Props {
+  /** The content file's name: src/content/pages/<name>.md */
+  name: InfoPageName;
+}
+
+const page = await getInfoPage(Astro.props.name);
+const { Content } = await render(page);
+---
+
+<Base title={`${page.data.title} — McGill NUS`} description={page.data.metaDescription}>
+  <article>
+    <h1>{page.data.title}</h1>
+    <Content />
+  </article>
+</Base>
