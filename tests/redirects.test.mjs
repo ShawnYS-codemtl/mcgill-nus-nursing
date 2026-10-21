@@ -1,0 +1,119 @@
+// Checks public/_redirects: the 301s that send old Wix addresses to their
+// place on this site (docs/information-architecture.md → Redirect map).
+//
+// Both ways a redirect breaks are silent. Cloudflare Pages skips a line it
+// can't read without any error, and a redirect to a page that doesn't exist
+// just lands the visitor on the 404 page. Either way the old link in an
+// Instagram bio or a McGill page stops working, and nobody hears about it.
+//
+// The last two tests are the ones content can break. A committee's or a post's
+// web address is editable in Pages CMS, so renaming one, hiding it, or giving it
+// an external link quietly orphans the redirect that points at it. CI runs on
+// every CMS commit, so the red X on main is the warning.
+//
+// Cloudflare's rules: https://developers.cloudflare.com/pages/configuration/redirects/
+
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+import { test } from 'node:test';
+import { parse } from 'yaml';
+
+const FILE = 'public/_redirects';
+
+/** Every rule in the file, skipping blank lines and # comments. */
+const rules = readFileSync(FILE, 'utf8')
+  .split('\n')
+  .map((text, index) => ({ text: text.trim(), line: index + 1 }))
+  .filter(({ text }) => text && !text.startsWith('#'))
+  .map(({ text, line }) => {
+    const [source, destination, code, ...extra] = text.split(/\s+/);
+    return { source, destination, code, extra, line, text, where: `${FILE} line ${line}` };
+  });
+
+/** Frontmatter of every entry in a content collection. */
+function entries(collection) {
+  const dir = path.join('src/content', collection);
+  return readdirSync(dir)
+    .filter((file) => file.endsWith('.md'))
+    .map((file) => ({ file, data: parse(readFileSync(path.join(dir, file), 'utf8').match(/^---\n([\s\S]*?)---/)[1]) }));
+}
+
+/** Does a rule's old address (which may end in a * wildcard) match this path? */
+const matches = (source, pathname) =>
+  source.endsWith('*') ? pathname.startsWith(source.slice(0, -1)) : source.replace(/\/$/, '') === pathname.replace(/\/$/, '');
+
+test('every line is "old-address new-address 301"', () => {
+  assert.ok(rules.length > 0, `${FILE} has no rules`);
+  for (const rule of rules) {
+    assert.ok(rule.destination && rule.extra.length === 0, `${rule.where} should be "old-address new-address 301": ${rule.text}`);
+    assert.equal(
+      rule.code,
+      '301',
+      `${rule.where} must end in 301. Without it Cloudflare sends a temporary 302, and search engines keep the old address: ${rule.text}`
+    );
+  }
+});
+
+test('every old address starts with / and is redirected only once', () => {
+  const seen = new Map();
+  for (const rule of rules) {
+    assert.ok(rule.source.startsWith('/'), `${rule.where}: the old address must start with "/": ${rule.text}`);
+    assert.ok(
+      !seen.has(rule.source),
+      `${rule.source} is redirected twice (lines ${seen.get(rule.source)} and ${rule.line}). Cloudflare only uses the first.`
+    );
+    seen.set(rule.source, rule.line);
+  }
+});
+
+test('no redirect points back at itself or at another old address', () => {
+  for (const rule of rules) {
+    const target = rule.destination.split('#')[0];
+    if (/^https?:\/\//.test(target)) continue;
+    assert.ok(
+      !matches(rule.source, target),
+      `${rule.where} sends ${rule.source} to itself, which loops. Cloudflare adds a trailing slash on its own, so a rule like "/about /about/" isn't needed.`
+    );
+    const next = rules.find((other) => matches(other.source, target));
+    assert.ok(
+      !next,
+      `${rule.where} sends visitors to ${target}, which line ${next?.line} redirects again. Point it at the final address.`
+    );
+  }
+});
+
+test('every /involved/<slug>/ target is a committee with its own page', () => {
+  const committees = entries('committees');
+  for (const rule of rules) {
+    const slug = rule.destination.match(/^\/involved\/([^/#]+)/)?.[1];
+    if (!slug) continue;
+    const committee = committees.find(({ data }) => data.slug === slug);
+    assert.ok(
+      committee,
+      `${rule.where} points at /involved/${slug}/, but no committee has the web address "${slug}". ` +
+        `Change the redirect, or the committee's Web address in Pages CMS.`
+    );
+    assert.ok(
+      !committee.data.externalLink,
+      `${rule.where} points at /involved/${slug}/, but ${committee.file} links somewhere else instead, so it has no page.`
+    );
+    assert.notEqual(committee.data.published, false, `${rule.where} points at /involved/${slug}/, but ${committee.file} isn't shown on the site.`);
+  }
+});
+
+test('every /news/<slug>/ target is a published post with its own page', () => {
+  const posts = entries('posts');
+  for (const rule of rules) {
+    const slug = rule.destination.match(/^\/news\/([^/#]+)/)?.[1];
+    if (!slug) continue;
+    const post = posts.find(({ data }) => data.slug === slug);
+    assert.ok(
+      post,
+      `${rule.where} points at /news/${slug}/, but no post has the web address "${slug}". ` +
+        `Change the redirect, or the post's Web address in Pages CMS.`
+    );
+    assert.ok(!post.data.externalLink, `${rule.where} points at /news/${slug}/, but ${post.file} links somewhere else instead, so it has no page.`);
+    assert.equal(post.data.published, true, `${rule.where} points at /news/${slug}/, but ${post.file} isn't published.`);
+  }
+});

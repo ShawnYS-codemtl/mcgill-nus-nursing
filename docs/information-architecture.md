@@ -75,15 +75,15 @@ Footer: contact block, office address, social links, listserv submission link, l
 
 ## Redirect map
 
-The Wix site has been live for years and these URLs are indexed and linked from McGill pages, Instagram bios, and old emails. All redirects are **301**, configured in `public/_redirects`.
+The Wix site has been live for years and these URLs are indexed and linked from McGill pages, Instagram bios, and old emails. All redirects are **301**, configured in `public/_redirects`. `tests/redirects.test.mjs` checks that file on every PR, and `MAINTENANCE.md` → *Adding a redirect* says how to add one. Keep this table and the file in step.
 
 | Old path | New path |
 |---|---|
-| `/about` | `/about/` |
+| `/about` | `/about/` — **no rule**: Cloudflare adds the trailing slash itself, and a rule could loop |
 | `/constitution-by-laws` | `/about/governance/` |
 | `/nus-council` | `/about/council/` |
 | `/past-nus-councils` | `/about/council/` |
-| `/nus-council-meetings` | `/about/governance/#minutes` |
+| `/nus-council-meetings` | `/about/governance/#nus-meeting-minutes` (the anchor is made from the heading *NUS Meeting Minutes* on the Governance page) |
 | `/ingram-school-of-nursing-ison` | `/about/ison/` |
 | `/get-involved-1` | `/involved/` |
 | `/helpful-resources` | `/resources/` |
@@ -95,7 +95,7 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/sponsors` | `/` — the page is archived, see decision 11 |
 | `/listserv` | `/submit/` |
 | `/calendar` | `/news/` |
-| `/contact` | `/contact/` |
+| `/contact` | `/contact/` — **no rule**, as for `/about` |
 | `/general-8` | `/resources/#mistreatment` |
 | `/general-8-1` | `/involved/equity-committee/` |
 | `/general-9` | `/news/21st-century-fund/` |
@@ -106,11 +106,14 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/blank-page-1` | `/involved/graduation-committee/` |
 | `/mngh` | `/involved/mngh/` |
 | `/mcgill-nurses-for-planetary-health-mnph` | `/involved/mnph/` |
+| `/opportunities` | `/news/` — found in the Wix sitemap 2026-10-21: student opportunity notices from 2020 |
+| `/general-clean` | `/news/` — found in the Wix sitemap 2026-10-21: the February 2025 career fair |
 | `/event-details-registration/*` | `/news/` |
+| `/_files/*` | `/about/governance/` — Wix's address for uploaded PDFs; the Elections page linked the by-laws this way |
 
-Also serve a **404 page** offering search or the main sections. Wix generated URL patterns we may not have crawled; a good 404 is the safety net.
+Also serve a **404 page** offering search or the main sections. Wix generated URL patterns we may not have crawled; a good 404 is the safety net. Done: `src/pages/404.astro` links the main sections (search can join it once Pagefind is in).
 
-**Before cutover,** crawl the live Wix site once more for any page not in this table — the Wix nav has a truncated "More" item that may hide entries, and committee detail pages were only discoverable through card links.
+**Re-crawled 2026-10-21** from Wix's own `sitemap.xml` (`pages-sitemap.xml` and `event-pages-sitemap.xml`), which lists the pages the truncated "More" menu hides. It added `/opportunities` and `/general-clean`; every other page was already here. Crawl once more just before cutover in case the council adds a page.
 
 ---
 

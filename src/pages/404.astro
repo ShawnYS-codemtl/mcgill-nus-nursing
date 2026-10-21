@@ -1,0 +1,24 @@
+---
+// Astro builds this to dist/404.html, which Cloudflare Pages serves for any
+// address that doesn't exist. Don't delete it: without a 404.html, Cloudflare
+// treats the site as a single-page app and answers every unknown address with
+// the homepage, so broken links look like they work.
+//
+// Old Wix addresses have their own redirects (public/_redirects). This page
+// catches the ones nobody found. Some sections below aren't built yet; the
+// links will work as they arrive. When the nav moves to src/config/, use it here.
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found — McGill NUS" description="This page doesn't exist." noindex>
+  <h1>Page not found</h1>
+  <p>Looks like this page called in sick 🤒 Try one of these instead:</p>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/news/">News</a></li>
+    <li><a href="/about/">About</a></li>
+    <li><a href="/involved/">Get Involved</a></li>
+    <li><a href="/resources/">Resources</a></li>
+    <li><a href="/contact/">Contact</a></li>
+  </ul>
+</Base>

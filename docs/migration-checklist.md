@@ -56,9 +56,10 @@ Several Google Drive links are load-bearing. If they sit in a graduating student
 
 ## Pre-launch
 
-- [ ] All redirects from `information-architecture.md` in place and tested
+- [x] All redirects from `information-architecture.md` in place — `public/_redirects`, checked on every PR by `tests/redirects.test.mjs` (2026-10-21). Many targets are pages not built yet
+- [ ] Every redirect tested in a browser once its target page exists, and again on `mcgillnus.ca` after the DNS move
 - [ ] `sitemap.xml` generated and valid
-- [ ] Custom 404 page
+- [x] Custom 404 page — `src/pages/404.astro` (2026-10-21)
 - [ ] Lighthouse: performance, accessibility, SEO, best practices all ≥95
 - [ ] Manual keyboard-only pass over every page type
 - [ ] Screen reader spot-check on the council roster and the electives table
