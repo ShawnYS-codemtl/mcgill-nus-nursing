@@ -25,11 +25,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: 'About',
     href: ROUTES.about,
     children: [
+      { label: 'Council', href: ROUTES.council },
       { label: 'Fees', href: ROUTES.fees },
       { label: 'Governance', href: ROUTES.governance },
       { label: 'ISoN', href: ROUTES.ison },
       { label: 'Elections', href: ROUTES.elections },
     ],
   },
+  { label: 'Get involved', href: ROUTES.involved },
+  { label: 'Resources', href: ROUTES.resources },
   { label: 'Contact', href: ROUTES.contact },
 ];

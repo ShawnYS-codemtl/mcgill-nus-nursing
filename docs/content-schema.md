@@ -96,14 +96,16 @@ In `.pages.yml` this collection has `create`, `rename` and `delete` all switched
 | `vacant` | Position is vacant | boolean | | Renders a "position open" card linking to Elections. |
 | `name` | Name | string | | Optional because of `vacant`. |
 | `program` | Program | string | | `U3 BScN`, `U2 BNI Online` |
-| `email` | Email | string | | Keep the `{role}.nus@mail.mcgill.ca` convention. |
-| `photo` | Photo | image | | Optional; must degrade to a placeholder. Alt text is derived from name and role. |
+| `email` | Email | string | | Keep the `{role}.nus@mail.mcgill.ca` convention. A bare address or `mailto:` link; anything else is dropped with a build-log warning. |
+| `photo` | Photo | image | | Optional; no photo means no image, not a placeholder. Shown cropped to 4:5 whatever its shape. Its alt text is empty, because the name beside it already says who it is. |
 | `roleDescription` | What this role does | text | | 1–3 sentences. |
 | `funFact` | Fun fact | text | | Keep this. It's why students read the page. |
 | `order` | Order | number | ✓ | Executive order is meaningful (President first). |
 | `published` | Show on the site | boolean | | Default `true`. |
 
 **Keyed by term and role, never by person.** The site shows the term named in Site settings → `currentTerm`. Past councils are the same collection filtered by a different term.
+
+**The page never goes empty.** If `currentTerm` has no published entries (an exec switched it before entering the new council), `/about/council/` shows the newest term that has some, and the build log says so. The heading always names the term shown ("Council 2025–26"). See `src/lib/council-term.mjs`.
 
 ## 4. Resources — `src/content/resources/<title>.yml`
 
@@ -115,8 +117,10 @@ In `.pages.yml` this collection has `create`, `rename` and `delete` all switched
 | `link` | Link | string | ✓ | `https://…`, or `/…` for one of our own pages. |
 | `linkLabel` | Link text | string | | Defaults to "Learn more". |
 | `lastVerified` | Link last checked | date | | **Surface in the build log.** Link rot is how a resource directory dies; this makes the decay visible. |
-| `order` | Order | number | ✓ | Within a category. |
+| `order` | Order | number | ✓ | Within a category. Categories themselves always appear in the order above. |
 | `published` | Show on the site | boolean | | Default `true`. |
+
+**Each resource has an anchor, and it is the filename.** `/resources/#student-mistreatment-policy` lands on that resource's heading. The filename is set when the entry is created and the CMS can't rename it, so the anchor survives a reworded title. The old Wix address `/general-8` redirects to that anchor, and `tests/redirects.test.mjs` fails if a resource some redirect points at is deleted or hidden.
 
 ## 5. Committees — `src/content/committees/<slug>.md`
 
@@ -130,10 +134,10 @@ In `.pages.yml` this collection has `create`, `rename` and `delete` all switched
 | `externalLink` | Link somewhere else instead | string | | If set, no detail page (NPMP, VASC, the Athletic Committee). |
 | `instagram` | Instagram link | string | | |
 | `contactEmail` | Contact email | string | | |
-| `acceptingMembers` | Recruiting now | boolean | | Drives a "recruiting" badge. |
+| `acceptingMembers` | Recruiting now | boolean | | Shows "Recruiting now" as text, on the card and the page. |
 | `order` | Order | number | ✓ | |
 | `published` | Show on the site | boolean | | Default `true`. |
-| *(body)* | Committee page | rich text → Markdown | | The detail page. |
+| *(body)* | Committee page | rich text → Markdown | | The detail page. The short description shows on the card; the page shows it only when this is empty. |
 
 ## 6. Gallery — `src/content/gallery/gallery.json`
 
@@ -152,7 +156,7 @@ One file holding a list, so editors can drag photos into order. List position is
 
 Facts about the club that appear site-wide: `currentTerm`, `contactEmail`, `officeAddress`, `officeHours`, `instagramUrl`, `tiktokUrl`, `facebookUrl`, `linkedinUrl`.
 
-**This one degrades rather than validates.** It is not a content collection. When the footer is built, read it through a helper that falls back to a repo default for any blank value and logs a warning. A stale office-hours string is a nuisance on one page; strict validation on a value used in the footer would take every page down.
+**This one degrades rather than validates.** It is not a content collection. Read it through `getSettings()` in `src/lib/settings.ts`, which falls back to a repo default for any blank value and logs a warning (`currentTerm` has no default; the council page copes without it). Only `currentTerm` is read today; the footer will read the rest. A stale office-hours string is a nuisance on one page; strict validation on a value used in the footer would take every page down.
 
 **Boundary, guard it against drift:** settings hold facts about the club, never labels, button text or nav copy. Those stay in `src/config/` (decision 6). The test: if changing it changes what a control *says*, it's the repo's. If it changes what the club *is*, it's here.
 

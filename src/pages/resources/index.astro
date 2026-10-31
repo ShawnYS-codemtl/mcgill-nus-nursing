@@ -1,0 +1,52 @@
+---
+// /resources/: the student services directory, by category. Entries are
+// edited in Pages CMS → Resources.
+import Base from '../../layouts/Base.astro';
+import { getResources } from '../../lib/content';
+
+const groups = await getResources();
+
+const paragraphs = (text: string) =>
+  text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+---
+
+<Base
+  title="Resources — McGill NUS"
+  description="Support, guides and services for McGill nursing students, gathered in one place."
+>
+  <h1>Resources</h1>
+  {
+    groups.length === 0 ? (
+      <p>No resources yet. Check back soon.</p>
+    ) : (
+      groups.map(({ category, resources }) => (
+        <section>
+          <h2>{category}</h2>
+          <ul>
+            {resources.map(({ id, data }) => {
+              const label = data.linkLabel?.trim() || 'Learn more';
+              return (
+                <li>
+                  <h3 id={id}>{data.title}</h3>
+                  {paragraphs(data.description).map((paragraph) => (
+                    <p>{paragraph}</p>
+                  ))}
+                  {data.link && (
+                    <p>
+                      <a href={data.link} aria-label={`${label}: ${data.title}`}>
+                        {label}
+                      </a>
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    )
+  }
+</Base>

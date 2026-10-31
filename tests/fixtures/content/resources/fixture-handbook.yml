@@ -1,0 +1,8 @@
+title: "Fixture: handbook"
+category: Academic
+description: Fixture resource with a bad link.
+link: "javascript:alert(1)"
+linkLabel: ""
+lastVerified: 2024-01-01
+order: 10
+published: true

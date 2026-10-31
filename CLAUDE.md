@@ -195,6 +195,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
   - Neither the 21st Century Fund page nor the EN-FR dictionary link shows a date; both posts carry 2026-10-21 as a placeholder.
   - The NUS Athletic Committee has one line and a link to a 2024 Instagram post, nothing more.
   - Seven PDFs (the Constitution, four sets of by-laws, the SSMU-NUS memorandum and the by-laws linked from Elections) and the Council Structure diagram are on Wix's servers only. The Governance page lists the documents by name, without links, until they are on the NUS Drive.
+    - **Found 2026-10-30:** the club's public Drive (folder `Documents + logos`) now has `[UPDATED] 2026-2027 NUS Constitution.pdf` and `[UPDATED]2026-2027 Financial By-laws.pdf`, plus `NUS Council Structure.png`. Governance can link these. Not done yet; it's a content edit in the CMS once the council confirms they're final.
   - No field holds the homepage mission paragraph or the Executive/General Council intro sentences. The Past Councils rosters (2017–18 to 2024–25) weren't imported. All of these die with Wix.
 - **To confirm before any DNS change:** `mcgillnus.ca` has a live `MX` record (`mail.mcgillnus.ca` → `69.195.124.181`). Who actually uses it? It must be recreated in Cloudflare or club email breaks at cutover. DNS today is hosted by **Wix**, not GoDaddy — see decision 3.
 
@@ -298,5 +299,18 @@ Do not skip step 5.
 - **Found and fixed:** Astro adds its image stylesheet (the rule that keeps an image inside the column) only to pages that import `astro:assets`. A picture pasted into a page's text would have shown at full size. `src/layouts/Base.astro` now imports it for every page; the committee pages would have hit the same bug.
 
 The page text is the Wix import, unedited. Rewording it is the council's job, in the CMS.
+
+### Status — 2026-10-30
+
+**The council roster, resources directory and Get Involved pages are built** (branch `feature/roster-resources-involved`). Those were the last MVP sections without pages, and they make the old Wix redirects to them land.
+
+- **Routes.** `/about/council/`, `/resources/`, `/involved/`, and `/involved/<slug>/` for each committee without an external link (8 of 11; NPMP, VASC and Athletic link out). All four are in `src/config/routes.ts` and the nav.
+- **Council term.** Site settings now says `2025-2026`, the council the club says still stands. `src/lib/settings.ts` reads Site settings and never fails the build. If the current term has no entries, `src/lib/council-term.mjs` shows the newest term that has some, and the heading always names the term shown. That was tested on the real content while the setting still said `2026-2027`.
+- **Resource anchors are filenames,** so `/general-8` now redirects to `/resources/#student-mistreatment-policy`, and `tests/redirects.test.mjs` checks it.
+- **Images.** 22 headshots and 10 committee logos, from the club's public Drive, shrunk (uploads went from 376K to 4.4M) with location data stripped. Each headshot was paired by the club's own Wix record, which holds the member's name and the photo's filename, then checked against the photo Wix showed. Two choices to confirm with the council:
+  - the Drive has a second, different photo named after Sophie Bujold (striped shirt); the site uses the one Wix showed;
+  - Wix showed a "Grad Committee 2025" logo that isn't on the Drive; the site uses the Drive's undated `Grad committee.png`.
+- **Found and fixed:** Astro never enlarges an image, so a photo smaller than 400×500 kept its own shape. Rules in `CouncilMember.astro` and `CommitteeLogo.astro` now hold every photo to 4:5 and every logo to a square. Separately, a link pasted as its full address pushed two committee pages sideways on a phone; `Base.astro` now wraps long words.
+- **Build-log notes**, never failures: an email that isn't an address, a resource link that isn't `https://` or a page on this site (including `//other-site`, which the CMS form allows, and `/<tab>/other-site`, which browsers read the same way), resource links never or long ago checked (all fifteen today), and committees with no short description (NPMP and VASC).
 
 **Unrelated to code and more urgent than any of it:** `mcgillnus.ca` expires **2026-11-01**. See §9.

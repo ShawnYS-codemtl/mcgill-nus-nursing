@@ -1,5 +1,7 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { pickTerm } from './council-term.mjs';
 import { filenameAltImages } from './image-alt.mjs';
+import { getSettings } from './settings';
 
 /**
  * Checks that are too soft to fail a build over. src/content.config.ts must
@@ -109,14 +111,20 @@ const CONTENT_DIR = process.env.CONTENT_DIR ?? 'src/content';
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 /**
+ * "Last checked" dates are compared with the build date, so a page or
+ * resource turns stale at the first Save of anything after its anniversary.
+ */
+function aYearAgo(): Date {
+  const today = new Date();
+  return new Date(Date.UTC(today.getUTCFullYear() - 1, today.getUTCMonth(), today.getUTCDate()));
+}
+
+/**
  * Build-log notes on the pages, none of which fail the build: a page nobody
- * has re-read in a year is still better shown than missing. "Last checked" is
- * compared with the build date, so a page turns stale at the first Save of
- * anything after its anniversary.
+ * has re-read in a year is still better shown than missing.
  */
 async function checkPages(): Promise<void> {
-  const today = new Date();
-  const yearAgo = new Date(Date.UTC(today.getUTCFullYear() - 1, today.getUTCMonth(), today.getUTCDate()));
+  const yearAgo = aYearAgo();
   const neverChecked: string[] = [];
 
   for (const page of await getCollection('pages')) {
@@ -170,4 +178,224 @@ export async function getInfoPage(name: InfoPageName): Promise<Page> {
     );
   }
   return page;
+}
+
+function emailAddress(value: string): string | undefined {
+  const address = value.trim().replace(/^mailto:/i, '');
+  return /^[^\s@:/]+@[^\s@:/]+\.[^\s@:/]+$/.test(address) ? address : undefined;
+}
+
+export type CouncilMember = CollectionEntry<'council'>;
+
+export interface Council {
+  /** The term shown, e.g. "2025-2026". Not always Site settings' current term: see src/lib/council-term.mjs. */
+  term: string;
+  executive: CouncilMember[];
+  general: CouncilMember[];
+}
+
+async function loadCouncil(): Promise<Council | undefined> {
+  const published = (await getCollection('council')).filter((entry) => entry.data.published);
+  const { currentTerm } = getSettings();
+  const picked = pickTerm(currentTerm, published.map((entry) => entry.data.term));
+
+  if (!picked) {
+    warn(`No council entries are shown on the site, so the council page says the council hasn't been posted yet.`);
+    return undefined;
+  }
+  if (picked.fallback) {
+    warn(
+      currentTerm
+        ? `No council entries for ${currentTerm}, so the roster shows ${picked.term}. Add the new council, ` +
+            `or change Current council term in Site settings.`
+        : `Site settings has no current council term, so the roster shows ${picked.term}, the newest term with entries.`
+    );
+  }
+
+  const members = published
+    .filter((entry) => entry.data.term === picked.term)
+    .sort((a, b) => a.data.order - b.data.order || a.data.role.localeCompare(b.data.role))
+    .map((entry) => {
+      const data = { ...entry.data };
+
+      if (!data.vacant && !data.name?.trim()) {
+        warn(`${data.role} (${data.term}) has no name, so only the role shows. Add the name, or switch on Position is vacant.`);
+      }
+
+      if (data.email) {
+        const address = emailAddress(data.email);
+        if (!address) warn(`${data.role} (${data.term}): "${data.email}" ignored, because it isn't an email address.`);
+        data.email = address;
+      }
+
+      return { ...entry, data };
+    });
+
+  return {
+    term: picked.term,
+    executive: members.filter((member) => member.data.council === 'Executive'),
+    general: members.filter((member) => member.data.council === 'General'),
+  };
+}
+
+let councilPending: Promise<Council | undefined> | undefined;
+
+/** The council to show at /about/council/. Undefined when no term has any entries. */
+export function getCouncil(): Promise<Council | undefined> {
+  councilPending ??= loadCouncil();
+  return councilPending;
+}
+
+type ResourceEntry = CollectionEntry<'resources'>;
+type ResourceCategory = ResourceEntry['data']['category'];
+
+/** A published resource. Its link is undefined when the one saved in the CMS isn't safe to show. */
+export type Resource = Omit<ResourceEntry, 'data'> & { data: Omit<ResourceEntry['data'], 'link'> & { link?: string } };
+
+export interface ResourceGroup {
+  category: ResourceCategory;
+  resources: Resource[];
+}
+
+const CATEGORY_ORDER: Record<ResourceCategory, number> = {
+  Academic: 1,
+  Financial: 2,
+  'Wellbeing & Safety': 3,
+  'Clinical & Professional': 4,
+  Governance: 5,
+};
+
+/**
+ * http(s), or a page on this site. "//elsewhere.example" (and "/\elsewhere",
+ * which browsers read the same way) is another site, though the CMS form's
+ * "starts with /" rule lets it through. Browsers drop tabs and line breaks
+ * from a link before reading it, so "/<tab>/elsewhere" is another site too.
+ */
+const isResourceLink = (value: string) => {
+  const link = value.replace(/[\t\n\r]/g, '');
+  return isWebLink(link) || /^\/(?![/\\])/.test(link);
+};
+
+async function loadResources(): Promise<ResourceGroup[]> {
+  const yearAgo = aYearAgo();
+  const neverChecked: string[] = [];
+
+  const resources = (await getCollection('resources'))
+    .filter((resource) => resource.data.published)
+    .map((resource) => {
+      const data: Resource['data'] = { ...resource.data };
+
+      if (!isResourceLink(resource.data.link)) {
+        warn(`"${data.title}": link "${data.link}" ignored — links must start with https://, or / for a page on this site`);
+        data.link = undefined;
+      }
+
+      if (!data.lastVerified) {
+        neverChecked.push(`"${data.title}"`);
+      } else if (data.lastVerified < yearAgo) {
+        warn(
+          `"${data.title}": link last checked on ${isoDate(data.lastVerified)}, over a year ago. Someone should ` +
+            `click it, then set Link last checked to today in Pages CMS.`
+        );
+      }
+
+      return { ...resource, data };
+    })
+    .sort(
+      (a, b) =>
+        CATEGORY_ORDER[a.data.category] - CATEGORY_ORDER[b.data.category] ||
+        a.data.order - b.data.order ||
+        a.data.title.localeCompare(b.data.title)
+    );
+
+  if (neverChecked.length) {
+    warn(`Resources whose link was never checked: ${neverChecked.join(', ')}. Set Link last checked in Pages CMS once someone has clicked it.`);
+  }
+
+  return [...Map.groupBy(resources, (resource) => resource.data.category)].map(([category, resources]) => ({ category, resources }));
+}
+
+let resourcesPending: Promise<ResourceGroup[]> | undefined;
+
+/** Published resources for /resources/, by category in a fixed order. Empty categories are left out. */
+export function getResources(): Promise<ResourceGroup[]> {
+  resourcesPending ??= loadResources();
+  return resourcesPending;
+}
+
+export type Committee = CollectionEntry<'committees'>;
+
+async function loadCommittees(): Promise<Committee[]> {
+  const published = (await getCollection('committees'))
+    .filter((committee) => committee.data.published)
+    .sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name));
+
+  const seen = new Map<string, string>();
+  const noDescription: string[] = [];
+  const kept: Committee[] = [];
+
+  for (const committee of published) {
+    const data = { ...committee.data };
+
+    const clash = seen.get(data.slug);
+    if (clash) {
+      warn(
+        `"${data.name}" was left out: its web address "${data.slug}" is already used by "${clash}". ` +
+          `Give one of them a different web address.`
+      );
+      continue;
+    }
+    seen.set(data.slug, data.name);
+
+    if (data.logo && !data.logoAlt?.trim()) {
+      warn(`"${data.name}": logo left out because it has no description.`);
+      data.logo = undefined;
+    }
+
+    for (const field of ['externalLink', 'instagram'] as const) {
+      const link = data[field];
+      if (link && !isWebLink(link)) {
+        warn(`"${data.name}": "${link}" ignored — links must start with https://`);
+        data[field] = undefined;
+      }
+    }
+
+    if (data.contactEmail) {
+      const address = emailAddress(data.contactEmail);
+      if (!address) warn(`"${data.name}": contact email "${data.contactEmail}" ignored, because it isn't an email address.`);
+      data.contactEmail = address;
+    }
+
+    if (!data.shortDescription.trim()) noDescription.push(`"${data.name}"`);
+
+    if (!data.externalLink) {
+      for (const alt of filenameAltImages(committee.body ?? '')) {
+        warn(
+          `"${data.name}": an image in the committee page has no description (only its filename, "${alt}"), ` +
+            `so screen readers skip it. If it holds information, write that information in the text too.`
+        );
+      }
+    }
+
+    kept.push({ ...committee, data });
+  }
+
+  if (noDescription.length) {
+    warn(`Committees with no short description, so their card shows only a name: ${noDescription.join(', ')}.`);
+  }
+
+  return kept;
+}
+
+let committeesPending: Promise<Committee[]> | undefined;
+
+/** Published committees and clubs for /involved/, in order. */
+export function getCommittees(): Promise<Committee[]> {
+  committeesPending ??= loadCommittees();
+  return committeesPending;
+}
+
+/** Committees that get their own page. One with an external link points off-site instead. */
+export async function getCommitteesWithPages(): Promise<Committee[]> {
+  return (await getCommittees()).filter((committee) => !committee.data.externalLink);
 }

@@ -2,6 +2,8 @@
 name: Canadian Black Nurses Alliance (CBNA)
 slug: cbna
 shortDescription: The Canadian Black Nurses Alliance - McGill (CBNA-McGill) is a student extension of the Canadian Black Nurses Alliance (CBNA) initiative. The goal of this club at McGill University is aimed towards creating a community for black nursing students here on campus.
+logo: ../../assets/uploads/cbna-logo.png
+logoAlt: "Canadian Black Nurses Alliance (CBNA) logo"
 instagram: "https://www.instagram.com/cbna.mcgill/?igshid=YmMyMTA2M2Y%3D"
 acceptingMembers: false
 order: 30

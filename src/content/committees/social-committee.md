@@ -2,6 +2,8 @@
 name: Nursing Social Committee
 slug: social-committee
 shortDescription: The role of the Social Committee is to organize various social events throughout the year to help the McGill nursing community (BScN & BNI) get more involved.
+logo: ../../assets/uploads/social-committee-logo.png
+logoAlt: "Nursing Social Committee logo"
 instagram: "https://www.instagram.com/nussocialcommittee/?hl=en"
 contactEmail: social.nus@mail.mcgill.ca
 acceptingMembers: false

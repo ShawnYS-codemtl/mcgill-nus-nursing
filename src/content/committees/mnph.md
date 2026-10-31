@@ -2,6 +2,8 @@
 name: McGill Nurses for Planetary Health (MNPH)
 slug: mnph
 shortDescription: McGill Nurses for Planetary Health (MNPH) is one of the many student groups that are members of GAIHN! MNPH advocates for environmental and social justice at the Ingram School of Nursing and the wider community.
+logo: ../../assets/uploads/mnph-logo.png
+logoAlt: "McGill Nurses for Planetary Health (MNPH) logo"
 contactEmail: mnpc.nursing@mcgill.ca
 acceptingMembers: false
 order: 80

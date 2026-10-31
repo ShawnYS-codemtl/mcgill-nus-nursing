@@ -1,0 +1,45 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CommitteeLogo from '../../components/CommitteeLogo.astro';
+import { ROUTES } from '../../config/routes';
+import { getCommitteesWithPages, type Committee } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const committees = await getCommitteesWithPages();
+  return committees.map((committee) => ({ params: { slug: committee.data.slug }, props: { committee } }));
+}
+
+const { committee } = Astro.props as { committee: Committee };
+const { data } = committee;
+const { Content } = await render(committee);
+const shortDescription = data.shortDescription.trim();
+const hasText = !!committee.body?.trim();
+---
+
+<Base title={`${data.name} — McGill NUS`} description={shortDescription || `${data.name}, at the McGill Nursing Undergraduate Society.`}>
+  <article>
+    <h1>{data.name}</h1>
+    {data.acceptingMembers && <p>Recruiting now</p>}
+    <CommitteeLogo committee={committee} />
+    {hasText ? <Content /> : shortDescription && <p>{shortDescription}</p>}
+    {
+      (data.instagram || data.contactEmail) && (
+        <ul>
+          {data.instagram && (
+            <li>
+              <a href={data.instagram}>{data.name} on Instagram</a>
+            </li>
+          )}
+          {data.contactEmail && (
+            <li>
+              Email: <a href={`mailto:${data.contactEmail}`}>{data.contactEmail}</a>
+            </li>
+          )}
+        </ul>
+      )
+    }
+  </article>
+
+  <p><a href={ROUTES.involved}>Back to Get involved</a></p>
+</Base>

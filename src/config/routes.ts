@@ -9,15 +9,19 @@
  * informational pages are keyed by their content file (src/content/pages/
  * <key>.md), and tests/build.test.mjs checks that each builds at its address.
  *
- * Only pages that exist go here. Add News, Get Involved and Resources when
- * their routes are built.
+ * Only pages that exist go here.
  */
 export const ROUTES = {
   home: '/',
   about: '/about/',
+  council: '/about/council/',
   fees: '/about/fees/',
   governance: '/about/governance/',
   ison: '/about/ison/',
   elections: '/about/elections/',
+  involved: '/involved/',
+  /** A committee's own page. Only committees without an external link have one. */
+  committee: (slug: string) => `/involved/${slug}/`,
+  resources: '/resources/',
   contact: '/contact/',
 } as const;

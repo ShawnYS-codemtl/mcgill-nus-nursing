@@ -2,6 +2,8 @@
 name: NUS Equity Committee
 slug: equity-committee
 shortDescription: We want to plan meaningful, enjoyable, and inclusive events for everyone.
+logo: ../../assets/uploads/equity-committee-logo.jpg
+logoAlt: "NUS Equity Committee logo"
 instagram: "https://www.instagram.com/equitynus/"
 acceptingMembers: false
 order: 100

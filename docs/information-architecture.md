@@ -96,7 +96,7 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/listserv` | `/submit/` |
 | `/calendar` | `/news/` |
 | `/contact` | `/contact/` — **no rule**, as for `/about` |
-| `/general-8` | `/resources/#mistreatment` |
+| `/general-8` | `/resources/#student-mistreatment-policy` (the anchor is the resource's filename) |
 | `/general-8-1` | `/involved/equity-committee/` |
 | `/general-9` | `/news/21st-century-fund/` |
 | `/canadian-nursing-students-associati` | `/involved/cnsa/` |

@@ -2,6 +2,8 @@
 name: Canadian Nursing Students' Association (CNSA)
 slug: cnsa
 shortDescription: The Canadian Nursing Students’ Association (CNSA) is the national voice of Canadian nursing students in diploma and baccalaureate registered nursing programs.
+logo: ../../assets/uploads/cnsa-logo.png
+logoAlt: "Canadian Nursing Students' Association (CNSA) logo"
 acceptingMembers: false
 order: 10
 published: true

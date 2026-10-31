@@ -1,0 +1,6 @@
+title: "Fixture: site page"
+category: Governance
+description: Fixture resource linking to one of our pages.
+link: /about/governance/
+order: 10
+published: true

@@ -1,0 +1,20 @@
+---
+import CommitteeLogo from './CommitteeLogo.astro';
+import { ROUTES } from '../config/routes';
+import type { Committee } from '../lib/content';
+
+interface Props {
+  committee: Committee;
+}
+
+const { data } = Astro.props.committee;
+---
+
+<li>
+  <h2>
+    <a href={data.externalLink ?? ROUTES.committee(data.slug)}>{data.name}</a>
+  </h2>
+  <CommitteeLogo committee={Astro.props.committee} />
+  {data.shortDescription.trim() && <p>{data.shortDescription}</p>}
+  {data.acceptingMembers && <p>Recruiting now</p>}
+</li>
