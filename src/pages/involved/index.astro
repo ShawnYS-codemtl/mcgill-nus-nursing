@@ -1,0 +1,24 @@
+---
+// /involved/: every committee and club, edited in Pages CMS → Committees &
+// clubs.
+import Base from '../../layouts/Base.astro';
+import CommitteeCard from '../../components/CommitteeCard.astro';
+import { getCommittees } from '../../lib/content';
+
+const committees = await getCommittees();
+---
+
+<Base title="Get involved — McGill NUS" description="Committees and clubs run by and for McGill nursing students.">
+  <h1>Get involved</h1>
+  {
+    committees.length === 0 ? (
+      <p>No committees listed yet. Check back soon.</p>
+    ) : (
+      <ul>
+        {committees.map((committee) => (
+          <CommitteeCard committee={committee} />
+        ))}
+      </ul>
+    )
+  }
+</Base>

@@ -6,17 +6,18 @@
 // just lands the visitor on the 404 page. Either way the old link in an
 // Instagram bio or a McGill page stops working, and nobody hears about it.
 //
-// The last three tests are the ones content can break. A committee's or a
+// The last four tests are the ones content can break. A committee's or a
 // post's web address is editable in Pages CMS, so renaming one, hiding it, or
 // giving it an external link quietly orphans the redirect that points at it.
-// So is every heading on the six informational pages, and a heading is what a
-// "#anchor" redirect lands on. CI runs on every CMS commit, so the red X on
+// Hiding or deleting a resource does the same to its /resources/#anchor. And
+// every heading on the six informational pages is editable, and a heading is
+// what a "#anchor" redirect lands on. CI runs on every CMS commit, so the red X on
 // main is the warning.
 //
 // Cloudflare's rules: https://developers.cloudflare.com/pages/configuration/redirects/
 
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import { parse } from 'yaml';
@@ -128,6 +129,23 @@ test('every /news/<slug>/ target is a published post with its own page', () => {
     );
     assert.ok(!post.data.externalLink, `${rule.where} points at /news/${slug}/, but ${post.file} links somewhere else instead, so it has no page.`);
     assert.equal(post.data.published, true, `${rule.where} points at /news/${slug}/, but ${post.file} isn't published.`);
+  }
+});
+
+test('every /resources/#anchor is a published resource', () => {
+  // A resource's heading id is its filename, which the CMS can't rename, so
+  // only hiding or deleting the resource breaks one of these.
+  for (const rule of rules) {
+    const [target, anchor] = rule.destination.split('#');
+    if (target !== '/resources/' || !anchor) continue;
+
+    const file = `src/content/resources/${anchor}.yml`;
+    assert.ok(
+      existsSync(file),
+      `${rule.where} sends visitors to ${rule.destination}, but there is no ${file}. ` +
+        `The anchor must be a resource's filename (without .yml).`
+    );
+    assert.notEqual(parse(readFileSync(file, 'utf8')).published, false, `${rule.where} points at ${file}, which isn't shown on the site.`);
   }
 });
 

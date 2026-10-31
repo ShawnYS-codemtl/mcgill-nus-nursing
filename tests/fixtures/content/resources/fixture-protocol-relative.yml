@@ -1,0 +1,7 @@
+# Passes the CMS form's "starts with /" rule, but points at another site.
+title: "Fixture: protocol-relative"
+category: Financial
+description: Fixture resource whose link goes to another site.
+link: //evil.example/
+order: 10
+published: true

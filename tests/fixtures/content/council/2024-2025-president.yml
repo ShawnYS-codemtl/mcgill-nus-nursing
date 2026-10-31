@@ -1,0 +1,8 @@
+# Last year's council. Site settings says 2025-2026, so this must never show.
+role: President
+term: "2024-2025"
+council: Executive
+vacant: false
+name: OLD-TERM-MARKER
+order: 10
+published: true

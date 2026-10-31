@@ -1,0 +1,13 @@
+# Typed as a mailto: link, which is kept. Its photo is the same file as the
+# President's but must come out the same 4:5 shape.
+role: Director of Logistics
+term: "2025-2026"
+council: Executive
+vacant: false
+name: Fixture Logistics
+program: U2 BScN
+email: mailto:logistics.nus@mail.mcgill.ca
+photo: ../../assets/uploads/test.png
+roleDescription: Keeps things moving.
+order: 20
+published: true

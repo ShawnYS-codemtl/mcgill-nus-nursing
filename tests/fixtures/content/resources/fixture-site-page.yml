@@ -1,0 +1,8 @@
+# A page on this site, which is allowed. A second "Learn more" link, so the
+# test can check the two are told apart.
+title: "Fixture: site page"
+category: Governance
+description: Fixture resource linking to one of our pages.
+link: /about/governance/
+order: 10
+published: true

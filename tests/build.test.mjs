@@ -232,3 +232,165 @@ test('the nav and the "Page not found" page link only to pages that were built',
   }
   assert.match(read('about/fees'), /<a href="\/about\/fees\/" aria-current="page">/, 'the nav should mark the current page');
 });
+
+/** The text of every <hN> on a page, in order, without tags. */
+const headings = (html, level) =>
+  [...html.matchAll(new RegExp(`<h${level}[^>]*>([\\s\\S]*?)</h${level}>`, 'g'))].map(([, text]) =>
+    text
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&#39;/g, "'")
+      .trim()
+  );
+
+/** The <li> that holds one council position or committee card, found by its heading. */
+const card = (html, level, heading) => {
+  const match = html.match(new RegExp(`<li[^>]*>\\s*<h${level}[^>]*>(?:(?!</li>)[\\s\\S])*?${heading}[\\s\\S]*?</li>`));
+  assert.ok(match, `no card headed "${heading}"`);
+  return match[0];
+};
+
+test('the council page shows the current term only, Executive Council before General Council, each in order', () => {
+  const html = read('about/council');
+  assert.deepEqual(headings(html, 1), ['Council 2025–26'], 'the heading must name the term shown');
+  assert.deepEqual(headings(html, 2), ['Executive Council', 'General Council']);
+  assert.deepEqual(headings(html, 3), ['President', 'Director of Logistics', 'U3 BScN Representative', 'U0 BScN Representative']);
+
+  for (const [file, page] of allHtml()) {
+    assert.ok(!page.includes('OLD-TERM-MARKER'), `last year's council appears in ${file}`);
+    assert.ok(!page.includes('UNPUBLISHED-COUNCIL-MARKER'), `a hidden council entry appears in ${file}`);
+  }
+  assert.doesNotMatch(log, /No council entries for/, 'the current term has entries, so there should be no fallback');
+});
+
+test('a vacant position says it is open and links to Elections', () => {
+  const vacant = card(read('about/council'), 3, 'U0 BScN Representative');
+  assert.match(vacant, /Position open/);
+  assert.match(vacant, /Represents the U0 cohort\./, 'the role description should still show');
+  assert.match(vacant, /<a href="\/about\/elections\/"[^>]*>/);
+});
+
+test('a council email that isn\'t an address is dropped and logged; a mailto: one is kept', () => {
+  const html = read('about/council');
+  assert.ok(!html.includes('example.com/mail'), 'the web link in an email field reached the page');
+  assert.match(log, /U3 BScN Representative \(2025-2026\): "http:\/\/example\.com\/mail" ignored, because it isn't an email address/);
+  assert.match(html, /<a href="mailto:logistics\.nus@mail\.mcgill\.ca"[^>]*>logistics\.nus@mail\.mcgill\.ca<\/a>/);
+});
+
+test('every council photo is held to the same 4:5 shape, with an empty alt because the name is beside it', () => {
+  const html = read('about/council');
+  const photos = imageTags(html);
+  assert.equal(photos.length, 3, `expected three photos, got:\n${photos.join('\n')}`);
+  for (const tag of photos) {
+    assert.match(tag, /\salt(="")?[\s>]/, `a council photo has alt text: ${tag}`);
+    assert.match(tag, /width="400" height="500"/, `a council photo isn't 4:5: ${tag}`);
+    assert.match(tag, /data-astro-image-fit="cover"/, `a council photo isn't cropped to fill: ${tag}`);
+  }
+  // The fixture photo is 240×160, smaller than 400×500. Astro won't enlarge
+  // it, so only this rule keeps it 4:5 on screen.
+  assert.match(html, /aspect-ratio:4\/5/, 'the rule that holds small photos to 4:5 is missing');
+});
+
+test('resource categories come in a fixed order, and each resource heading\'s id is its filename', () => {
+  const html = read('resources');
+  assert.deepEqual(headings(html, 2), ['Academic', 'Financial', 'Wellbeing & Safety', 'Governance'], 'an empty category should be left out');
+  const ids = [...html.matchAll(/<h3 id="([^"]+)"/g)].map(([, id]) => id);
+  assert.deepEqual(ids, ['fixture-handbook', 'fixture-textbooks', 'fixture-protocol-relative', 'the-well-office', 'fixture-site-page']);
+  for (const [file, page] of allHtml()) assert.ok(!page.includes('HIDDEN-RESOURCE-MARKER'), `a hidden resource appears in ${file}`);
+});
+
+test('a blank line in a resource description starts a new paragraph', () => {
+  assert.match(read('resources'), /<p>FIRST-PARAGRAPH-MARKER<\/p>\s*<p>SECOND-PARAGRAPH-MARKER<\/p>/);
+});
+
+test('a resource link that is neither https:// nor a page on this site is dropped, and the resource still shows', () => {
+  const html = read('resources');
+  assert.doesNotMatch(html, /href="\/\//, 'a link to another site reached the page');
+  assert.match(log, /"Fixture: protocol-relative": link "\/\/evil\.example\/" ignored/);
+  assert.match(log, /"Fixture: handbook": link "javascript:alert\(1\)" ignored/);
+  assert.doesNotMatch(card(html, 3, 'Fixture: handbook'), /<a /);
+  assert.match(html, /<a href="\/about\/governance\/"/, 'a page on this site is a valid link');
+});
+
+test('resource links each have an accessible name that starts with the words on screen and names the resource', () => {
+  const links = [...read('resources').matchAll(/<a href="[^"]*" aria-label="([^"]*)">\s*([^<]*?)\s*<\/a>/g)].map(([, name, text]) => ({ name, text }));
+  assert.deepEqual(
+    links.map(({ text }) => text),
+    ['Browse the folder', 'Learn more', 'Learn more'],
+    'a blank Link text should read "Learn more"'
+  );
+  const names = links.map(({ name }) => name);
+  assert.equal(new Set(names).size, names.length, `two links share an accessible name: ${names.join(' | ')}`);
+  for (const { name, text } of links) assert.ok(name.startsWith(text), `"${name}" doesn't start with the visible "${text}"`);
+});
+
+test('the build log flags resource links last checked over a year ago, and lists the never-checked ones in one line', () => {
+  assert.match(log, /"Fixture: handbook": link last checked on 2024-01-01, over a year ago/);
+  const lines = log.split('\n').filter((line) => line.includes('Resources whose link was never checked:'));
+  assert.equal(lines.length, 1, `expected the never-checked summary exactly once, got:\n${lines.join('\n')}`);
+  assert.match(lines[0], /"Fixture: protocol-relative", "Fixture: site page", "Fixture: textbooks"\./);
+});
+
+test('only committees without an external link get a page, and an external card links straight out', () => {
+  const built = readdirSync(path.join(outDir, 'involved'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepEqual(built, ['equity-committee', 'logo-no-alt'], 'external and hidden committees get no page');
+
+  const index = read('involved');
+  assert.match(card(index, 2, 'Fixture: external club'), /<a href="https:\/\/example\.com\/club"[^>]*>/);
+  assert.match(card(index, 2, 'NUS Equity Committee'), /<a href="\/involved\/equity-committee\/"[^>]*>/);
+  for (const [file, page] of allHtml()) {
+    assert.ok(!page.includes('EXTERNAL-BODY-MARKER'), `an external committee's text appears in ${file}`);
+    assert.ok(!page.includes('HIDDEN-COMMITTEE-MARKER'), `a hidden committee appears in ${file}`);
+  }
+});
+
+test('two committees with the same web address: the lower Order wins and the build says so', () => {
+  assert.ok(read('involved/equity-committee').includes('EQUITY-BODY-MARKER'));
+  for (const [file, page] of allHtml()) {
+    assert.ok(!page.includes('DUPLICATE-COMMITTEE-MARKER'), `the dropped duplicate appears in ${file}`);
+    assert.ok(!page.includes('Fixture: duplicate equity'), `the dropped duplicate appears in ${file}`);
+  }
+  assert.match(log, /"Fixture: duplicate equity" was left out: its web address "equity-committee" is already used by "NUS Equity Committee"/);
+});
+
+test('a recruiting committee says so in words, on its card and its page', () => {
+  assert.match(card(read('involved'), 2, 'NUS Equity Committee'), /Recruiting now/);
+  assert.match(read('involved/equity-committee'), /Recruiting now/);
+  assert.doesNotMatch(card(read('involved'), 2, 'Fixture: external club'), /Recruiting now/);
+});
+
+test('a committee logo without a description is left out, and the build says so', () => {
+  const equity = card(read('involved'), 2, 'NUS Equity Committee');
+  assert.match(equity, /<img[^>]+alt="NUS Equity Committee logo"/, 'a logo with a description should show');
+  assert.doesNotMatch(card(read('involved'), 2, 'Fixture: logo without a description'), /<img/);
+  // Its page keeps only the picture pasted into its text, made decorative.
+  const images = imageTags(read('involved/logo-no-alt'));
+  assert.equal(images.length, 1, `expected only the pasted picture, got:\n${images.join('\n')}`);
+  assert.match(images[0], /\salt=""/);
+  assert.match(log, /"Fixture: logo without a description": logo left out because it has no description/);
+  assert.match(log, /"Fixture: logo without a description": an image in the committee page has no description \(only its filename, "image\.png"\)/);
+});
+
+test('a committee page shows its Instagram and email, and drops an email that isn\'t an address', () => {
+  const equity = read('involved/equity-committee');
+  assert.match(equity, /<a href="https:\/\/www\.instagram\.com\/equitynus\/"[^>]*>NUS Equity Committee on Instagram<\/a>/);
+  assert.match(equity, /<a href="mailto:equity\.nus@mail\.mcgill\.ca"[^>]*>/);
+  assert.ok(!read('involved/logo-no-alt').includes('not-an-email'));
+  assert.match(log, /contact email "not-an-email" ignored, because it isn't an email address/);
+  assert.match(log, /Committees with no short description, so their card shows only a name: "Fixture: logo without a description"\./);
+});
+
+test('the council, resources and Get Involved pages each have one <h1>, and no heading skips a level', () => {
+  for (const route of ['about/council', 'resources', 'involved', 'involved/equity-committee', 'involved/logo-no-alt']) {
+    const main = read(route).match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
+    const levels = [...main.matchAll(/<h([1-6])[\s>]/g)].map(([, level]) => Number(level));
+    assert.equal(levels.filter((level) => level === 1).length, 1, `/${route}/ should have exactly one <h1>`);
+    levels.reduce((previous, level) => {
+      assert.ok(level <= previous + 1, `/${route}/ jumps from <h${previous}> to <h${level}>`);
+      return level;
+    });
+  }
+});

@@ -1,0 +1,41 @@
+---
+// /about/council/: the council for the term in Site settings, or the newest
+// term with entries if that one has none yet (src/lib/council-term.mjs). The
+// heading always names the term shown, so a stale roster is labelled as one.
+import Base from '../../layouts/Base.astro';
+import CouncilMember from '../../components/CouncilMember.astro';
+import { getCouncil } from '../../lib/content';
+import { formatTerm } from '../../lib/council-term.mjs';
+
+const council = await getCouncil();
+const heading = council ? `Council ${formatTerm(council.term)}` : 'Council';
+const sections = council
+  ? [
+      { title: 'Executive Council', members: council.executive },
+      { title: 'General Council', members: council.general },
+    ].filter(({ members }) => members.length)
+  : [];
+---
+
+<Base
+  title={`${heading} — McGill NUS`}
+  description={`Who's on the McGill Nursing Undergraduate Society ${heading.toLowerCase()}, and how to reach them.`}
+>
+  <h1>{heading}</h1>
+  {
+    council ? (
+      sections.map(({ title, members }) => (
+        <section>
+          <h2>{title}</h2>
+          <ul>
+            {members.map((member) => (
+              <CouncilMember member={member} />
+            ))}
+          </ul>
+        </section>
+      ))
+    ) : (
+      <p>This year's council hasn't been posted yet.</p>
+    )
+  }
+</Base>

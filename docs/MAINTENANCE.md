@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-21
+**Last reviewed:** 2026-10-30
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -39,7 +39,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 Keep this current. A stale map is worse than none.
 
-Directories marked *(planned)* do not exist yet. Phase 0 built the publish loop (posts); the six informational pages and a plain nav followed. Everything unmarked is real and on disk today.
+Directories marked *(planned)* do not exist yet. Phase 0 built the publish loop (posts); the six informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved. Everything unmarked is real and on disk today.
 
 ```
 CLAUDE.md                Project context — read before making structural changes
@@ -65,7 +65,14 @@ src/
                          elections .astro serve /about/fees/ and so on: the
                          informational pages. Each names its file in
                          src/content/pages/ and does nothing else
+    about/council.astro  /about/council/: the council for the term in Site
+                         settings (or the newest term with entries)
     contact.astro        /contact/, the sixth informational page
+    resources/index.astro  /resources/, by category. Each heading's #anchor
+                         is the resource's filename
+    involved/index.astro /involved/: a card per committee or club
+    involved/[slug].astro  /involved/<slug>/, only for committees without an
+                         external link
     404.astro            "Page not found". Don't delete it: without it Cloudflare
                          answers every unknown address with the homepage
   layouts/
@@ -74,10 +81,18 @@ src/
   components/
     InfoPage.astro       Renders one informational page: heading, then text
     Nav.astro            The main nav, from src/config/nav.ts
+    CouncilMember.astro  One council position, or an open seat. Holds every
+                         photo to the same 4:5 shape
+    CommitteeCard.astro  One committee's card on /involved/
   lib/
     content.ts           Soft checks: drops one bad value with a warning
-                         instead of failing the whole build. Also loads the
-                         six pages and logs which are overdue a read-through
+                         instead of failing the whole build. Loads posts, the
+                         six pages, the council, resources and committees,
+                         and logs what's overdue a check
+    settings.ts          Reads Site settings (settings.json); a blank value
+                         falls back to a repo default, never fails the build
+    council-term.mjs     Which council term to show when Site settings names
+                         one with no entries yet
     image-alt.mjs        Images pasted into post or page text get their
                          filename as alt text from the CMS; this makes them
                          decorative
@@ -90,7 +105,9 @@ src/
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
   build.test.mjs         Builds against fixtures; checks drafts, links, images,
-                         the six pages and the nav
+                         the six pages, the nav, the council, resources and
+                         committees
+  council-term.test.mjs  The council term fallback
   redirects.test.mjs     Every redirect is a valid 301 to a page (and heading)
                          that exists
   lib/headings.mjs       Works out a heading's #anchor the way Astro does
@@ -199,7 +216,7 @@ The single most predictable task. Happens every spring after elections. It is a 
 1. In **Council**, create one entry per position for the new term (e.g. `2026-2027`). Fill in name, program, photo, role description, fun fact and email. Pages CMS has **no duplicate button** (checked 2026-10-14), so open last year's entry in a second tab and copy the role description across where the role hasn't changed.
 2. Switch on **Position is vacant** for any position not yet filled. It renders a "position open" card instead of a blank person.
 3. **Do not delete last year's entries.** They become the Past Councils page.
-4. In **Site settings**, change **Current council term** to the new term. This is what flips the site over. Until you do it, the old council keeps showing.
+4. In **Site settings**, change **Current council term** to the new term. This is what flips the site over. Until you do it, the old council keeps showing. Doing it too early is safe: if the new term has no entries yet, the page keeps showing the newest term that has some, its heading names that term ("Council 2025–26"), and the build log says why (`src/lib/council-term.mjs`). It never shows an empty council.
 5. Wait two minutes and check `/about/council/`.
 
 Keep the `{role}.nus@mail.mcgill.ca` email convention. Cohort reps use personal McGill addresses; SSMU roles use `@ssmu.ca`.
@@ -369,6 +386,10 @@ Four things that will actually take the site down. Understand these before chang
 | Build log: "src/content/pages/… has no route, so it isn't on the site" | A page file was added in the repo without finishing [Adding a new page](#adding-a-new-page) | Finish steps 2–5, or delete the file |
 | Build fails: "src/content/pages/… is missing" | One of the six page files was deleted or renamed in the repo. The CMS can't do either, so it was a commit | `git log -- <file>` finds the commit that removed it; `git checkout <that commit>~1 -- <file>` brings it back |
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
+| The council page shows last year's council | Site settings → **Current council term** names a term with no council entries (or none switched on to **Show on the site**), so the page falls back to the newest term that has some. The build log says "No council entries for …, so the roster shows …" | Enter the new council (see [The annual council rollover](#the-annual-council-rollover)), or set Current council term back. If the log shows nothing, the term is still the old one: change it |
+| Build log: "… ignored, because it isn't an email address" | A council email or committee contact email holds something else, often a web link. The address is left off the page | Correct the email in Pages CMS |
+| Build log: "Resources whose link was never checked: …" or "… link last checked on …, over a year ago" | No one has set **Link last checked** on those resources. All fifteen arrived from Wix without it (2026-10-21) | Click each link; if it works, set Link last checked to today in Pages CMS. If it's dead, fix or hide the resource |
+| Build log: "Committees with no short description …" | Those committees' cards show only a name. NPMP and VASC had none on Wix | Ask the council for a sentence each, and add it in Pages CMS |
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
 | Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed, or the `import 'astro:assets'` line in `src/layouts/Base.astro` was. Astro only adds its image stylesheet to pages that import `astro:assets`, so without that line a picture in a page's text shows at full size | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
 | Nobody can add a new editor | The GitHub account that installed Pages CMS is gone | See Landmine 3 |
