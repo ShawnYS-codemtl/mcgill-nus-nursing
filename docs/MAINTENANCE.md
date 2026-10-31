@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-30
+**Last reviewed:** 2026-10-31
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -388,6 +388,7 @@ Four things that will actually take the site down. Understand these before chang
 | Build fails: "src/content/pages/… is missing" | One of the six page files was deleted or renamed in the repo. The CMS can't do either, so it was a commit | `git log -- <file>` finds the commit that removed it; `git checkout <that commit>~1 -- <file>` brings it back |
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
 | The council page shows last year's council | Site settings → **Current council term** names a term with no council entries (or none switched on to **Show on the site**), so the page falls back to the newest term that has some. The build log says "No council entries for …, so the roster shows …" | Enter the new council (see [The annual council rollover](#the-annual-council-rollover)), or set Current council term back. If the log shows nothing, the term is still the old one: change it |
+| You edited `src/content/settings.json` and `npm run dev` still shows the old value (the council term, say) | The dev server reads Site settings once, when it starts, and doesn't watch that file. Council entries and other content do update live. The live site isn't affected: every build reads the file fresh | Stop `npm run dev` and start it again |
 | Build log: "… ignored, because it isn't an email address" | A council email or committee contact email holds something else, often a web link. The address is left off the page | Correct the email in Pages CMS |
 | Build log: "Resources whose link was never checked: …" or "… link last checked on …, over a year ago" | No one has set **Link last checked** on those resources. All fifteen arrived from Wix without it (2026-10-21) | Click each link; if it works, set Link last checked to today in Pages CMS. If it's dead, fix or hide the resource |
 | Build log: "Committees with no short description …" | Those committees' cards show only a name. NPMP and VASC had none on Wix | Ask the council for a sentence each, and add it in Pages CMS |

@@ -58,6 +58,9 @@ function loadSettings(): Settings {
   return settings;
 }
 
+// shortcut: read once per process, and Astro doesn't watch this file, so
+// `npm run dev` shows a settings.json edit only after a restart. Builds start
+// fresh each time. Make Site settings a content collection if that bites.
 let settings: Settings | undefined;
 
 export function getSettings(): Settings {
