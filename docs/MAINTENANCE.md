@@ -84,6 +84,7 @@ src/
     CouncilMember.astro  One council position, or an open seat. Holds every
                          photo to the same 4:5 shape
     CommitteeCard.astro  One committee's card on /involved/
+    CommitteeLogo.astro  A committee's logo, whole, in a square (card and page)
   lib/
     content.ts           Soft checks: drops one bad value with a warning
                          instead of failing the whole build. Loads posts, the

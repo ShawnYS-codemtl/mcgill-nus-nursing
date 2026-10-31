@@ -1,5 +1,3 @@
-# A javascript: link, dropped with a warning while the resource still shows.
-# Checked long ago, so the build log flags it.
 title: "Fixture: handbook"
 category: Academic
 description: Fixture resource with a bad link.

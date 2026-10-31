@@ -1,0 +1,6 @@
+title: "Fixture: tab in link"
+category: Financial
+description: Fixture resource whose link hides a tab, so browsers read it as another site.
+link: "/\t/evil.example/"
+order: 20
+published: true

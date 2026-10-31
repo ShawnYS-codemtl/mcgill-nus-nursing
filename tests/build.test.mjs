@@ -233,7 +233,6 @@ test('the nav and the "Page not found" page link only to pages that were built',
   assert.match(read('about/fees'), /<a href="\/about\/fees\/" aria-current="page">/, 'the nav should mark the current page');
 });
 
-/** The text of every <hN> on a page, in order, without tags. */
 const headings = (html, level) =>
   [...html.matchAll(new RegExp(`<h${level}[^>]*>([\\s\\S]*?)</h${level}>`, 'g'))].map(([, text]) =>
     text
@@ -243,7 +242,6 @@ const headings = (html, level) =>
       .trim()
   );
 
-/** The <li> that holds one council position or committee card, found by its heading. */
 const card = (html, level, heading) => {
   const match = html.match(new RegExp(`<li[^>]*>\\s*<h${level}[^>]*>(?:(?!</li>)[\\s\\S])*?${heading}[\\s\\S]*?</li>`));
   assert.ok(match, `no card headed "${heading}"`);
@@ -286,8 +284,6 @@ test('every council photo is held to the same 4:5 shape, with an empty alt becau
     assert.match(tag, /width="400" height="500"/, `a council photo isn't 4:5: ${tag}`);
     assert.match(tag, /data-astro-image-fit="cover"/, `a council photo isn't cropped to fill: ${tag}`);
   }
-  // The fixture photo is 240×160, smaller than 400×500. Astro won't enlarge
-  // it, so only this rule keeps it 4:5 on screen.
   assert.match(html, /aspect-ratio:4\/5/, 'the rule that holds small photos to 4:5 is missing');
 });
 
@@ -295,7 +291,7 @@ test('resource categories come in a fixed order, and each resource heading\'s id
   const html = read('resources');
   assert.deepEqual(headings(html, 2), ['Academic', 'Financial', 'Wellbeing & Safety', 'Governance'], 'an empty category should be left out');
   const ids = [...html.matchAll(/<h3 id="([^"]+)"/g)].map(([, id]) => id);
-  assert.deepEqual(ids, ['fixture-handbook', 'fixture-textbooks', 'fixture-protocol-relative', 'the-well-office', 'fixture-site-page']);
+  assert.deepEqual(ids, ['fixture-handbook', 'fixture-textbooks', 'fixture-protocol-relative', 'fixture-tab-link', 'the-well-office', 'fixture-site-page']);
   for (const [file, page] of allHtml()) assert.ok(!page.includes('HIDDEN-RESOURCE-MARKER'), `a hidden resource appears in ${file}`);
 });
 
@@ -305,8 +301,9 @@ test('a blank line in a resource description starts a new paragraph', () => {
 
 test('a resource link that is neither https:// nor a page on this site is dropped, and the resource still shows', () => {
   const html = read('resources');
-  assert.doesNotMatch(html, /href="\/\//, 'a link to another site reached the page');
+  assert.ok(!html.includes('evil.example'), 'a link to another site reached the page');
   assert.match(log, /"Fixture: protocol-relative": link "\/\/evil\.example\/" ignored/);
+  assert.match(log, /"Fixture: tab in link": link "\/\t\/evil\.example\/" ignored/);
   assert.match(log, /"Fixture: handbook": link "javascript:alert\(1\)" ignored/);
   assert.doesNotMatch(card(html, 3, 'Fixture: handbook'), /<a /);
   assert.match(html, /<a href="\/about\/governance\/"/, 'a page on this site is a valid link');
@@ -328,7 +325,8 @@ test('the build log flags resource links last checked over a year ago, and lists
   assert.match(log, /"Fixture: handbook": link last checked on 2024-01-01, over a year ago/);
   const lines = log.split('\n').filter((line) => line.includes('Resources whose link was never checked:'));
   assert.equal(lines.length, 1, `expected the never-checked summary exactly once, got:\n${lines.join('\n')}`);
-  assert.match(lines[0], /"Fixture: protocol-relative", "Fixture: site page", "Fixture: textbooks"\./);
+  const listed = [...lines[0].matchAll(/"([^"]+)"/g)].map(([, title]) => title).sort();
+  assert.deepEqual(listed, ['Fixture: protocol-relative', 'Fixture: site page', 'Fixture: tab in link', 'Fixture: textbooks']);
 });
 
 test('only committees without an external link get a page, and an external card links straight out', () => {
@@ -364,9 +362,11 @@ test('a recruiting committee says so in words, on its card and its page', () => 
 
 test('a committee logo without a description is left out, and the build says so', () => {
   const equity = card(read('involved'), 2, 'NUS Equity Committee');
-  assert.match(equity, /<img[^>]+alt="NUS Equity Committee logo"/, 'a logo with a description should show');
+  assert.match(equity, /<img[^>]+alt="NUS Equity Committee logo"[^>]+data-astro-image-fit="contain"/, 'a logo with a description should show, whole');
+  for (const route of ['involved', 'involved/equity-committee']) {
+    assert.match(read(route), /aspect-ratio:1[;}]/, `/${route}/ is missing the rule that keeps every logo square`);
+  }
   assert.doesNotMatch(card(read('involved'), 2, 'Fixture: logo without a description'), /<img/);
-  // Its page keeps only the picture pasted into its text, made decorative.
   const images = imageTags(read('involved/logo-no-alt'));
   assert.equal(images.length, 1, `expected only the pasted picture, got:\n${images.join('\n')}`);
   assert.match(images[0], /\salt=""/);

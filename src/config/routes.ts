@@ -9,7 +9,7 @@
  * informational pages are keyed by their content file (src/content/pages/
  * <key>.md), and tests/build.test.mjs checks that each builds at its address.
  *
- * Only pages that exist go here. Add News when its index is built.
+ * Only pages that exist go here.
  */
 export const ROUTES = {
   home: '/',

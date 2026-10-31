@@ -1,0 +1,20 @@
+---
+import { Image } from 'astro:assets';
+import type { Committee } from '../lib/content';
+
+interface Props {
+  committee: Committee;
+}
+
+const { logo, logoAlt } = Astro.props.committee.data;
+---
+
+{logo && logoAlt && <Image src={logo} alt={logoAlt} width={240} height={240} fit="contain" />}
+
+<style>
+  /* fit="contain" shrinks the file without adding bars, and
+     this rule keeps the box square whatever shape the file comes out. */
+  img {
+    aspect-ratio: 1 / 1;
+  }
+</style>

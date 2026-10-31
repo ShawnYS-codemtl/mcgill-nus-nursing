@@ -1,10 +1,7 @@
 ---
-// /involved/<slug>/: a committee's own page. Only committees without an
-// external link get one, which is what the CMS help text promises and what
-// tests/redirects.test.mjs checks for the old Wix addresses.
-import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import CommitteeLogo from '../../components/CommitteeLogo.astro';
 import { ROUTES } from '../../config/routes';
 import { getCommitteesWithPages, type Committee } from '../../lib/content';
 
@@ -17,9 +14,6 @@ const { committee } = Astro.props as { committee: Committee };
 const { data } = committee;
 const { Content } = await render(committee);
 const shortDescription = data.shortDescription.trim();
-// The CMS shows the short description on the card. Here the page text speaks
-// for itself, and the imported texts open with the same words, so it's shown
-// only when there is no page text.
 const hasText = !!committee.body?.trim();
 ---
 
@@ -27,10 +21,7 @@ const hasText = !!committee.body?.trim();
   <article>
     <h1>{data.name}</h1>
     {data.acceptingMembers && <p>Recruiting now</p>}
-    {
-      /* src/lib/content.ts has already dropped a logo with no description. */
-      data.logo && data.logoAlt && <Image class="logo" src={data.logo} alt={data.logoAlt} width={240} height={240} fit="contain" />
-    }
+    <CommitteeLogo committee={committee} />
     {hasText ? <Content /> : shortDescription && <p>{shortDescription}</p>}
     {
       (data.instagram || data.contactEmail) && (
@@ -52,11 +43,3 @@ const hasText = !!committee.body?.trim();
 
   <p><a href={ROUTES.involved}>Back to Get involved</a></p>
 </Base>
-
-<style>
-  /* As in src/components/CommitteeCard.astro: the logo, whole, in a square.
-     Only the logo: images in the page text keep their own shape. */
-  .logo {
-    aspect-ratio: 1 / 1;
-  }
-</style>

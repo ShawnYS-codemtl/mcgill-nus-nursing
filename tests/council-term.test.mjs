@@ -1,7 +1,3 @@
-// Which council /about/council/ shows (src/lib/council-term.mjs). The page
-// must never go empty because an exec switched Site settings to the new term
-// before entering the new council, so the newest term with entries stands in.
-
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { formatTerm, pickTerm } from '../src/lib/council-term.mjs';

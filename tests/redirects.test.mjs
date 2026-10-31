@@ -6,13 +6,12 @@
 // just lands the visitor on the 404 page. Either way the old link in an
 // Instagram bio or a McGill page stops working, and nobody hears about it.
 //
-// The last four tests are the ones content can break. A committee's or a
-// post's web address is editable in Pages CMS, so renaming one, hiding it, or
-// giving it an external link quietly orphans the redirect that points at it.
-// Hiding or deleting a resource does the same to its /resources/#anchor. And
-// every heading on the six informational pages is editable, and a heading is
-// what a "#anchor" redirect lands on. CI runs on every CMS commit, so the red X on
-// main is the warning.
+// A committee's or a post's web address is editable in Pages CMS, so renaming
+// one, hiding it, or giving it an external link quietly orphans the redirect
+// that points at it. Hiding or deleting a resource does the same to its
+// /resources/#anchor. And every heading on the six informational pages is
+// editable, and a heading is what a "#anchor" redirect lands on. CI runs on
+// every CMS commit, so the red X on main is the warning.
 //
 // Cloudflare's rules: https://developers.cloudflare.com/pages/configuration/redirects/
 
@@ -133,8 +132,6 @@ test('every /news/<slug>/ target is a published post with its own page', () => {
 });
 
 test('every /resources/#anchor is a published resource', () => {
-  // A resource's heading id is its filename, which the CMS can't rename, so
-  // only hiding or deleting the resource breaks one of these.
   for (const rule of rules) {
     const [target, anchor] = rule.destination.split('#');
     if (target !== '/resources/' || !anchor) continue;

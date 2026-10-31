@@ -1,7 +1,5 @@
 ---
-// One council position on /about/council/: a person, or an open seat. The
-// words are the council's, edited in Pages CMS → Council. src/lib/content.ts
-// has already dropped an email that isn't an address.
+// The words are the council's, edited in Pages CMS → Council.
 import { Image } from 'astro:assets';
 import { ROUTES } from '../config/routes';
 import type { CouncilMember } from '../lib/content';
@@ -31,8 +29,6 @@ const { data } = Astro.props.member;
       </>
     ) : (
       <>
-        {/* The alt is empty because the name is right beside it: a screen
-            reader would otherwise read the name twice. */}
         {data.photo && <Image src={data.photo} alt="" width={400} height={500} fit="cover" />}
         {data.name && <p>{data.name}</p>}
         {data.program && <p>{data.program}</p>}
@@ -63,8 +59,7 @@ const { data } = Astro.props.member;
 </li>
 
 <style>
-  /* Not decoration: every photo is the same shape, whatever was uploaded.
-     fit="cover" crops a large photo to 4:5, but Astro never enlarges, so a
+  /* fit="cover" crops a large photo to 4:5, but Astro never enlarges, so a
      photo smaller than 400×500 would keep its own shape without this rule. */
   img {
     aspect-ratio: 4 / 5;

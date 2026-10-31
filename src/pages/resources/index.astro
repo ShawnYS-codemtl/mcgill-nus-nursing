@@ -1,17 +1,11 @@
 ---
 // /resources/: the student services directory, by category. Entries are
-// edited in Pages CMS → Resources; src/lib/content.ts sorts them and drops a
-// bad link.
-//
-// Each resource's heading id is its filename, which the CMS can't change
-// (decision 5a), so links like /resources/#student-mistreatment-policy keep
-// working when a title is reworded. public/_redirects depends on that.
+// edited in Pages CMS → Resources.
 import Base from '../../layouts/Base.astro';
 import { getResources } from '../../lib/content';
 
 const groups = await getResources();
 
-/** The CMS saves a description as plain text; a blank line starts a new paragraph. */
 const paragraphs = (text: string) =>
   text
     .split(/\n\s*\n/)
@@ -40,9 +34,6 @@ const paragraphs = (text: string) =>
                   {paragraphs(data.description).map((paragraph) => (
                     <p>{paragraph}</p>
                   ))}
-                  {/* The accessible name starts with the words on screen, so voice
-                      control still finds it, and adds the title, so a list of
-                      "Learn more" links can be told apart (WCAG 2.5.3, 2.4.4). */}
                   {data.link && (
                     <p>
                       <a href={data.link} aria-label={`${label}: ${data.title}`}>

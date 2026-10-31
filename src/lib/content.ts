@@ -111,9 +111,8 @@ const CONTENT_DIR = process.env.CONTENT_DIR ?? 'src/content';
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 /**
- * The build date a year back. "Last checked" dates are compared with it, so a
- * page or resource turns stale at the first Save of anything after its
- * anniversary.
+ * "Last checked" dates are compared with the build date, so a page or
+ * resource turns stale at the first Save of anything after its anniversary.
  */
 function aYearAgo(): Date {
   const today = new Date();
@@ -181,11 +180,6 @@ export async function getInfoPage(name: InfoPageName): Promise<Page> {
   return page;
 }
 
-/**
- * An email address typed into the CMS, bare or as a mailto: link, as a bare
- * address. Anything else is undefined: Wix had an http:// link in an email
- * field, which as a mailto: would open a broken draft.
- */
 function emailAddress(value: string): string | undefined {
   const address = value.trim().replace(/^mailto:/i, '');
   return /^[^\s@:/]+@[^\s@:/]+\.[^\s@:/]+$/.test(address) ? address : undefined;
@@ -252,19 +246,17 @@ export function getCouncil(): Promise<Council | undefined> {
   return councilPending;
 }
 
-export type Resource = CollectionEntry<'resources'>;
-type ResourceCategory = Resource['data']['category'];
+type ResourceEntry = CollectionEntry<'resources'>;
+type ResourceCategory = ResourceEntry['data']['category'];
+
+/** A published resource. Its link is undefined when the one saved in the CMS isn't safe to show. */
+export type Resource = Omit<ResourceEntry, 'data'> & { data: Omit<ResourceEntry['data'], 'link'> & { link?: string } };
 
 export interface ResourceGroup {
   category: ResourceCategory;
   resources: Resource[];
 }
 
-/**
- * The order of the sections on /resources/. Keyed by every category, so a
- * category added to the schema but not placed here is a type error rather
- * than a section that silently never shows.
- */
 const CATEGORY_ORDER: Record<ResourceCategory, number> = {
   Academic: 1,
   Financial: 2,
@@ -276,9 +268,13 @@ const CATEGORY_ORDER: Record<ResourceCategory, number> = {
 /**
  * http(s), or a page on this site. "//elsewhere.example" (and "/\elsewhere",
  * which browsers read the same way) is another site, though the CMS form's
- * "starts with /" rule lets it through.
+ * "starts with /" rule lets it through. Browsers drop tabs and line breaks
+ * from a link before reading it, so "/<tab>/elsewhere" is another site too.
  */
-const isResourceLink = (value: string) => isWebLink(value) || /^\/(?![/\\])/.test(value);
+const isResourceLink = (value: string) => {
+  const link = value.replace(/[\t\n\r]/g, '');
+  return isWebLink(link) || /^\/(?![/\\])/.test(link);
+};
 
 async function loadResources(): Promise<ResourceGroup[]> {
   const yearAgo = aYearAgo();
@@ -287,12 +283,11 @@ async function loadResources(): Promise<ResourceGroup[]> {
   const resources = (await getCollection('resources'))
     .filter((resource) => resource.data.published)
     .map((resource) => {
-      const data = { ...resource.data };
+      const data: Resource['data'] = { ...resource.data };
 
-      // The resource still shows, without its link; an empty link means none.
-      if (!isResourceLink(data.link)) {
+      if (!isResourceLink(resource.data.link)) {
         warn(`"${data.title}": link "${data.link}" ignored — links must start with https://, or / for a page on this site`);
-        data.link = '';
+        data.link = undefined;
       }
 
       if (!data.lastVerified) {
@@ -342,7 +337,6 @@ async function loadCommittees(): Promise<Committee[]> {
   for (const committee of published) {
     const data = { ...committee.data };
 
-    // As for posts, but the committee listed first (lower Order) wins.
     const clash = seen.get(data.slug);
     if (clash) {
       warn(
@@ -374,7 +368,6 @@ async function loadCommittees(): Promise<Committee[]> {
 
     if (!data.shortDescription.trim()) noDescription.push(`"${data.name}"`);
 
-    // Only a committee with its own page shows its text.
     if (!data.externalLink) {
       for (const alt of filenameAltImages(committee.body ?? '')) {
         warn(
