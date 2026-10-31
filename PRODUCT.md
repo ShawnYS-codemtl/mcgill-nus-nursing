@@ -78,7 +78,7 @@ This has one sharp consequence. The riskiest assumption in the project — that 
 - Council roster, editable in the CMS, filtered to the current term, Executive and General Council sections. 23 people, photo/name/program/role/fun fact/email each.
 - Resources directory, editable in the CMS — 15 entries across five suggested categories (Academic, Financial, Wellbeing & Safety, Clinical & Professional, Governance).
 - Get Involved: 10–11 committee/club cards, editable in the CMS, with detail pages where real content exists.
-- Informational pages, editable in the CMS: About, Fees, Governance (Constitution & By-Laws), ISoN, Elections, Contact. Editable by execs; the CMS can edit the six but cannot add, rename or delete one, so content changes cannot move a URL or break the nav.
+- Informational pages, editable in the CMS: About, Fees, Governance (Constitution & By-Laws), Elections, Contact. (ISoN became a resource, 2026-10-31.) Editable by execs; the CMS can edit the six but cannot add, rename or delete one, so content changes cannot move a URL or break the nav.
 - Homepage photo gallery, editable in the CMS, so the event photo library stays current rather than freezing at launch.
 - Site settings, editable in the CMS — office hours, address, contact email, social links — degrading to repo defaults rather than failing a build.
 - 301 redirects from all old Wix URLs (`docs/information-architecture.md`).

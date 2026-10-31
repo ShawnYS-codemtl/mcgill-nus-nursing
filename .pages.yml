@@ -121,7 +121,7 @@ content:
           format: markdown
 
   # ---------------------------------------------------------------------------
-  # The six informational pages. Editors change what a page SAYS; they cannot
+  # The informational pages. Editors change what a page SAYS; they cannot
   # add, remove or rename one — that is decision 12a, enforced right here by
   # operations rather than by code. The filename is the route join: about.md
   # is /about/, and so on (see docs/content-schema.md).

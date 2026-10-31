@@ -12,7 +12,7 @@ If you are **not a McGill Entity**, e.g., companies/organizations not involved w
 
 For other **opportunities**, e.g., **job offerings**, fairs, etc., please contact the **NUS Opportunities Director at [opportunities.nus@mail.mcgill.ca](mailto:opportunities.nus@mail.mcgill.ca).**
 
-If you are unsure, please use the **form submission box below**!
+If you are unsure, or want a newsletter sent to the whole student body, please email [nus.nursing@mail.mcgill.ca](mailto:nus.nursing@mail.mcgill.ca).
 
 Thank you!
 

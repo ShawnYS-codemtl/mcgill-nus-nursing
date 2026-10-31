@@ -61,9 +61,9 @@ Drives the homepage, the news index and, later, the email export. The most-used 
 | `pinnedUntil` | Keep at the top until | date | | Pinned posts sort first until this date. **It is checked at build time**, so a pin expires at the first build after the date, which in practice means the next Save of anything. |
 | *(body)* | Post | rich text → Markdown | | Images pasted here are decorative; see *Images in body text are decoration* above. |
 
-## 2. Pages — `src/content/pages/{about,fees,governance,ison,elections,contact}.md`
+## 2. Pages — `src/content/pages/{about,fees,governance,elections,contact}.md`
 
-The six informational pages. Without this collection they would be hard-coded prose. The pages most likely to go stale (Elections is annual, Fees changes by referendum, ISoN needs checking against mcgill.ca) would then need a developer, which is the incumbent site's failure mode all over again.
+The five informational pages. Without this collection they would be hard-coded prose. The pages most likely to go stale (Elections is annual, Fees changes by referendum) would then need a developer, which is the incumbent site's failure mode all over again.
 
 | Field | CMS label | Type | Required | Notes |
 |---|---|---|---|---|
@@ -80,7 +80,7 @@ The six informational pages. Without this collection they would be hard-coded pr
 
 In `.pages.yml` this collection has `create`, `rename` and `delete` all switched off, so editors change what a page *says* and cannot add, remove or move one. That is decision 12a, enforced by configuration rather than code. Adding a seventh page is a developer's job; see `MAINTENANCE.md` → *Adding a new page*. A file here with no route isn't published, and the build log says so.
 
-**All six files always exist.** The CMS can't delete one, and `tests/cms-contract.test.mjs` checks all six are there. If one goes missing anyway, the build fails with a message naming the file. Since 2026-10-21 they hold the old Wix site's text, word for word.
+**All five files always exist.** The CMS can't delete one, and `tests/cms-contract.test.mjs` checks they are all there. If one goes missing anyway, the build fails with a message naming the file. Since 2026-10-21 they hold the old Wix site's text, word for word.
 
 **Headings are link targets.** Astro gives each heading an id made from its text: `## NUS Meeting Minutes` becomes `#nus-meeting-minutes`. The old Wix address `/nus-council-meetings` redirects to that anchor on Governance, so renaming that heading quietly sends visitors to the top of the page instead. `tests/redirects.test.mjs` fails if any `#anchor` redirect to one of the six pages no longer matches a heading.
 
@@ -172,7 +172,7 @@ A plain-language guide for a nursing student with no technical background. Per `
 
 - How to log in (the email invite), write a post, and publish it: switch on **Published**, press **Save**, wait about two minutes
 - Why images need a description, and why **the photo that matters goes in Cover image**: pictures pasted into the text can't be described, so screen readers skip them. Anything a picture says (a poster's date, a schedule) has to be in the text too
-- How to edit one of the six pages, and why pages can't be added or deleted
+- How to edit one of the informational pages, and why pages can't be added or deleted
 - How to add a homepage photo
 - How to update office hours, address and social links in Site settings
 - The annual council rollover, step by step

@@ -24,14 +24,13 @@ const pageExists = (route) => existsSync(path.join(outDir, route, 'index.html'))
 const imageTags = (html) => [...html.matchAll(/<img[^>]*>/g)].map(([tag]) => tag);
 
 /**
- * The six informational pages: content file → the folder its page builds to
+ * The informational pages: content file → the folder its page builds to
  * (CLAUDE.md decision 12a; the addresses are in src/config/routes.ts).
  */
 const INFO_PAGES = {
   about: 'about',
   fees: 'about/fees',
   governance: 'about/governance',
-  ison: 'about/ison',
   elections: 'about/elections',
   contact: 'contact',
 };
@@ -192,14 +191,14 @@ test('an image in a page\'s text whose description is only a filename is treated
 });
 
 test('the build log flags pages last checked over a year ago, and lists the never-checked ones in one line', () => {
-  assert.match(log, /"Fixture: ISoN" was last checked on 2024-09-01, over a year ago/);
+  assert.match(log, /"Fixture: Elections" was last checked on 2024-09-01, over a year ago/);
 
   const lines = log.split('\n').filter((line) => line.includes('Pages never checked:'));
   assert.equal(lines.length, 1, `expected the never-checked summary exactly once, got:\n${lines.join('\n')}`);
   const listed = [...lines[0].matchAll(/"([^"]+)"/g)].map(([, title]) => title).sort();
   assert.deepEqual(
     listed,
-    ['Fixture: About', 'Fixture: Contact', 'Fixture: Elections', 'Fixture: Fees', 'Fixture: Governance'],
+    ['Fixture: About', 'Fixture: Contact', 'Fixture: Fees', 'Fixture: Governance'],
     'blank, null and missing Last checked all count as never checked; a dated page and a page with no route do not'
   );
 });
@@ -392,5 +391,20 @@ test('the council, resources and Get Involved pages each have one <h1>, and no h
       assert.ok(level <= previous + 1, `/${route}/ jumps from <h${previous}> to <h${level}>`);
       return level;
     });
+  }
+});
+
+test('every redirect to one of the site\'s fixed pages lands on a page that was built', () => {
+  // Committee and post pages depend on content, so tests/redirects.test.mjs
+  // checks those against the real entries instead.
+  const rules = readFileSync('public/_redirects', 'utf8')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split(/\s+/));
+  for (const [source, destination] of rules) {
+    const target = destination.split('#')[0];
+    if (/^https?:\/\//.test(target) || /^\/(involved|news)\/[^/]+\//.test(target)) continue;
+    assert.ok(pageExists(target.replace(/^\/|\/$/g, '')), `public/_redirects sends ${source} to ${target}, which wasn't built`);
   }
 });

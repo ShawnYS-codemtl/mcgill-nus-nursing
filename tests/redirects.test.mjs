@@ -9,7 +9,7 @@
 // A committee's or a post's web address is editable in Pages CMS, so renaming
 // one, hiding it, or giving it an external link quietly orphans the redirect
 // that points at it. Hiding or deleting a resource does the same to its
-// /resources/#anchor. And every heading on the six informational pages is
+// /resources/#anchor. And every heading on the informational pages is
 // editable, and a heading is what a "#anchor" redirect lands on. CI runs on
 // every CMS commit, so the red X on main is the warning.
 //
@@ -24,12 +24,11 @@ import { headingIds } from './lib/headings.mjs';
 
 const FILE = 'public/_redirects';
 
-/** The six informational pages, by address (src/config/routes.ts → their content file). */
+/** The informational pages, by address (src/config/routes.ts → their content file). */
 const INFO_PAGES = {
   '/about/': 'about',
   '/about/fees/': 'fees',
   '/about/governance/': 'governance',
-  '/about/ison/': 'ison',
   '/about/elections/': 'elections',
   '/contact/': 'contact',
 };

@@ -39,7 +39,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 Keep this current. A stale map is worse than none.
 
-Directories marked *(planned)* do not exist yet. Phase 0 built the publish loop (posts); the six informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved. Everything unmarked is real and on disk today.
+Directories marked *(planned)* do not exist yet. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved. Everything unmarked is real and on disk today.
 
 ```
 CLAUDE.md                Project context — read before making structural changes
@@ -50,7 +50,7 @@ docs/                    Reference specs (see Documentation map, below)
 src/
   content/               ALL SITE CONTENT. Written by editors via Pages CMS.
     posts/               One .md file per news post
-    pages/               The six informational pages (fixed set, see 12a)
+    pages/               The five informational pages (fixed set, see 12a)
     council/             One .yml per council position per term
     resources/           One .yml per resource
     committees/          One .md per committee or club
@@ -61,13 +61,13 @@ src/
   pages/                 Every URL on the site. File path = URL path.
     index.astro          Post list (becomes the real homepage later)
     news/[slug].astro    One page per published post
-    about/index.astro    /about/. Beside it, fees, governance, ison and
+    about/index.astro    /about/. Beside it, fees, governance and
                          elections .astro serve /about/fees/ and so on: the
                          informational pages. Each names its file in
                          src/content/pages/ and does nothing else
     about/council.astro  /about/council/: the council for the term in Site
                          settings (or the newest term with entries)
-    contact.astro        /contact/, the sixth informational page
+    contact.astro        /contact/, the fifth informational page
     resources/index.astro  /resources/, by category. Each heading's #anchor
                          is the resource's filename
     involved/index.astro /involved/: a card per committee or club
@@ -88,7 +88,7 @@ src/
   lib/
     content.ts           Soft checks: drops one bad value with a warning
                          instead of failing the whole build. Loads posts, the
-                         six pages, the council, resources and committees,
+                         five pages, the council, resources and committees,
                          and logs what's overdue a check
     settings.ts          Reads Site settings (settings.json); a blank value
                          falls back to a repo default, never fails the build
@@ -106,7 +106,7 @@ src/
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
   build.test.mjs         Builds against fixtures; checks drafts, links, images,
-                         the six pages, the nav, the council, resources and
+                         the five pages, the nav, the council, resources and
                          committees
   council-term.test.mjs  The council term fallback
   redirects.test.mjs     Every redirect is a valid 301 to a page (and heading)
@@ -153,7 +153,7 @@ No `.env`, no tokens: the build needs no secrets. `npm run build` produces the r
 
 The tests check the things a build can't catch on its own:
 
-- **`tests/cms-contract.test.mjs`** checks that `.pages.yml` and `src/content.config.ts` still agree: same fields, no field required by the build but optional in the form, same select options, image paths still relative (Landmine 4), the six pages still locked.
+- **`tests/cms-contract.test.mjs`** checks that `.pages.yml` and `src/content.config.ts` still agree: same fields, no field required by the build but optional in the form, same select options, image paths still relative (Landmine 4), the informational pages still locked.
 - **`tests/build.test.mjs`** builds the site against `tests/fixtures/content/`, a set of deliberately awkward content:
   - posts: a draft, a duplicate web address, a `javascript:` link, a cover with no description;
   - pages: one never checked, one last checked in 2024, one with a pasted picture, and a seventh file with no route.
@@ -226,7 +226,7 @@ Keep the `{role}.nus@mail.mcgill.ca` email convention. Cohort reps use personal 
 
 **This is a Pages CMS job, not a code job. Tell the exec so and stop there.**
 
-About, Fees, Governance, ISoN, Elections and Contact are the **Pages** list in Pages CMS. An exec edits the page and saves. Nothing in the repo needs a developer.
+About, Fees, Governance, Elections and Contact are the **Pages** list in Pages CMS. An exec edits the page and saves. Nothing in the repo needs a developer.
 
 Editors can't add, delete or rename these pages, on purpose. See the next entry.
 
@@ -237,7 +237,7 @@ Two things worth a line in the editor's guide:
 
 ### Adding a new page
 
-All in the repo. For a page execs can edit, like the six informational pages:
+All in the repo. For a page execs can edit, like the informational pages:
 
 1. Add `src/content/pages/<name>.md` with a `title`, a `metaDescription` and some placeholder text. It appears in the CMS **Pages** list automatically; `.pages.yml` needs no change.
 2. Add `'<name>'` to `INFO_PAGES` in `src/lib/content.ts`, and its address to `src/config/routes.ts` under the same key.
@@ -383,9 +383,9 @@ Four things that will actually take the site down. Understand these before chang
 | A post vanished after someone edited it | Its web address now matches another post's | The build log warns `was left out: its web address … is already used by …`. Change one |
 | Build log: "an image in the post text has no description (only its filename …)", or the same for "page text" | An editor pasted a picture into a post's or page's text; Pages CMS can't describe those, so it's shown but skipped by screen readers | Nothing is broken. If the picture matters, ask the editor to write what it shows in the text, or, in a post, to make it the Cover image (which takes a description) |
 | Build log: "… was last checked on …, over a year ago" | Nobody has set that page's **Last checked** date in Pages CMS for a year. The page still publishes | Ask a council member to read the page through in Pages CMS, fix anything out of date, and set Last checked to today |
-| Build log: "Pages never checked: …" | Those pages have no Last checked date. All six arrived from Wix without one (2026-10-21), so expect this line until the council has read them | Same as above. Nothing is broken; the line is there so the gap stays visible |
+| Build log: "Pages never checked: …" | Those pages have no Last checked date. All of them arrived from Wix without one (2026-10-21), so expect this line until the council has read them | Same as above. Nothing is broken; the line is there so the gap stays visible |
 | Build log: "src/content/pages/… has no route, so it isn't on the site" | A page file was added in the repo without finishing [Adding a new page](#adding-a-new-page) | Finish steps 2–5, or delete the file |
-| Build fails: "src/content/pages/… is missing" | One of the six page files was deleted or renamed in the repo. The CMS can't do either, so it was a commit | `git log -- <file>` finds the commit that removed it; `git checkout <that commit>~1 -- <file>` brings it back |
+| Build fails: "src/content/pages/… is missing" | One of the page files was deleted or renamed in the repo. The CMS can't do either, so it was a commit | `git log -- <file>` finds the commit that removed it; `git checkout <that commit>~1 -- <file>` brings it back |
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
 | The council page shows last year's council | Site settings → **Current council term** names a term with no council entries (or none switched on to **Show on the site**), so the page falls back to the newest term that has some. The build log says "No council entries for …, so the roster shows …" | Enter the new council (see [The annual council rollover](#the-annual-council-rollover)), or set Current council term back. If the log shows nothing, the term is still the old one: change it |
 | You edited `src/content/settings.json` and `npm run dev` still shows the old value (the council term, say) | The dev server reads Site settings once, when it starts, and doesn't watch that file. Council entries and other content do update live. The live site isn't affected: every build reads the file fresh | Stop `npm run dev` and start it again |

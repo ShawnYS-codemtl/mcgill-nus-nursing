@@ -62,7 +62,7 @@ const posts = defineCollection({
 });
 
 /**
- * The six informational pages. The filename is the route join (about.md →
+ * The informational pages. The filename is the route join (about.md →
  * /about/). The CMS cannot create, rename or delete these files, so the set is
  * fixed in the repo — decision 12a.
  */
