@@ -222,6 +222,65 @@ The requirement was "one post publishes to the web and generates the email." Spl
 
 ---
 
+## 10. Commit messages
+
+Every commit follows [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/), and so does every PR title, because a squash merge turns the title into the commit. The exception is the commits Pages CMS makes when someone saves. They keep the CMS's own messages, because editors never type a message. For the same reason, don't add a commit-message check to CI: it would fail every editor's save.
+
+```
+<type>(<scope>): <summary>
+
+<body: what changed and why, wrapped at 72>
+
+<footer: BREAKING CHANGE, Refs #12, then Co-Authored-By last>
+```
+
+**Type** (required, lowercase):
+
+| Type | Use for |
+|---|---|
+| `feat` | something a visitor or editor can now see or do: a page, a section, a CMS field |
+| `fix` | something that was wrong for a visitor or editor, now right |
+| `docs` | `CLAUDE.md`, `MAINTENANCE.md`, `docs/`, code comments |
+| `style` | code formatting only. **Not CSS:** a visual change is `feat` or `fix` |
+| `refactor` | code that changes nothing a visitor or editor would notice |
+| `perf` | faster pages or smaller output |
+| `test` | `tests/` and fixtures only |
+| `build` | `package.json`, `astro.config.*`, dependencies |
+| `ci` | `.github/workflows/` |
+| `chore` | anything that fits none of the above |
+| `revert` | undoing an earlier commit |
+
+**Scope** (optional): one lowercase word naming the area, e.g. `news`, `council`, `resources`, `involved`, `pages`, `gallery`, `settings`, `cms` (`.pages.yml`), `redirects`, `design`. Leave it out of a change that cuts across areas instead of inventing one.
+
+**Summary:**
+- imperative, lowercase, no full stop. It should complete "If applied, this commit will …"
+- the whole first line is at most 72 characters (GitHub truncates there); aim for 50
+- one logical change per commit. If the summary needs "and", it's probably two commits
+
+**Body:** skip it when the summary says everything. Otherwise leave a blank line after the summary, wrap at 72, and say *what* and *why*. The diff already shows *how*.
+
+**Breaking changes:** add `!` before the colon and a `BREAKING CHANGE: <what breaks, what to do>` footer. In this project that means removing or renaming a public URL without a redirect, renaming a CMS field, or tightening a schema so existing content files no longer build.
+
+**Examples:**
+
+```
+feat(council): add roster page filtered by current term
+fix(pages): keep pasted images inside the column
+docs: record the Desk by the Window direction
+ci: run verify on every PR and push to main
+feat(cms)!: rename post field "summary" to "description"
+```
+
+```
+fix(redirects): send /listserv to Contact
+
+The listserv sign-up was a Wix form and goes with Wix, so /listserv
+pointed at /submit/, which was never built. Contact now tells
+students to email the club instead.
+```
+
+---
+
 ## 11. Documentation upkeep — standing rules
 
 Two audiences, two documents, and they must not be merged:
