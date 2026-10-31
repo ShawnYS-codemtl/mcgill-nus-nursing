@@ -2,6 +2,8 @@
 name: Swab the World
 slug: swab-the-world
 shortDescription: MSS Swab The World aims to make blood cancer a fairer fight for all Canadians by building awareness for the critical need of stem cell donors; in particular, in underrepresented ethnic groups, and recruiting informed and committed individuals to register to become stem cell donors at McGill University and in the greater Montreal community.
+logo: ../../assets/uploads/swab-the-world-logo.png
+logoAlt: "Swab the World logo"
 contactEmail: swabtheworldmcgill@gmail.com
 acceptingMembers: false
 order: 40

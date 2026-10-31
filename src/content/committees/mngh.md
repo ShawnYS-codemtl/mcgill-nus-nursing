@@ -2,6 +2,8 @@
 name: McGill Nurses for Global Health (MNGH)
 slug: mngh
 shortDescription: McGill Nurses for Global Health (MNGH) is a group of undergraduate and graduate students who are committed to addressing issues of global health and structural health inequity from a nursing perspective.
+logo: ../../assets/uploads/mngh-logo.jpg
+logoAlt: "McGill Nurses for Global Health (MNGH) logo"
 contactEmail: globalhealth.nus@mail.mcgill.ca
 acceptingMembers: false
 order: 70

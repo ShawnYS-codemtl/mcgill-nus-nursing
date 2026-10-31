@@ -2,6 +2,8 @@
 name: Graduation Committee
 slug: graduation-committee
 shortDescription: The role of the Graduation Committee will consist of organizing the graduation gala, which includes voting on decisions such as the theme (if we want one), venues, decorations, photographs, etc.
+logo: ../../assets/uploads/graduation-committee-logo.png
+logoAlt: "Graduation Committee logo"
 contactEmail: graduation.nus@mail.mcgill.ca
 acceptingMembers: false
 order: 60
