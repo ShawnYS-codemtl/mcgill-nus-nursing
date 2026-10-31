@@ -40,7 +40,7 @@ Several Google Drive links are load-bearing. If they sit in a graduating student
 - [ ] Elective courses PDF
 - [ ] EN-FR nursing dictionary PDF
 - [ ] Meeting minutes folders — Fall 2024, Winter 2025, Fall 2025, Winter 2026
-- [ ] Listserv submission form (currently a Microsoft Form)
+- [x] Listserv submission form: it is a Wix form, so it goes with Wix. Not replaced; the Contact page says to email `nus.nursing@mail.mcgill.ca` (decided 2026-10-31)
 - [ ] Mistreatment report form — verify this is McGill-owned, and leave it there
 
 ## Content preparation

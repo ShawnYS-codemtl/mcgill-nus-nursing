@@ -56,7 +56,7 @@ GitHub repo (NUS-owned)  ← this repo; THE CONTENT LIVES HERE
   ├── src/content/council/      (roster, filtered by term)
   ├── src/content/resources/    (student services directory)
   ├── src/content/committees/   (get-involved cards + detail)
-  ├── src/content/pages/        (the six informational pages, fixed set)
+  ├── src/content/pages/        (the five informational pages, fixed set)
   ├── src/content/gallery/      (homepage event photos)
   ├── src/content/settings.json (address, office hours, socials, current term)
   └── src/assets/uploads/       (every uploaded image)
@@ -129,11 +129,11 @@ The requirement was "one post publishes to the web and generates the email." Spl
 ### MVP — must ship by October
 
 - `[MVP]` **Homepage as newsletter:** latest post in full or as a lead card, recent posts below, featured links block, land acknowledgement.
-- `[MVP]` News/post system, editable in the CMS: index, detail pages, dates, author (role, not person), optional cover image.
+- `[MVP]` News/post system, editable in the CMS: the homepage is the index (no separate `/news/` list until posts outgrow it), detail pages, dates, author (role, not person), optional cover image.
 - `[MVP]` **Council roster**, editable in the CMS, filtered to the current term. Executive and General Council sections, photo/name/program/role/fun fact/email per member. Handles a VACANT row gracefully.
 - `[MVP]` **Resources directory**, editable in the CMS — the 15 existing entries, grouped by category, each with title, description, outbound link.
 - `[MVP]` Get Involved: committee/club cards, editable in the CMS, with detail pages for the ones that have real content.
-- `[MVP]` **Informational pages, editable in the CMS:** About, Fees, Governance (Constitution & By-Laws), ISoN, Elections, Contact. Content lives in `src/content/pages/`; the CMS can edit the six but cannot add, rename or delete one. Execs edit what a page says, never where it lives. See decision 12.
+- `[MVP]` **Informational pages, editable in the CMS:** About, Fees, Governance (Constitution & By-Laws), Elections, Contact. Content lives in `src/content/pages/`; the CMS can edit the five but cannot add, rename or delete one. Execs edit what a page says, never where it lives. See decision 12.
 - `[MVP]` **Homepage photo gallery**, editable in the CMS, so the event photo library doesn't freeze at launch.
 - `[MVP]` **Site settings, editable in the CMS:** office hours, address, contact email, social links. Degrades to repo defaults, never fails a build.
 - `[MVP]` Contact page: office info, address, email, link to council roster, contact form.
@@ -176,7 +176,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
 | 9 | Council term as a field, not a new collection per year | Makes "Past Councils" free and makes the annual rollover a filter change instead of a migration. |
 | 10 | Everything (repo, the Pages CMS install, Cloudflare, the domain) must end up NUS-owned | Personal accounts are the single most common way a club site dies. See `docs/migration-checklist.md`. |
 | 11 | Sponsors, Note-Taking Club, and Calendar all archived — not migrated, not rewritten | Confirmed 2026-08-03. Each was stale in a way no rewrite fixes: Sponsors is bound to a departed coordinator and 2024 events, NTC is seven years old, the Calendar has no owner. Cutting all three removes the site's three worst staleness liabilities before launch rather than after. |
-| 12 | Informational pages, the homepage gallery, and site settings are all editable in the CMS — not developer-only | Decided 2026-08-03. **Reverses the earlier "static informational pages" wording in §7.** Leaving About, Fees, Governance, ISoN, Elections, and Contact in the repo would mean the pages that change most predictably — Elections annually, Fees by referendum, ISoN whenever McGill's page moves — need a developer nobody is guaranteed to have. That is failure mode #1 from §1, rebuilt on purpose. The infrastructure cost is near zero: three more entries in `.pages.yml` and `src/content.config.ts`. |
+| 12 | Informational pages, the homepage gallery, and site settings are all editable in the CMS — not developer-only | Decided 2026-08-03. **Reverses the earlier "static informational pages" wording in §7.** Leaving About, Fees, Governance, ISoN, Elections, and Contact in the repo would mean the pages that change most predictably — Elections annually, Fees by referendum, ISoN whenever McGill's page moves — need a developer nobody is guaranteed to have. That is failure mode #1 from §1, rebuilt on purpose. The infrastructure cost is near zero: three more entries in `.pages.yml` and `src/content.config.ts`. **Updated 2026-10-31:** ISoN is no longer one of these pages. It was links to McGill's own site, the student handbook (already a resource), the grad students' association, and contacts for roles the council no longer has, so it became two Resources entries. Five pages remain. |
 | 12a | Page routes are a fixed set in the repo; execs cannot create pages | Keeps decision 6's boundary intact. Now enforced by configuration, not code: the **Pages** collection in `.pages.yml` has `create`, `rename` and `delete` switched off. Editors change what a page *says*; they cannot change a URL, orphan a page outside the nav, or 404 their own work with a slug typo. File path still equals URL, so the `MAINTENANCE.md` repo tour stays true. Adding a seventh page is a small code change, deliberately. |
 | 13 | The Land Acknowledgement and Truth & Reconciliation statement stay in `src/config/`, never exposed in the CMS | Both are verbatim texts that must not be edited, paraphrased, or "improved." Everything else on this list was made editable; these two are excluded for exactly that reason. Exposing them in `.pages.yml` would give every future exec an edit button on text that must not change. |
 | 14 | ~~Notion API pinned to `2025-09-03`; the build resolves data sources itself~~ → **Retired 2026-10-11** with decision 1 | There is no Notion API in the build any more. Kept in the log because the data-source change it records (Notion reshaping its API under a pinned client) was one of the reasons for leaving. |
@@ -312,5 +312,17 @@ The page text is the Wix import, unedited. Rewording it is the council's job, in
   - Wix showed a "Grad Committee 2025" logo that isn't on the Drive; the site uses the Drive's undated `Grad committee.png`.
 - **Found and fixed:** Astro never enlarges an image, so a photo smaller than 400×500 kept its own shape. Rules in `CouncilMember.astro` and `CommitteeLogo.astro` now hold every photo to 4:5 and every logo to a square. Separately, a link pasted as its full address pushed two committee pages sideways on a phone; `Base.astro` now wraps long words.
 - **Build-log notes**, never failures: an email that isn't an address, a resource link that isn't `https://` or a page on this site (including `//other-site`, which the CMS form allows, and `/<tab>/other-site`, which browsers read the same way), resource links never or long ago checked (all fifteen today), and committees with no short description (NPMP and VASC).
+
+### Status — 2026-10-31
+
+**The page structure was simplified further, rather than copied from Wix** (branch `structure/simplify`). The IA had already dropped Wix's catch-all "More" menu, merged three governance pages into one, and archived Sponsors, Calendar and the Note-Taking Club. Three more changes:
+
+- **The homepage is the News tab.** No separate `/news/` list until posts outgrow the homepage. The nav is now News · About (Council, Fees, Governance, Elections) · Get involved · Resources · Contact. Decision 17's tabs cover the first four; Contact stays by choice.
+- **No `/submit/` page.** The Wix listserv form was a Wix form, so it goes with Wix. `/listserv` redirects to Contact, which now says to email `nus.nursing@mail.mcgill.ca` instead of pointing at a form that no longer exists.
+- **ISoN became two resources** (the school and the NGSA), and its old address redirects to the school's entry. The page's two "Academic Affairs Coordinator" emails were dropped: those roles aren't on the council (decision 12, updated).
+
+Found on the way: five Wix redirects pointed at `/news/` or `/submit/`, which were never built, so they showed "Page not found". A new test in `tests/build.test.mjs` checks that every redirect to a fixed page lands on a built page.
+
+**Still for the council:** the Elections page is titled "2026-2027 Elections" and opens with the Winter 2026 call, so it's already out of date, and the vacant-seat card links to it. The suggestion is a page that doesn't expire (how elections work, who to ask) with each year's call published as a post.
 
 **Unrelated to code and more urgent than any of it:** `mcgillnus.ca` expires **2026-11-01**. See §9.

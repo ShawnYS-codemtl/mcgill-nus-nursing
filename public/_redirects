@@ -16,7 +16,7 @@
 /nus-council /about/council/ 301
 /past-nus-councils /about/council/ 301
 /nus-council-meetings /about/governance/#nus-meeting-minutes 301
-/ingram-school-of-nursing-ison /about/ison/ 301
+/ingram-school-of-nursing-ison /resources/#ingram-school-of-nursing-ison 301
 /programs /about/elections/ 301
 /fees /about/fees/ 301
 
@@ -40,12 +40,12 @@
 
 # News, and archived pages (decision 11)
 /general-9 /news/21st-century-fund/ 301
-/calendar /news/ 301
-/opportunities /news/ 301
-/general-clean /news/ 301
-/listserv /submit/ 301
+/calendar / 301
+/opportunities / 301
+/general-clean / 301
+/listserv /contact/ 301
 /sponsors / 301
 
 # Wildcards
-/event-details-registration/* /news/ 301
+/event-details-registration/* / 301
 /_files/* /about/governance/ 301

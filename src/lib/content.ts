@@ -95,12 +95,12 @@ export async function getPostsWithPages(): Promise<Post[]> {
 export type Page = CollectionEntry<'pages'>;
 
 /**
- * The six informational pages, by filename: src/content/pages/<name>.md. Each
+ * The informational pages, by filename: src/content/pages/<name>.md. Each
  * has its own route file in src/pages/ and its address in src/config/routes.ts.
  * The set is fixed (CLAUDE.md decision 12a). Editors can't add or delete one,
  * so a missing file is a developer's mistake and fails the build.
  */
-export const INFO_PAGES = ['about', 'fees', 'governance', 'ison', 'elections', 'contact'] as const;
+export const INFO_PAGES = ['about', 'fees', 'governance', 'elections', 'contact'] as const;
 export type InfoPageName = (typeof INFO_PAGES)[number];
 
 const isInfoPage = (id: string): id is InfoPageName => (INFO_PAGES as readonly string[]).includes(id);

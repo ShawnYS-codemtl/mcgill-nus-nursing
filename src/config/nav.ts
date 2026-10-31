@@ -20,7 +20,8 @@ export interface NavItem {
 export const NAV_LABEL = 'Main';
 
 export const NAV_ITEMS: readonly NavItem[] = [
-  { label: 'Home', href: ROUTES.home },
+  // The homepage is the news feed, so the News tab is the homepage.
+  { label: 'News', href: ROUTES.home },
   {
     label: 'About',
     href: ROUTES.about,
@@ -28,7 +29,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
       { label: 'Council', href: ROUTES.council },
       { label: 'Fees', href: ROUTES.fees },
       { label: 'Governance', href: ROUTES.governance },
-      { label: 'ISoN', href: ROUTES.ison },
       { label: 'Elections', href: ROUTES.elections },
     ],
   },

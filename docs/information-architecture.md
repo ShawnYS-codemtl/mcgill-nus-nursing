@@ -23,8 +23,7 @@ Three top-level sections, aligned to what a student actually arrives wanting:
 The site is **English only** — no locale prefixes, no language switcher. See `CLAUDE.md` §3.
 
 ```
-/                             Home — newsletter feed
-/news/                        All posts, paginated
+/                             Home — the news feed, and the News tab
 /news/[slug]/                 Post detail
 /news/[slug]/email/           Email-safe render               [fast-follow]
 
@@ -33,7 +32,6 @@ The site is **English only** — no locale prefixes, no language switcher. See `
 /about/council/[term]/        Past council by term            [fast-follow]
 /about/governance/            Constitution, by-laws, meeting minutes
 /about/elections/             Elections
-/about/ison/                  Ingram School of Nursing
 /about/fees/                  NUSF and NURF
 
 /involved/                    Committees + clubs index
@@ -43,19 +41,19 @@ The site is **English only** — no locale prefixes, no language switcher. See `
 /resources/electives/         Electives explorer              [fast-follow]
 
 /contact/                     Contact + office info
-/submit/                      Listserv / newsletter submission
-
-/sponsors/                    Sponsors & partnerships         [pending rewrite]
 ```
 
 Notes on the shape:
 
-- **The six informational routes are CMS-editable, but their paths are not.** `/about/`, `/about/fees/`, `/about/governance/`, `/about/ison/`, `/about/elections/`, and `/contact/` each have an explicit route file in `src/pages/` that reads its content from `src/content/pages/<name>.md` (`about`, `fees`, `governance`, `ison`, `elections`, `contact`). There is no catch-all route. An exec can rewrite any of these pages in Pages CMS; nobody can move one, rename one, or add a seventh without a code change. See `content-schema.md` §2 and `CLAUDE.md` decision 12a.
+- **The informational routes are CMS-editable, but their paths are not.** `/about/`, `/about/fees/`, `/about/governance/`, `/about/elections/`, and `/contact/` each have an explicit route file in `src/pages/` that reads its content from `src/content/pages/<name>.md` (`about`, `fees`, `governance`, `elections`, `contact`). There is no catch-all route. An exec can rewrite any of these pages in Pages CMS; nobody can move one, rename one, or add one without a code change. See `content-schema.md` §2 and `CLAUDE.md` decision 12a.
 - **Governance consolidates three thin pages.** Constitution, by-laws, and meeting minutes were three separate pages that are mostly links to PDFs and Drive folders. One page serves better.
 - **Elections moves under About.** It's a governance function, not a "more" item.
 - **Fees moves under About.** It explains what the society is and how it's funded.
-- **`/submit` stays out of the main nav** — it's a utility page, linked from the footer and from the newsletter section.
-- **Sponsors stays top-level** because sponsors need a clean URL to be shown, and the sponsorship coordinator will want to point partners at it.
+- **Simplified further on 2026-10-31**, rather than copying Wix:
+  - **The homepage is the news feed**, so there is no separate `/news/` list. An archive page can come when posts outgrow the homepage. Wix addresses that pointed at news now go to `/`.
+  - **No `/submit/` page.** The Wix listserv form was a Wix form, so its submissions go with Wix, and this site can't host forms. The Contact page says to email `nus.nursing@mail.mcgill.ca`.
+  - **ISoN folded into Resources.** The page was links to McGill's own site, the student handbook (already a resource), the grad students' association, and contacts for roles the council no longer has. The school and the NGSA are now resources, which can't go stale the way a page of prose does.
+- **No Sponsors page** (decision 11). `/sponsors` redirects home.
 
 **Leave room for locale prefixes.** French is out of scope, but don't build anything that would make `/fr/…` structurally impossible later — chiefly, avoid hardcoding absolute paths in components. Use a single link helper or Astro's routing rather than scattering `href="/about/council/"` string literals through the codebase. This costs nothing now and is the whole difference between adding French later and rewriting every component.
 
@@ -63,9 +61,11 @@ Notes on the shape:
 
 Primary nav — five items, no third level:
 
-`Home` · `News` · `About` (dropdown) · `Get Involved` · `Resources` · `Contact`
+`News` (the homepage) · `About` (dropdown) · `Get involved` · `Resources` · `Contact`
 
-Footer: contact block, office address, social links, listserv submission link, land acknowledgement (short form linking to the full text).
+The site title in the header also links home. Decision 17's index-card tabs cover the first four; Contact stays in the nav as well (decided 2026-10-31).
+
+Footer: contact block, office address, social links, the listserv email (`nus.nursing@mail.mcgill.ca`), land acknowledgement (short form linking to the full text).
 
 **UI strings** — nav labels, button text, form labels — live in a single config or constants file in the repo, not scattered through components and not in the CMS. The boundary: if an exec should be able to change it, it belongs in the CMS; if changing it could break navigation, it belongs in the repo. Keeping these centralised also means a future French version is a second file rather than a hunt through the codebase.
 
@@ -84,7 +84,7 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/nus-council` | `/about/council/` |
 | `/past-nus-councils` | `/about/council/` |
 | `/nus-council-meetings` | `/about/governance/#nus-meeting-minutes` (the anchor is made from the heading *NUS Meeting Minutes* on the Governance page) |
-| `/ingram-school-of-nursing-ison` | `/about/ison/` |
+| `/ingram-school-of-nursing-ison` | `/resources/#ingram-school-of-nursing-ison` (the page became a resource) |
 | `/get-involved-1` | `/involved/` |
 | `/helpful-resources` | `/resources/` |
 | `/ntc` | `/resources/` |
@@ -93,8 +93,8 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/programs` | `/about/elections/` |
 | `/fees` | `/about/fees/` |
 | `/sponsors` | `/` — the page is archived, see decision 11 |
-| `/listserv` | `/submit/` |
-| `/calendar` | `/news/` |
+| `/listserv` | `/contact/` — the Wix form goes with Wix; Contact says to email instead |
+| `/calendar` | `/` |
 | `/contact` | `/contact/` — **no rule**, as for `/about` |
 | `/general-8` | `/resources/#student-mistreatment-policy` (the anchor is the resource's filename) |
 | `/general-8-1` | `/involved/equity-committee/` |
@@ -106,9 +106,9 @@ The Wix site has been live for years and these URLs are indexed and linked from 
 | `/blank-page-1` | `/involved/graduation-committee/` |
 | `/mngh` | `/involved/mngh/` |
 | `/mcgill-nurses-for-planetary-health-mnph` | `/involved/mnph/` |
-| `/opportunities` | `/news/` — found in the Wix sitemap 2026-10-21: student opportunity notices from 2020 |
-| `/general-clean` | `/news/` — found in the Wix sitemap 2026-10-21: the February 2025 career fair |
-| `/event-details-registration/*` | `/news/` |
+| `/opportunities` | `/` — found in the Wix sitemap 2026-10-21: student opportunity notices from 2020 |
+| `/general-clean` | `/` — found in the Wix sitemap 2026-10-21: the February 2025 career fair |
+| `/event-details-registration/*` | `/` |
 | `/_files/*` | `/about/governance/` — Wix's address for uploaded PDFs; the Elections page linked the by-laws this way |
 
 Also serve a **404 page** offering search or the main sections. Wix generated URL patterns we may not have crawled; a good 404 is the safety net. Done: `src/pages/404.astro` links the main sections (search can join it once Pagefind is in).

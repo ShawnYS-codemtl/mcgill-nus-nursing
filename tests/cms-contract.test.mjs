@@ -25,7 +25,7 @@ const NOT_A_COLLECTION = ['settings'];
 const BUILD_DERIVED = { gallery: ['order'] };
 
 /** The informational pages that must always exist (CLAUDE.md decision 12a). */
-const FIXED_PAGES = ['about', 'fees', 'governance', 'ison', 'elections', 'contact'];
+const FIXED_PAGES = ['about', 'fees', 'governance', 'elections', 'contact'];
 
 let cms;
 let entries;
@@ -164,7 +164,7 @@ test('uploaded image paths stay relative, and every file that can hold an image 
   }
 });
 
-test('the six informational pages can be edited but never added, renamed or deleted', () => {
+test('the informational pages can be edited but never added, renamed or deleted', () => {
   const pages = entries.find((entry) => entry.name === 'pages');
   assert.deepEqual(
     pages.operations,

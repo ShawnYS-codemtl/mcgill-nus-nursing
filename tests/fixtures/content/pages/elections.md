@@ -1,6 +1,6 @@
 ---
 title: "Fixture: Elections"
 metaDescription: "Fixture: the Elections page's search description."
-lastReviewed: ""
+lastReviewed: 2024-09-01
 ---
-ELECTIONS-BODY-MARKER
+Last checked more than a year ago. ELECTIONS-BODY-MARKER
