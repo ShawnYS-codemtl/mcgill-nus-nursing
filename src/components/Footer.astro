@@ -1,27 +1,21 @@
 ---
-// The footer on every page: how to reach the club. The facts come from Site
-// settings (Pages CMS → Site settings, read by src/lib/settings.ts, which has
-// already swapped any blank or unusable value for its default); the labels
-// around them are the repo's (CLAUDE.md decision 6).
-//
-// The Land Acknowledgement is a link to its full text on the homepage, never a
-// shortened version here: it's verbatim (decision 13), and the design brief
-// rules out a small-print footer item.
+// The footer on every page. The facts are Site settings, already checked by
+// src/lib/settings.ts; the labels are the repo's (CLAUDE.md decision 6).
+// The Land Acknowledgement is only linked: a shortened copy would paraphrase a
+// verbatim text (decision 13).
 import { LAND_ACKNOWLEDGEMENT } from '../config/indigenous-relations';
 import { ROUTES } from '../config/routes';
 import { getSettings } from '../lib/settings';
 
 const { contactEmail, officeAddress, officeHours, instagramUrl, tiktokUrl, facebookUrl, linkedinUrl } = getSettings();
 
-// Address and hours are multi-line text fields in the CMS.
-const lines = (text: string) => text.split('\n');
-
+// A social link left blank in Site settings isn't shown.
 const socials = [
   ['Instagram', instagramUrl],
   ['TikTok', tiktokUrl],
   ['Facebook', facebookUrl],
   ['LinkedIn', linkedinUrl],
-];
+].filter(([, href]) => href);
 ---
 
 <footer>
@@ -30,19 +24,22 @@ const socials = [
       <dt>Email</dt>
       <dd><a href={`mailto:${contactEmail}`}>{contactEmail}</a></dd>
       <dt>Office</dt>
-      <dd>{lines(officeAddress).map((line, i) => <>{i > 0 && <br />}{line}</>)}</dd>
+      {/* Address and hours are multi-line text fields in the CMS. */}
+      <dd>{officeAddress.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)}</dd>
       <dt>Office hours</dt>
-      <dd>{lines(officeHours).map((line, i) => <>{i > 0 && <br />}{line}</>)}</dd>
+      <dd>{officeHours.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)}</dd>
     </dl>
-    <ul>
-      {
-        socials.map(([network, href]) => (
-          <li>
-            <a href={href}>NUS on {network}</a>
-          </li>
-        ))
-      }
-    </ul>
+    {
+      socials.length > 0 && (
+        <ul>
+          {socials.map(([network, href]) => (
+            <li>
+              <a href={href}>NUS on {network}</a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
   </address>
   <p>
     <a href={ROUTES.landAcknowledgement}>{LAND_ACKNOWLEDGEMENT.heading}</a>

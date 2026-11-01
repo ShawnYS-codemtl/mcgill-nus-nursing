@@ -331,14 +331,16 @@ test('every page ends with the footer: Site settings\' contact details and a lin
   assert.match(read(''), /<section id="land-acknowledgement">\s*<h2>Land Acknowledgement<\/h2>/, 'the footer links to this id');
 });
 
-test('a blank or unusable Site setting falls back to its default, and the build says so', () => {
-  const text = footer(read('about/fees'));
-  assert.match(text, /<a href="mailto:nus\.nursing@mail\.mcgill\.ca">nus\.nursing@mail\.mcgill\.ca<\/a>/);
-  assert.match(text, /<a href="https:\/\/www\.facebook\.com\/McGillNUS">NUS on Facebook<\/a>/);
-  assert.match(text, /<a href="https:\/\/www\.linkedin\.com\/company\/mcgillnus">NUS on LinkedIn<\/a>/);
+test('a contact email that isn\'t an address falls back to the default, and the build says so', () => {
+  assert.match(footer(read('about/fees')), /<a href="mailto:nus\.nursing@mail\.mcgill\.ca">nus\.nursing@mail\.mcgill\.ca<\/a>/);
   assert.match(log, /contactEmail is "nus at mcgill" in Site settings, which isn't an email address/);
-  assert.match(log, /facebookUrl is "javascript:alert\('settings'\)" in Site settings, which isn't a web link/);
-  assert.match(log, /linkedinUrl is blank in Site settings/);
+});
+
+test('a blank social link is left out of the footer quietly; one that isn\'t a web link is left out with a note', () => {
+  const links = [...footer(read('about/fees')).matchAll(/>NUS on ([^<]+)<\/a>/g)].map(([, network]) => network);
+  assert.deepEqual(links, ['Instagram', 'TikTok'], 'Facebook is javascript: and LinkedIn is blank in the fixture');
+  assert.match(log, /facebookUrl is "javascript:alert\('settings'\)" in Site settings, which isn't a web link \(https:\/\/…\), so the footer leaves it out/);
+  assert.doesNotMatch(log, /linkedinUrl/, 'a blank social link is the council\'s choice, not a problem to log');
 });
 
 const headings = (html, level) =>

@@ -6,39 +6,23 @@ export interface Settings {
   contactEmail: string;
   officeAddress: string;
   officeHours: string;
-  instagramUrl: string;
-  tiktokUrl: string;
-  facebookUrl: string;
-  linkedinUrl: string;
+  instagramUrl?: string;
+  tiktokUrl?: string;
+  facebookUrl?: string;
+  linkedinUrl?: string;
 }
 
-type Defaulted = Exclude<keyof Settings, 'currentTerm'>;
+type Defaulted = 'contactEmail' | 'officeAddress' | 'officeHours';
 
 const DEFAULTS: Record<Defaulted, string> = {
   contactEmail: 'nus.nursing@mail.mcgill.ca',
   officeAddress: '680 Rue Sherbrooke Ouest, Suite 1923\nMontreal, QC H3A 0B8',
   officeHours: 'Office hours may vary.',
-  instagramUrl: 'https://www.instagram.com/mcgillnus/',
-  tiktokUrl: 'https://www.tiktok.com/@mcgillnus',
-  facebookUrl: 'https://www.facebook.com/McGillNUS',
-  linkedinUrl: 'https://www.linkedin.com/company/mcgillnus',
 };
 
-// Every value here lands in the footer of every page, so one that's there but
-// unusable falls back to its default too: a `javascript:` link typed into Site
-// settings must never become a live script on the whole site.
-interface Check {
-  use: (value: string) => string | undefined;
-  needs: string;
-}
-const WEB_LINK: Check = { use: (value) => (isWebLink(value) ? value : undefined), needs: 'a web link (https://…)' };
-const CHECKS: Partial<Record<Defaulted, Check>> = {
-  contactEmail: { use: emailAddress, needs: 'an email address' },
-  instagramUrl: WEB_LINK,
-  tiktokUrl: WEB_LINK,
-  facebookUrl: WEB_LINK,
-  linkedinUrl: WEB_LINK,
-};
+// No defaults: a blank link means the club isn't on that network, so the
+// footer leaves it out, and the council can drop one without a developer.
+const SOCIALS = ['instagramUrl', 'tiktokUrl', 'facebookUrl', 'linkedinUrl'] as const;
 
 const CONTENT_DIR = process.env.CONTENT_DIR ?? 'src/content';
 const FILE = `${CONTENT_DIR}/settings.json`;
@@ -56,19 +40,26 @@ function loadSettings(): Settings {
   try {
     const parsed: unknown = JSON.parse(readFileSync(FILE, 'utf8'));
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) raw = parsed as Record<string, unknown>;
-    else warn(`${FILE} isn't a list of settings, so every setting uses its default.`);
+    else warn(`${FILE} isn't a list of settings, so every setting uses its default and the footer has no social links.`);
   } catch (error) {
-    warn(`${FILE} couldn't be read (${(error as Error).message}), so every setting uses its default.`);
+    warn(`${FILE} couldn't be read (${(error as Error).message}), so every setting uses its default and the footer has no social links.`);
   }
 
   const settings: Settings = { ...DEFAULTS };
   for (const key of Object.keys(DEFAULTS) as Defaulted[]) {
     const value = text(raw[key]);
-    const check = CHECKS[key];
-    const usable = value && check ? check.use(value) : value;
+    // Only the email has a shape to check; a pasted mailto: is taken off.
+    const usable = value && key === 'contactEmail' ? emailAddress(value) : value;
     if (usable) settings[key] = usable;
-    else if (value && check) warn(`${key} is "${value}" in Site settings, which isn't ${check.needs}, so the site uses "${DEFAULTS[key]}".`);
+    else if (value) warn(`${key} is "${value}" in Site settings, which isn't an email address, so the site uses "${DEFAULTS[key]}".`);
     else warn(`${key} is blank in Site settings, so the site uses "${DEFAULTS[key]}".`);
+  }
+
+  // Only http(s): every page links to these, so a `javascript:` one would run site-wide.
+  for (const key of SOCIALS) {
+    const value = text(raw[key]);
+    if (isWebLink(value)) settings[key] = value;
+    else if (value) warn(`${key} is "${value}" in Site settings, which isn't a web link (https://…), so the footer leaves it out.`);
   }
 
   const term = text(raw.currentTerm);
