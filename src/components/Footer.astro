@@ -1,0 +1,47 @@
+---
+// The footer on every page. The facts are Site settings, already checked by
+// src/lib/settings.ts; the labels are the repo's (CLAUDE.md decision 6).
+// The Land Acknowledgement is only linked: a shortened copy would paraphrase a
+// verbatim text (decision 13).
+import { LAND_ACKNOWLEDGEMENT } from '../config/indigenous-relations';
+import { ROUTES } from '../config/routes';
+import { getSettings } from '../lib/settings';
+
+const { contactEmail, officeAddress, officeHours, instagramUrl, tiktokUrl, facebookUrl, linkedinUrl } = getSettings();
+
+// A social link left blank in Site settings isn't shown.
+const socials = [
+  ['Instagram', instagramUrl],
+  ['TikTok', tiktokUrl],
+  ['Facebook', facebookUrl],
+  ['LinkedIn', linkedinUrl],
+].filter(([, href]) => href);
+---
+
+<footer>
+  <address>
+    <dl>
+      <dt>Email</dt>
+      <dd><a href={`mailto:${contactEmail}`}>{contactEmail}</a></dd>
+      <dt>Office</dt>
+      {/* Address and hours are multi-line text fields in the CMS. */}
+      <dd>{officeAddress.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)}</dd>
+      <dt>Office hours</dt>
+      <dd>{officeHours.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)}</dd>
+    </dl>
+    {
+      socials.length > 0 && (
+        <ul>
+          {socials.map(([network, href]) => (
+            <li>
+              <a href={href}>NUS on {network}</a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </address>
+  <p>
+    <a href={ROUTES.landAcknowledgement}>{LAND_ACKNOWLEDGEMENT.heading}</a>
+  </p>
+</footer>

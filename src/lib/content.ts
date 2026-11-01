@@ -1,6 +1,7 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { pickTerm } from './council-term.mjs';
 import { filenameAltImages } from './image-alt.mjs';
+import { emailAddress, isWebLink } from './links';
 import { getSettings } from './settings';
 
 /**
@@ -12,10 +13,6 @@ import { getSettings } from './settings';
  */
 
 export type Post = CollectionEntry<'posts'>;
-
-/** Only http(s). A `javascript:` link typed into the CMS would otherwise become a live script. */
-export const isWebLink = (value: string | undefined): value is string =>
-  !!value && /^https?:\/\//i.test(value);
 
 function warn(message: string): void {
   console.warn(`  [content] ${message}`);
@@ -246,11 +243,6 @@ export async function getInfoPage(name: InfoPageName): Promise<Page> {
     );
   }
   return page;
-}
-
-function emailAddress(value: string): string | undefined {
-  const address = value.trim().replace(/^mailto:/i, '');
-  return /^[^\s@:/]+@[^\s@:/]+\.[^\s@:/]+$/.test(address) ? address : undefined;
 }
 
 export type CouncilMember = CollectionEntry<'council'>;

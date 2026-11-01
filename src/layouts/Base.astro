@@ -10,6 +10,7 @@
 // line such a picture shows at full size (found 2026-10-21).
 // tests/build.test.mjs checks every page that has an image.
 import 'astro:assets';
+import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import { ROUTES } from '../config/routes';
 
@@ -31,8 +32,11 @@ const { title, description, noindex = false } = Astro.props;
     {description && <meta name="description" content={description} />}
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <style>
-      /* Just enough to be readable on a phone. Not a design. */
+    <style is:global>
+      /* Just enough to be readable on a phone. Not a design.
+         Global because Astro scopes a component's styles to its own elements:
+         without it, the link colour and focus ring reached only the site-title
+         link, not the nav, the page or the footer (found 2026-11-01). */
       body {
         font-family: system-ui, sans-serif;
         line-height: 1.6;
@@ -58,5 +62,6 @@ const { title, description, noindex = false } = Astro.props;
     <main>
       <slot />
     </main>
+    <Footer />
   </body>
 </html>

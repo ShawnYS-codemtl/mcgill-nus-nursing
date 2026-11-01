@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-10-31
+**Last reviewed:** 2026-11-01
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -78,11 +78,15 @@ src/
     404.astro            "Page not found". Don't delete it: without it Cloudflare
                          answers every unknown address with the homepage
   layouts/
-    Base.astro           Page shell: the header with the nav, then the page.
-                         Also loads the rule that keeps images in the column
+    Base.astro           Page shell: the header with the nav, the page, then
+                         the footer. Also loads the rule that keeps images
+                         in the column
   components/
     InfoPage.astro       Renders one informational page: heading, then text
     Nav.astro            The main nav, from src/config/nav.ts
+    Footer.astro         Every page's footer: email, address, office hours and
+                         social links from Site settings, and a link to the
+                         Land Acknowledgement on the homepage
     CouncilMember.astro  One council position, or an open seat. Holds every
                          photo to the same 4:5 shape
     CommitteeCard.astro  One committee's card on /involved/
@@ -95,8 +99,12 @@ src/
                          five pages, the council, resources, committees and
                          homepage photos, sorts posts for the homepage,
                          and logs what's overdue a check
-    settings.ts          Reads Site settings (settings.json); a blank value
-                         falls back to a repo default, never fails the build
+    settings.ts          Reads Site settings (settings.json); a blank value,
+                         or an email that isn't an address, falls back to a
+                         repo default. A social link left blank or not
+                         https:// is left out. Never fails the build
+    links.ts             What counts as a safe link or a real email address,
+                         for content and Site settings alike
     council-term.mjs     Which council term to show when Site settings names
                          one with no entries yet
     image-alt.mjs        Images pasted into post or page text get their
@@ -111,8 +119,8 @@ src/
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
   build.test.mjs         Builds against fixtures; checks drafts, links, images,
-                         the homepage, the five pages, the nav, the council,
-                         resources and committees
+                         the homepage, the five pages, the nav, the footer,
+                         the council, resources and committees
   council-term.test.mjs  The council term fallback
   redirects.test.mjs     Every redirect is a valid 301 to a page (and heading)
                          that exists
@@ -287,7 +295,7 @@ A Pages CMS job. **Homepage photos** is one list; add a photo, give it a descrip
 
 ### Changing the office hours, address, or social links
 
-**Site settings** in Pages CMS. Edit, save, done. These are facts about the club, not labels. If you're tempted to add a setting for button text or a nav label, it belongs in `src/config/` instead (decision 6).
+**Site settings** in Pages CMS. Edit, save, done: they show in the footer of every page. To take a social network off the site, empty its link; there is no default to bring it back. These are facts about the club, not labels. If you're tempted to add a setting for button text or a nav label, it belongs in `src/config/` instead (decision 6).
 
 ### Adding a field editors can fill in
 
@@ -396,6 +404,8 @@ Four things that will actually take the site down. Understand these before chang
 | A cover image or logo doesn't show | No description was given | Add one in the CMS; the build log says which |
 | The council page shows last year's council | Site settings → **Current council term** names a term with no council entries (or none switched on to **Show on the site**), so the page falls back to the newest term that has some. The build log says "No council entries for …, so the roster shows …" | Enter the new council (see [The annual council rollover](#the-annual-council-rollover)), or set Current council term back. If the log shows nothing, the term is still the old one: change it |
 | You edited `src/content/settings.json` and `npm run dev` still shows the old value (the council term, say) | The dev server reads Site settings once, when it starts, and doesn't watch that file. Council entries and other content do update live. The live site isn't affected: every build reads the file fresh | Stop `npm run dev` and start it again |
+| A social link is missing from the footer | Its link in Site settings is empty (that's how the council takes a network off the site, so the build log says nothing), or it doesn't start `https://`, and the log says `… isn't a web link (https://…), so the footer leaves it out` | Put the full address back in Pages CMS → Site settings |
+| Build log: "contactEmail is … which isn't an email address" | Site settings' Contact email holds something else, often a web link. The footer shows the default address instead | Correct it in Pages CMS → Site settings |
 | Build log: "… ignored, because it isn't an email address" | A council email or committee contact email holds something else, often a web link. The address is left off the page | Correct the email in Pages CMS |
 | Build log: "Resources whose link was never checked: …" or "… link last checked on …, over a year ago" | No one has set **Link last checked** on those resources. All fifteen arrived from Wix without it (2026-10-21) | Click each link; if it works, set Link last checked to today in Pages CMS. If it's dead, fix or hide the resource |
 | Build log: "Committees with no short description …" | Those committees' cards show only a name. NPMP and VASC had none on Wix | Ask the council for a sentence each, and add it in Pages CMS |

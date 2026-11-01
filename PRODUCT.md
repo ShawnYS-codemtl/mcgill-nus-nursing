@@ -80,7 +80,7 @@ This has one sharp consequence. The riskiest assumption in the project — that 
 - Get Involved: 10–11 committee/club cards, editable in the CMS, with detail pages where real content exists.
 - Informational pages, editable in the CMS: About, Fees, Governance (Constitution & By-Laws), Elections, Contact. (ISoN became a resource, 2026-10-31.) Editable by execs; the CMS can edit the six but cannot add, rename or delete one, so content changes cannot move a URL or break the nav.
 - Homepage photo gallery, editable in the CMS, so the event photo library stays current rather than freezing at launch.
-- Site settings, editable in the CMS — office hours, address, contact email, social links — degrading to repo defaults rather than failing a build.
+- Site settings, editable in the CMS — office hours, address, contact email, social links — degrading to repo defaults (a blank social link is hidden) rather than failing a build.
 - 301 redirects from all old Wix URLs (`docs/information-architecture.md`).
 - An editor's guide, in plain language, for the incoming exec (a Google Doc in the NUS-owned Drive by default).
 

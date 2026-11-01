@@ -65,11 +65,11 @@ Primary nav — five items, no third level:
 
 The site title in the header also links home. Decision 17's index-card tabs cover the first four; Contact stays in the nav as well (decided 2026-10-31).
 
-Footer: contact block, office address, social links, the listserv email (`nus.nursing@mail.mcgill.ca`), land acknowledgement (short form linking to the full text).
+Footer: contact block, office address, social links, the listserv email (`nus.nursing@mail.mcgill.ca`), and a link to the Land Acknowledgement's full text on the homepage. No short form: the text is verbatim (decision 13), and a shortened one would be a paraphrase.
 
 **UI strings** — nav labels, button text, form labels — live in a single config or constants file in the repo, not scattered through components and not in the CMS. The boundary: if an exec should be able to change it, it belongs in the CMS; if changing it could break navigation, it belongs in the repo. Keeping these centralised also means a future French version is a second file rather than a hunt through the codebase.
 
-**Footer contents are not UI strings.** The office address, office hours, contact email, and social links come from Site settings (`src/content/settings.json`, edited in the CMS) so they aren't developer-only, and fall back to repo defaults if a value is blank. The labels around them stay in the repo. Same file, different sources — see `content-schema.md` §7.
+**Footer contents are not UI strings.** The office address, office hours, contact email, and social links come from Site settings (`src/content/settings.json`, edited in the CMS) so they aren't developer-only, and fall back to repo defaults if a value is blank, except social links: a blank one is hidden, so the council can drop a network. The labels around them stay in the repo. Same file, different sources — see `content-schema.md` §7.
 
 ---
 

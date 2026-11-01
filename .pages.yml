@@ -425,12 +425,16 @@ content:
       - name: instagramUrl
         label: Instagram link
         type: string
+        description: The full address, starting https://. Shown at the bottom of every page. Leave it empty to take Instagram off the site.
       - name: tiktokUrl
         label: TikTok link
         type: string
+        description: The full address, starting https://. Shown at the bottom of every page. Leave it empty to take TikTok off the site.
       - name: facebookUrl
         label: Facebook link
         type: string
+        description: The full address, starting https://. Shown at the bottom of every page. Leave it empty to take Facebook off the site.
       - name: linkedinUrl
         label: LinkedIn link
         type: string
+        description: The full address, starting https://. Shown at the bottom of every page. Leave it empty to take LinkedIn off the site.

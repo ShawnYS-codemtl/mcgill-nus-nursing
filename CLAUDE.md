@@ -135,7 +135,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
 - `[MVP]` Get Involved: committee/club cards, editable in the CMS, with detail pages for the ones that have real content.
 - `[MVP]` **Informational pages, editable in the CMS:** About, Fees, Governance (Constitution & By-Laws), Elections, Contact. Content lives in `src/content/pages/`; the CMS can edit the five but cannot add, rename or delete one. Execs edit what a page says, never where it lives. See decision 12.
 - `[MVP]` **Homepage photo gallery**, editable in the CMS, so the event photo library doesn't freeze at launch.
-- `[MVP]` **Site settings, editable in the CMS:** office hours, address, contact email, social links. Degrades to repo defaults, never fails a build.
+- `[MVP]` **Site settings, editable in the CMS:** office hours, address, contact email, social links. Degrades to repo defaults (a blank social link is hidden instead), never fails a build.
 - `[MVP]` Contact page: office info, address, email, link to council roster, contact form.
 - `[MVP]` 301 redirects from all old Wix URLs (see `docs/information-architecture.md`).
 - `[MVP]` Accessibility baseline: semantic HTML, WCAG AA contrast, keyboard nav, alt text required in the CMS form for covers and logos, and images without it dropped at build. Pictures pasted into body text can't be described in the CMS, so they're marked decorative (`alt=""`, `src/lib/image-alt.mjs`).
@@ -400,3 +400,13 @@ Found on the way: five Wix redirects pointed at `/news/` or `/submit/`, which we
 **11 of the 14 Wix gallery photos are imported** (§9). Two of the Wix originals carried GPS coordinates; every photo was re-saved without metadata.
 
 The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary is Featured. Both posts carry the same placeholder date (§9), so which one leads comes from file order.
+
+### Status — 2026-11-01, the footer
+
+**Every page now ends with a footer** (branch `feature/footer`), still unstyled: the contact email, office address, office hours and the four social links from Site settings, then a link to the Land Acknowledgement.
+
+- **A link, not a short form.** The IA asked for a "short form" of the Land Acknowledgement. A shortened verbatim text is a paraphrase (decision 13), so the footer links to the full text on the homepage (`/#land-acknowledgement`) instead.
+- **Social links have no defaults any more.** An empty one is hidden, so the council can drop a network without a developer; a default would have brought it back every time. One that isn't `http(s)` is hidden too, with a build-log note: a `javascript:` link typed into Site settings would otherwise run on every page. The CMS help text on each field says so.
+- **The contact email is checked too:** one that isn't an address falls back to the default, with a note, as a blank one already did. The link and email rules moved to `src/lib/links.ts`, shared with `src/lib/content.ts`.
+
+**For the council:** the Contact page's text has the office address typed into it, and the footer now shows the one from Site settings. Moving the office means changing both.
