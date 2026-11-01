@@ -33,8 +33,9 @@ export default defineConfig({
     // One known limit: an image inside a post's text can't be told the
     // column width, so Astro also keeps one copy at the original size. Phones
     // still pick a 1344px-or-smaller copy; a large high-density desktop
-    // screen may fetch the original. Covers don't have this problem: their
-    // sizes are set in src/pages/news/[slug].astro.
+    // screen may fetch the original. Covers and homepage photos don't have
+    // this problem: their sizes are set in src/pages/news/[slug].astro and
+    // src/pages/index.astro.
     breakpoints: [640, 828, 1080, 1344],
   },
 });

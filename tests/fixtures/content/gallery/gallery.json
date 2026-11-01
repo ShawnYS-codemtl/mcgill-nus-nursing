@@ -1,4 +1,5 @@
 [
-  { "image": "../../assets/uploads/test.png", "alt": "Fixture gallery photo", "caption": "", "term": "2026-2027" },
-  { "image": "../../assets/uploads/test.png", "alt": "Second fixture photo" }
+  { "image": "../../assets/uploads/test.png", "alt": "Fixture gallery photo", "caption": "", "term": "2025-2026" },
+  { "image": "../../assets/uploads/test.png", "alt": "Second fixture photo", "caption": "FIXTURE-CAPTION" },
+  { "image": "../../assets/uploads/test.png", "alt": "Old-term fixture photo", "term": "2024-2025" }
 ]

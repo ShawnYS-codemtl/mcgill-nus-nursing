@@ -3,8 +3,8 @@
 
 /**
  * The term to show, given Site settings' current term and the terms that have
- * published council entries. `fallback` is true when that isn't the current
- * term. Undefined only when no term has entries at all.
+ * entries: published council members, or homepage photos. `fallback` is true
+ * when that isn't the current term. Undefined only when no term has entries.
  * @param {string | undefined} currentTerm
  * @param {Iterable<string>} termsWithEntries
  * @returns {{ term: string, fallback: boolean } | undefined}

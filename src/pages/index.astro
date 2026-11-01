@@ -1,8 +1,17 @@
 ---
+// The homepage is the news feed (docs/information-architecture.md): the lead
+// post, the featured posts, the rest, the event photos, then the Land
+// Acknowledgement and the Commitment to Truth & Reconciliation in full.
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import { getPublishedPosts } from '../lib/content';
+import { LAND_ACKNOWLEDGEMENT, TRUTH_AND_RECONCILIATION } from '../config/indigenous-relations';
+import { ROUTES } from '../config/routes';
+import { getGallery, getHomepagePosts, type Post } from '../lib/content';
 
-const posts = await getPublishedPosts();
+const { lead, featured, more } = await getHomepagePosts();
+const photos = await getGallery();
+
+const href = (post: Post) => post.data.externalLink ?? ROUTES.post(post.data.slug);
 
 const dateFormat = new Intl.DateTimeFormat('en-CA', {
   year: 'numeric',
@@ -10,29 +19,95 @@ const dateFormat = new Intl.DateTimeFormat('en-CA', {
   day: 'numeric',
   timeZone: 'UTC',
 });
+
+// Same as a post's own page: the text column is 42rem (src/layouts/Base.astro).
+const widths = [400, 800, 1200];
+const sizes = '(max-width: 42rem) 100vw, 42rem';
 ---
 
 <Base title="McGill NUS — News" description="News and announcements from the McGill Nursing Undergraduate Society.">
   <h1>News</h1>
 
   {
-    posts.length === 0 ? (
+    lead ? (
+      // No "Latest" label: a pinned post leads even when it isn't the newest.
+      <article>
+        <h2>
+          <a href={href(lead)}>{lead.data.title}</a>
+        </h2>
+        <p>
+          <time datetime={lead.data.date.toISOString().slice(0, 10)}>{dateFormat.format(lead.data.date)}</time>
+          {lead.data.authorRole && <> · {lead.data.authorRole}</>}
+        </p>
+        {
+          /* src/lib/content.ts has already dropped a cover with no description. */
+          lead.data.cover && lead.data.coverAlt && (
+            <Image src={lead.data.cover} alt={lead.data.coverAlt} widths={widths} sizes={sizes} />
+          )
+        }
+        <p>{lead.data.summary}</p>
+      </article>
+    ) : (
       // The empty state is a real state, not an edge case: "nothing posted in a
       // month" will happen. See PRODUCT.md → Product Principles.
       <p>No posts yet. Check back soon.</p>
-    ) : (
-      <ul>
-        {posts.map((post) => (
-          <li>
-            <a href={post.data.externalLink ?? `/news/${post.data.slug}/`}>{post.data.title}</a>
-            <br />
-            <time datetime={post.data.date.toISOString().slice(0, 10)}>
-              {dateFormat.format(post.data.date)}
-            </time>
-            <p>{post.data.summary}</p>
-          </li>
-        ))}
-      </ul>
     )
   }
+
+  {
+    featured.length > 0 && (
+      <section>
+        <h2>Featured</h2>
+        <ul>
+          {featured.map((post) => (
+            <li>
+              <a href={href(post)}>{post.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    more.length > 0 && (
+      <section>
+        <h2>More news</h2>
+        <ul>
+          {more.map((post) => (
+            <li>
+              <a href={href(post)}>{post.data.title}</a>
+              <br />
+              <time datetime={post.data.date.toISOString().slice(0, 10)}>{dateFormat.format(post.data.date)}</time>
+              <p>{post.data.summary}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    photos.length > 0 && (
+      <section>
+        <h2>Photos</h2>
+        {photos.map(({ data }) => (
+          <figure>
+            <Image src={data.image} alt={data.alt} widths={widths} sizes={sizes} />
+            {data.caption && <figcaption>{data.caption}</figcaption>}
+          </figure>
+        ))}
+      </section>
+    )
+  }
+
+  {/* Verbatim texts, never edited here or in the CMS: CLAUDE.md decision 13. */}
+  <section>
+    <h2>{LAND_ACKNOWLEDGEMENT.heading}</h2>
+    <p>{LAND_ACKNOWLEDGEMENT.text}</p>
+  </section>
+  <section>
+    <h2>{TRUTH_AND_RECONCILIATION.heading}</h2>
+    <p>{TRUTH_AND_RECONCILIATION.text}</p>
+  </section>
 </Base>

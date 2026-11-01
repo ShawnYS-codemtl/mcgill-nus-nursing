@@ -43,7 +43,7 @@ Until 2026-10-11 the plan was Notion. That changed. See `CLAUDE.md` decision 1 f
 
 ## 1. Posts — `src/content/posts/<slug>.md`
 
-Drives the homepage, the news index and, later, the email export. The most-used collection, so its ergonomics matter more than any other's.
+Drives the homepage and, later, the email export. The most-used collection, so its ergonomics matter more than any other's.
 
 | Field | CMS label | Type | Required | Notes |
 |---|---|---|---|---|
@@ -55,7 +55,7 @@ Drives the homepage, the news index and, later, the email export. The most-used 
 | `category` | Category | select | | `Announcement`, `Event`, `Opportunity`, `Governance`, `Newsletter` |
 | `cover` | Cover image | image | | |
 | `coverAlt` | Cover image description | string | | **Needed if `cover` is set.** Without it the cover is dropped with a warning; the post still publishes. |
-| `featured` | Featured on the homepage | boolean | | Cap of 4, to be warned on once the homepage block exists. |
+| `featured` | Featured on the homepage | boolean | | Puts the post in the homepage's **Featured** list. At most four count, the first four in homepage order (pinned, then newest); the lead post counts as one but isn't repeated in the list. A fifth shows under More news instead, with a build-log warning naming it. Every post appears on the homepage exactly once. Done in `getHomepagePosts()`, `src/lib/content.ts`. |
 | `authorRole` | Written by (role) | string | | **A role, not a person.** Pages outlive people. |
 | `externalLink` | Link somewhere else instead | string | | If set, the card links out and **no detail page is built**. Must be `http(s)`. |
 | `pinnedUntil` | Keep at the top until | date | | Pinned posts sort first until this date. **It is checked at build time**, so a pin expires at the first build after the date, which in practice means the next Save of anything. |
@@ -150,7 +150,7 @@ One file holding a list, so editors can drag photos into order. List position is
 | `caption` | Caption | string | |
 | `term` | Term | string | |
 
-`term` lets older photos age out by filter rather than by deletion.
+`term` lets older photos age out by filter rather than by deletion. The homepage shows the photos whose `term` is Site settings' current term, plus every photo with no `term`. If no photo has the current term, the newest term that has photos stands in (the same `pickTerm()` as the council, `src/lib/council-term.mjs`), with a build-log warning, so the section doesn't empty at the council rollover. The CMS form only accepts a term like `2026-2027` or a blank, because a typo would hide the photo. Done in `getGallery()`, `src/lib/content.ts`. With no photos to show, the homepage leaves the section out.
 
 ## 7. Site settings — `src/content/settings.json`
 
