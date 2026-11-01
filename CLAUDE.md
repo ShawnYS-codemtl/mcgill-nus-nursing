@@ -400,3 +400,13 @@ Found on the way: five Wix redirects pointed at `/news/` or `/submit/`, which we
 **11 of the 14 Wix gallery photos are imported** (§9). Two of the Wix originals carried GPS coordinates; every photo was re-saved without metadata.
 
 The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary is Featured. Both posts carry the same placeholder date (§9), so which one leads comes from file order.
+
+### Status — 2026-11-01, the footer
+
+**Every page now ends with a footer** (branch `feature/footer`), still unstyled: the contact email, office address, office hours and the four social links from Site settings, then a link to the Land Acknowledgement.
+
+- **A link, not a short form.** The IA asked for a "short form" of the Land Acknowledgement. A shortened verbatim text is a paraphrase (decision 13), so the footer links to the full text on the homepage (`/#land-acknowledgement`) instead.
+- **Site settings are now checked, not just defaulted.** The footer puts the social links on every page, so a value that's there but unusable (a link that isn't `http(s)`, an email that isn't an address) falls back to its default with a build-log note, like a blank one. A `javascript:` link typed into Site settings would otherwise have run on every page. The link and email rules moved to `src/lib/links.ts`, shared with `src/lib/content.ts`.
+- **Cost accepted:** blanking a social link brings back its default, so the council can't drop a network from the CMS. That takes a PR (`MAINTENANCE.md` troubleshooting).
+
+**For the council:** the Contact page's text has the office address typed into it, and the footer now shows the one from Site settings. Moving the office means changing both.

@@ -156,7 +156,7 @@ One file holding a list, so editors can drag photos into order. List position is
 
 Facts about the club that appear site-wide: `currentTerm`, `contactEmail`, `officeAddress`, `officeHours`, `instagramUrl`, `tiktokUrl`, `facebookUrl`, `linkedinUrl`.
 
-**This one degrades rather than validates.** It is not a content collection. Read it through `getSettings()` in `src/lib/settings.ts`, which falls back to a repo default for any blank value and logs a warning (`currentTerm` has no default; the council page copes without it). Only `currentTerm` is read today; the footer will read the rest. A stale office-hours string is a nuisance on one page; strict validation on a value used in the footer would take every page down.
+**This one degrades rather than validates.** It is not a content collection. Read it through `getSettings()` in `src/lib/settings.ts`, which falls back to a repo default for any blank value and logs a warning (`currentTerm` has no default; the council page copes without it). So does a value that's there but unusable: a social link that isn't `http(s)` (a `javascript:` one would otherwise run on every page) or a contact email that isn't an address. `currentTerm` picks the council and the homepage photos; everything else is in the footer of every page (`src/components/Footer.astro`). A stale office-hours string is a nuisance; strict validation on a value used in the footer would take every page down.
 
 **Boundary, guard it against drift:** settings hold facts about the club, never labels, button text or nav copy. Those stay in `src/config/` (decision 6). The test: if changing it changes what a control *says*, it's the repo's. If it changes what the club *is*, it's here.
 
