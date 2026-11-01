@@ -4,6 +4,7 @@
 // Acknowledgement and the Commitment to Truth & Reconciliation in full.
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import PostDate from '../components/PostDate.astro';
 import { LAND_ACKNOWLEDGEMENT, TRUTH_AND_RECONCILIATION } from '../config/indigenous-relations';
 import { ROUTES } from '../config/routes';
 import { getGallery, getHomepagePosts, type Post } from '../lib/content';
@@ -12,13 +13,6 @@ const { lead, featured, more } = await getHomepagePosts();
 const photos = await getGallery();
 
 const href = (post: Post) => post.data.externalLink ?? ROUTES.post(post.data.slug);
-
-const dateFormat = new Intl.DateTimeFormat('en-CA', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
 
 // Same as a post's own page: the text column is 42rem (src/layouts/Base.astro).
 const widths = [400, 800, 1200];
@@ -36,7 +30,7 @@ const sizes = '(max-width: 42rem) 100vw, 42rem';
           <a href={href(lead)}>{lead.data.title}</a>
         </h2>
         <p>
-          <time datetime={lead.data.date.toISOString().slice(0, 10)}>{dateFormat.format(lead.data.date)}</time>
+          <PostDate date={lead.data.date} />
           {lead.data.authorRole && <> · {lead.data.authorRole}</>}
         </p>
         {
@@ -78,7 +72,7 @@ const sizes = '(max-width: 42rem) 100vw, 42rem';
             <li>
               <a href={href(post)}>{post.data.title}</a>
               <br />
-              <time datetime={post.data.date.toISOString().slice(0, 10)}>{dateFormat.format(post.data.date)}</time>
+              <PostDate date={post.data.date} />
               <p>{post.data.summary}</p>
             </li>
           ))}

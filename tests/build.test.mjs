@@ -193,6 +193,13 @@ test('homepage photos are the current term\'s and those with no term, in list or
   assert.match(log, /2 homepage photo\(s\), 1 from other terms hidden/);
 });
 
+test('a homepage photo whose description is only spaces is left out, and the build says so', () => {
+  for (const [file, html] of allHtml()) {
+    assert.ok(!html.includes('BLANK-DESCRIPTION-MARKER'), `the photo with a blank description appears in ${file}`);
+  }
+  assert.match(log, /Homepage photo 4 \(in list order\) was left out because its description is blank/);
+});
+
 test('the Land Acknowledgement and the Commitment to Truth & Reconciliation close the homepage, word for word', () => {
   // Copied here on purpose rather than imported from src/config/indigenous-relations.ts:
   // these are verbatim texts (CLAUDE.md decision 13), so "improving" either one there

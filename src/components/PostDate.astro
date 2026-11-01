@@ -1,0 +1,19 @@
+---
+// A post's date in words, plus the plain date for browsers and screen readers.
+interface Props {
+  date: Date;
+}
+
+const { date } = Astro.props;
+
+// A post dated 2026-10-21 is stored as midnight UTC. Formatted in Montreal's
+// time zone it would read October 20, so format in UTC too.
+const dateFormat = new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<time datetime={date.toISOString().slice(0, 10)}>{dateFormat.format(date)}</time>

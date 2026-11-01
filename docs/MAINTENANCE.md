@@ -87,6 +87,8 @@ src/
                          photo to the same 4:5 shape
     CommitteeCard.astro  One committee's card on /involved/
     CommitteeLogo.astro  A committee's logo, whole, in a square (card and page)
+    PostDate.astro       A post's date in words, on the homepage and the
+                         post's page
   lib/
     content.ts           Soft checks: drops one bad value with a warning
                          instead of failing the whole build. Loads posts, the
@@ -408,7 +410,8 @@ Four things that will actually take the site down. Understand these before chang
 | Site stopped updating, but is still online | Monthly build allowance used up (500 on the free plan; every Save is one) | It resets monthly. It would take a lot of saving; check for something stuck in a commit loop |
 | A pinned post won't drop off the top | Pins are checked at build time | Any Save triggers a build; it drops off then |
 | A post marked Featured shows under More news instead | More than four posts are marked Featured. The four that come first on the homepage keep the spot (the lead counts as one); the build log names the rest | Switch Featured off on a post that no longer needs it |
-| A photo disappeared from the homepage | Its Term isn't the current council term, and at least one photo has the current term. Photos with no Term always show | Change or clear its Term in **Homepage photos**. See [Adding a photo to the homepage gallery](#adding-a-photo-to-the-homepage-gallery) |
+| A photo disappeared from the homepage | Either its description is only spaces (the build log names it by its position in the list), or its Term isn't the current council term while at least one photo has the current term. Photos with no Term always show | Write a description, or change or clear its Term, in **Homepage photos**. See [Adding a photo to the homepage gallery](#adding-a-photo-to-the-homepage-gallery) |
+| The build log warns `The collection "gallery" does not exist or is empty. Please check your content config file for errors.` | **Homepage photos** is empty. That's Astro's own wording; nothing is wrong with the config, and the homepage simply has no photo section | Nothing to fix. It goes away once a photo is added |
 | An old link from Instagram 404s | Missing redirect | See [Adding a redirect](#adding-a-redirect) |
 | CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished. Or it points at a `#anchor` on an informational page whose heading was renamed | Update the line in `public/_redirects` (and the redirect map) to the new address, or to one of the anchors the error lists, through a PR |
 | A mistyped address shows the homepage instead of "Page not found" | `src/pages/404.astro` is gone, so the build has no `404.html` and Cloudflare treats the site as a single-page app | Restore `src/pages/404.astro` |

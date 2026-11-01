@@ -150,7 +150,7 @@ One file holding a list, so editors can drag photos into order. List position is
 | `caption` | Caption | string | |
 | `term` | Term | string | |
 
-`term` lets older photos age out by filter rather than by deletion. The homepage shows the photos whose `term` is Site settings' current term, plus every photo with no `term`. If no photo has the current term, the newest term that has photos stands in (the same `pickTerm()` as the council, `src/lib/council-term.mjs`), with a build-log warning, so the section doesn't empty at the council rollover. The CMS form only accepts a term like `2026-2027` or a blank, because a typo would hide the photo. Done in `getGallery()`, `src/lib/content.ts`. With no photos to show, the homepage leaves the section out.
+`term` lets older photos age out by filter rather than by deletion. The homepage shows the photos whose `term` is Site settings' current term, plus every photo with no `term`. If no photo has the current term, the newest term that has photos stands in (the same `pickTerm()` as the council, `src/lib/council-term.mjs`), with a build-log warning, so the section doesn't empty at the council rollover. The CMS form only accepts a term like `2026-2027` or a blank, because a typo would hide the photo. Done in `getGallery()`, `src/lib/content.ts`. A photo whose description is only spaces (the form's required check lets that through) is left out, with a build-log warning giving its position in the list. With no photos to show, the homepage leaves the section out.
 
 ## 7. Site settings — `src/content/settings.json`
 

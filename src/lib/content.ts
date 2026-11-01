@@ -146,8 +146,17 @@ export async function getGallery(): Promise<GalleryPhoto[]> {
     );
   }
 
-  const shown = photos.filter((photo) => !photo.data.term || photo.data.term === picked?.term);
-  console.log(`  [content] ${shown.length} homepage photo(s), ${photos.length - shown.length} from other terms hidden`);
+  const inTerm = photos.filter((photo) => !photo.data.term || photo.data.term === picked?.term);
+
+  // The form requires a description, but a few spaces get past it, and a
+  // screen reader would skip the photo. Left out, as a cover would be.
+  const shown = inTerm.filter((photo) => {
+    if (photo.data.alt.trim()) return true;
+    warn(`Homepage photo ${photo.data.order + 1} (in list order) was left out because its description is blank.`);
+    return false;
+  });
+
+  console.log(`  [content] ${shown.length} homepage photo(s), ${photos.length - inTerm.length} from other terms hidden`);
   return shown;
 }
 
