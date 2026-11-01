@@ -196,6 +196,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
   - The NUS Athletic Committee has one line and a link to a 2024 Instagram post, nothing more.
   - Seven PDFs (the Constitution, four sets of by-laws, the SSMU-NUS memorandum and the by-laws linked from Elections) and the Council Structure diagram are on Wix's servers only. The Governance page lists the documents by name, without links, until they are on the NUS Drive.
     - **Found 2026-10-30:** the club's public Drive (folder `Documents + logos`) now has `[UPDATED] 2026-2027 NUS Constitution.pdf` and `[UPDATED]2026-2027 Financial By-laws.pdf`, plus `NUS Council Structure.png`. Governance can link these. Not done yet; it's a content edit in the CMS once the council confirms they're final.
+  - The homepage gallery had 14 photos with no captions, descriptions or dates. 11 were imported on 2026-10-31 with descriptions written from what each shows; their captions and terms are blank for the council to fill in. The other three (JIIQ 2019, a 2019 frosh, CUCOH) are small 2019 Facebook copies, left out on purpose, and are only on Wix.
   - No field holds the homepage mission paragraph or the Executive/General Council intro sentences. The Past Councils rosters (2017–18 to 2024–25) weren't imported. All of these die with Wix.
 - **To confirm before any DNS change:** `mcgillnus.ca` has a live `MX` record (`mail.mcgillnus.ca` → `69.195.124.181`). Who actually uses it? It must be recreated in Cloudflare or club email breaks at cutover. DNS today is hosted by **Wix**, not GoDaddy — see decision 3.
 
@@ -385,3 +386,17 @@ Found on the way: five Wix redirects pointed at `/news/` or `/submit/`, which we
 **Still for the council:** the Elections page is titled "2026-2027 Elections" and opens with the Winter 2026 call, so it's already out of date, and the vacant-seat card links to it. The suggestion is a page that doesn't expire (how elections work, who to ask) with each year's call published as a post.
 
 **Unrelated to code and more urgent than any of it:** `mcgillnus.ca` expires **2026-11-01**. See §9.
+
+### Status — 2026-10-31, the homepage
+
+**The homepage is the newsletter** (branch `feature/homepage`), still unstyled. From the top:
+
+- **The lead post:** the pinned post, or else the newest, with its cover and summary. It has no "Latest" label, because a pinned post may not be the newest (decision 17).
+- **Featured:** the posts marked Featured, at most four, counting the lead. A fifth shows under More news, and the build log names it.
+- **More news:** every other post. Each post appears on the homepage exactly once.
+- **Photos:** Homepage photos from the current council term, plus any with no term. The newest term with photos stands in until this term has some. Without photos the section isn't shown.
+- **The Land Acknowledgement and the Commitment to Truth & Reconciliation,** in full, last. `tests/build.test.mjs` holds its own copy of both texts, so editing either one in `src/config/` fails CI (decision 13).
+
+**11 of the 14 Wix gallery photos are imported** (§9). Two of the Wix originals carried GPS coordinates; every photo was re-saved without metadata.
+
+The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary is Featured. Both posts carry the same placeholder date (§9), so which one leads comes from file order.

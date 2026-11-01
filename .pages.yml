@@ -387,7 +387,10 @@ content:
       - name: term
         label: Term
         type: string
-        description: For example 2026-2027.
+        description: For example 2026-2027. The homepage shows the current council term's photos, plus any with no term, so last year's photos stop showing once this year's are added. Leave it blank to keep a photo showing.
+        pattern:
+          regex: "^([0-9]{4}-[0-9]{4})?$"
+          message: Use the form 2026-2027, or leave it blank
 
   # ---------------------------------------------------------------------------
   # Facts about the club that appear site-wide. Labels, button text and nav

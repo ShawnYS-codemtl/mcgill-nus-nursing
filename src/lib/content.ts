@@ -92,6 +92,74 @@ export async function getPostsWithPages(): Promise<Post[]> {
   return (await getPublishedPosts()).filter((post) => !post.data.externalLink);
 }
 
+/** The CMS help text promises "Up to four posts can be featured at once". */
+const FEATURED_LIMIT = 4;
+
+export interface HomepagePosts {
+  /** The first post: pinned, or else the newest. Undefined when nothing is published. */
+  lead?: Post;
+  featured: Post[];
+  more: Post[];
+}
+
+/**
+ * Every published post exactly once: the lead, then up to four featured
+ * posts (the lead counts toward the four), then the rest under More news.
+ */
+export async function getHomepagePosts(): Promise<HomepagePosts> {
+  const posts = await getPublishedPosts();
+  const flagged = posts.filter((post) => post.data.featured);
+  const featured = new Set(flagged.slice(0, FEATURED_LIMIT));
+
+  for (const post of flagged.slice(FEATURED_LIMIT)) {
+    warn(
+      `"${post.data.title}" is marked Featured, but only ${FEATURED_LIMIT} posts can be featured at once, so it ` +
+        `shows under More news instead. Switch Featured off on one that no longer needs it.`
+    );
+  }
+
+  const [lead, ...rest] = posts;
+  return {
+    lead,
+    featured: rest.filter((post) => featured.has(post)),
+    more: rest.filter((post) => !featured.has(post)),
+  };
+}
+
+export type GalleryPhoto = CollectionEntry<'gallery'>;
+
+/**
+ * The homepage photos: those from Site settings' current term, plus any with
+ * no term, in list order. If no photo has the current term yet, the newest
+ * term that has photos stands in, so the section doesn't empty at the
+ * council rollover (same rule as the council, src/lib/council-term.mjs).
+ */
+export async function getGallery(): Promise<GalleryPhoto[]> {
+  const photos = (await getCollection('gallery')).sort((a, b) => a.data.order - b.data.order);
+  const { currentTerm } = getSettings();
+  const picked = pickTerm(currentTerm, photos.flatMap((photo) => photo.data.term ?? []));
+
+  if (picked?.fallback) {
+    warn(
+      `No homepage photos are from ${currentTerm ?? 'the current term'}, so the homepage shows ${picked.term}'s. ` +
+        `Add this year's photos with that Term, or change Current council term in Site settings.`
+    );
+  }
+
+  const inTerm = photos.filter((photo) => !photo.data.term || photo.data.term === picked?.term);
+
+  // The form requires a description, but a few spaces get past it, and a
+  // screen reader would skip the photo. Left out, as a cover would be.
+  const shown = inTerm.filter((photo) => {
+    if (photo.data.alt.trim()) return true;
+    warn(`Homepage photo ${photo.data.order + 1} (in list order) was left out because its description is blank.`);
+    return false;
+  });
+
+  console.log(`  [content] ${shown.length} homepage photo(s), ${photos.length - inTerm.length} from other terms hidden`);
+  return shown;
+}
+
 export type Page = CollectionEntry<'pages'>;
 
 /**

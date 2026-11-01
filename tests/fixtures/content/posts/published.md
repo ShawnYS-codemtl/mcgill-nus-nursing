@@ -7,7 +7,7 @@ summary: "Has a cover, a body image, and blank optional fields."
 category: ""
 cover: ../../assets/uploads/test.png
 coverAlt: "A fixture cover image"
-featured: false
+featured: true
 authorRole: "Director of Testing"
 externalLink: ""
 pinnedUntil: null

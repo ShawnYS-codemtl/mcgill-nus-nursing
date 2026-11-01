@@ -22,6 +22,15 @@ let log = '';
 const read = (route) => readFileSync(path.join(outDir, route, 'index.html'), 'utf8');
 const pageExists = (route) => existsSync(path.join(outDir, route, 'index.html'));
 const imageTags = (html) => [...html.matchAll(/<img[^>]*>/g)].map(([tag]) => tag);
+const main = (html) => html.match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
+const hrefs = (html) => [...html.matchAll(/<a href="([^"]+)"/g)].map(([, href]) => href);
+/** The text as a reader sees it: tags gone, and the entities Astro writes turned back into characters. */
+const plainText = (html) =>
+  html
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;/g, "'")
+    .trim();
 
 /**
  * The informational pages: content file → the folder its page builds to
@@ -139,10 +148,80 @@ test('an image whose description is only a filename is treated as decoration, an
   assert.match(log, /"Fixture: published post": an image in the post text has no description \(only its filename, "IMG_5310\.jpeg"\)/);
 });
 
-test('a pinned post is listed first, ahead of newer posts', () => {
-  const main = read('').match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
-  const links = [...main.matchAll(/<li>\s*<a href="([^"]+)"/g)].map(([, href]) => href);
-  assert.equal(links[0], '/news/pinned-bad-link/', `list order was: ${links.join(', ')}`);
+test('the pinned post leads the homepage, ahead of newer posts, with its cover', () => {
+  const lead = read('').match(/<article[^>]*>([\s\S]*?)<\/article>/)?.[1];
+  assert.ok(lead, 'the homepage should lead with one post');
+  assert.match(lead, /<h2>\s*<a href="\/news\/pinned-bad-link\/">/);
+  assert.match(lead, /<img[^>]+alt="A fixture lead cover"/);
+});
+
+test('every published post appears on the homepage exactly once, in feed order', () => {
+  // Lead, then Featured, then More news. Nothing else on the homepage is a link.
+  assert.deepEqual(hrefs(main(read(''))), [
+    '/news/pinned-bad-link/',
+    '/news/published/',
+    'https://www.instagram.com/mcgillnus/',
+    '/news/cover-no-alt/',
+    '/news/featured-overflow/',
+  ]);
+});
+
+/** The contents of the homepage section under this <h2>, or undefined if there's none. */
+const homepageSection = (heading) => read('').match(new RegExp(`<h2>${heading}</h2>([\\s\\S]*?)</section>`))?.[1];
+
+test('Featured holds four featured posts at most, the lead among them, and a fifth goes under More news with a note in the log', () => {
+  assert.deepEqual(hrefs(homepageSection('Featured')), ['/news/published/', 'https://www.instagram.com/mcgillnus/', '/news/cover-no-alt/']);
+  assert.deepEqual(hrefs(homepageSection('More news')), ['/news/featured-overflow/']);
+  assert.match(log, /"Fixture: fifth featured post" is marked Featured, but only 4 posts can be featured at once, so it shows under More news instead/);
+});
+
+test('homepage photos are the current term\'s and those with no term, in list order', () => {
+  const photos = homepageSection('Photos');
+  assert.ok(photos, 'the homepage has no Photos section');
+  assert.deepEqual(
+    imageTags(photos).map((tag) => tag.match(/\salt="([^"]*)"/)[1]),
+    ['Fixture gallery photo', 'Second fixture photo']
+  );
+  assert.deepEqual(
+    [...photos.matchAll(/<figcaption>([\s\S]*?)<\/figcaption>/g)].map(([, caption]) => caption),
+    ['FIXTURE-CAPTION'],
+    'a blank caption should leave no empty <figcaption>'
+  );
+  for (const [file, html] of allHtml()) {
+    assert.ok(!html.includes('Old-term fixture photo'), `a photo from an older term appears in ${file}`);
+  }
+  assert.match(log, /2 homepage photo\(s\), 1 from other terms hidden/);
+});
+
+test('a homepage photo whose description is only spaces is left out, and the build says so', () => {
+  for (const [file, html] of allHtml()) {
+    assert.ok(!html.includes('BLANK-DESCRIPTION-MARKER'), `the photo with a blank description appears in ${file}`);
+  }
+  assert.match(log, /Homepage photo 4 \(in list order\) was left out because its description is blank/);
+});
+
+test('the Land Acknowledgement and the Commitment to Truth & Reconciliation close the homepage, word for word', () => {
+  // Copied here on purpose rather than imported from src/config/indigenous-relations.ts:
+  // these are verbatim texts (CLAUDE.md decision 13), so "improving" either one there
+  // must fail CI. The two apostrophes differ on purpose; see that file.
+  const expected = [
+    [
+      'Land Acknowledgement',
+      'We respectfully acknowledge that McGill University resides on unceded Indigenous territory, a space historically serving as a meeting ground for many peoples, including the Haudenosaunee and Anishinaabeg, of which the Kanien’keha:ka Nation are recognized as the traditional custodians.',
+    ],
+    [
+      'Commitment to Truth & Reconciliation',
+      "Embracing the principles of truth and reconciliation, we strive to confront historical injustices. In alignment with Joyce's Principle, we recognize the urgent need to address systemic inequalities in healthcare and health outcomes for Indigenous peoples. As we gather on this land, we are committed to fostering understanding, acknowledging past wrongs, and actively working towards a more just and equitable future.",
+    ],
+  ];
+  const sections = [...main(read('')).matchAll(/<section[^>]*>\s*<h2>([^<]*)<\/h2>\s*<p>([^<]*)<\/p>\s*<\/section>/g)].map(
+    ([, heading, text]) => [plainText(heading), plainText(text)]
+  );
+  assert.deepEqual(
+    sections.slice(-2),
+    expected,
+    'The homepage must end with both texts, word for word. They are verbatim (CLAUDE.md decision 13): never edit them.'
+  );
 });
 
 test('each informational page builds at its address, with its heading as the only <h1> and its text below it', () => {
@@ -233,13 +312,7 @@ test('the nav and the "Page not found" page link only to pages that were built',
 });
 
 const headings = (html, level) =>
-  [...html.matchAll(new RegExp(`<h${level}[^>]*>([\\s\\S]*?)</h${level}>`, 'g'))].map(([, text]) =>
-    text
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&')
-      .replace(/&#39;/g, "'")
-      .trim()
-  );
+  [...html.matchAll(new RegExp(`<h${level}[^>]*>([\\s\\S]*?)</h${level}>`, 'g'))].map(([, text]) => plainText(text));
 
 const card = (html, level, heading) => {
   const match = html.match(new RegExp(`<li[^>]*>\\s*<h${level}[^>]*>(?:(?!</li>)[\\s\\S])*?${heading}[\\s\\S]*?</li>`));
@@ -382,10 +455,9 @@ test('a committee page shows its Instagram and email, and drops an email that is
   assert.match(log, /Committees with no short description, so their card shows only a name: "Fixture: logo without a description"\./);
 });
 
-test('the council, resources and Get Involved pages each have one <h1>, and no heading skips a level', () => {
-  for (const route of ['about/council', 'resources', 'involved', 'involved/equity-committee', 'involved/logo-no-alt']) {
-    const main = read(route).match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
-    const levels = [...main.matchAll(/<h([1-6])[\s>]/g)].map(([, level]) => Number(level));
+test('the homepage, council, resources and Get Involved pages each have one <h1>, and no heading skips a level', () => {
+  for (const route of ['', 'about/council', 'resources', 'involved', 'involved/equity-committee', 'involved/logo-no-alt']) {
+    const levels = [...main(read(route)).matchAll(/<h([1-6])[\s>]/g)].map(([, level]) => Number(level));
     assert.equal(levels.filter((level) => level === 1).length, 1, `/${route}/ should have exactly one <h1>`);
     levels.reduce((previous, level) => {
       assert.ok(level <= previous + 1, `/${route}/ jumps from <h${previous}> to <h${level}>`);

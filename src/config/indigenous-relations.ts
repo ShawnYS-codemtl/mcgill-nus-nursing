@@ -18,8 +18,8 @@
  * "COMMITMENT TO TRUTH & RECONCILIATION"). They are in title case here so the
  * design can set them however it likes; the words are unchanged.
  *
- * Nothing displays these yet. They were captured before the build reached the
- * homepage because the Wix site may disappear.
+ * Both appear in full at the end of the homepage (src/pages/index.astro), and
+ * tests/build.test.mjs fails if either stops appearing there word for word.
  */
 
 export const LAND_ACKNOWLEDGEMENT = {

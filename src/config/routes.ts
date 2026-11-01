@@ -13,6 +13,8 @@
  */
 export const ROUTES = {
   home: '/',
+  /** A post's own page. Only posts without an external link have one. */
+  post: (slug: string) => `/news/${slug}/`,
   about: '/about/',
   council: '/about/council/',
   fees: '/about/fees/',
