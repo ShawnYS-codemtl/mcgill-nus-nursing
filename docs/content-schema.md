@@ -156,7 +156,7 @@ One file holding a list, so editors can drag photos into order. List position is
 
 Facts about the club that appear site-wide: `currentTerm`, `contactEmail`, `officeAddress`, `officeHours`, `instagramUrl`, `tiktokUrl`, `facebookUrl`, `linkedinUrl`.
 
-**This one degrades rather than validates.** It is not a content collection. Read it through `getSettings()` in `src/lib/settings.ts`, which falls back to a repo default for any blank value and logs a warning (`currentTerm` has no default; the council page copes without it). So does a value that's there but unusable: a social link that isn't `http(s)` (a `javascript:` one would otherwise run on every page) or a contact email that isn't an address. `currentTerm` picks the council and the homepage photos; everything else is in the footer of every page (`src/components/Footer.astro`). A stale office-hours string is a nuisance; strict validation on a value used in the footer would take every page down.
+**This one degrades rather than validates.** It is not a content collection. Read it through `getSettings()` in `src/lib/settings.ts`, which falls back to a repo default for a blank contact email, address or office hours and logs a warning (`currentTerm` has no default; the council page copes without it). So does a contact email that isn't an address. **Social links have no defaults:** an empty one is how the council takes a network off the site, so the footer leaves it out without a warning. One that isn't `http(s)` is left out too, with a warning, because a `javascript:` link would otherwise run on every page. `currentTerm` picks the council and the homepage photos; everything else is in the footer of every page (`src/components/Footer.astro`). A stale office-hours string is a nuisance; strict validation on a value used in the footer would take every page down.
 
 **Boundary, guard it against drift:** settings hold facts about the club, never labels, button text or nav copy. Those stay in `src/config/` (decision 6). The test: if changing it changes what a control *says*, it's the repo's. If it changes what the club *is*, it's here.
 
@@ -174,7 +174,7 @@ A plain-language guide for a nursing student with no technical background. Per `
 - Why images need a description, and why **the photo that matters goes in Cover image**: pictures pasted into the text can't be described, so screen readers skip them. Anything a picture says (a poster's date, a schedule) has to be in the text too
 - How to edit one of the informational pages, and why pages can't be added or deleted
 - How to add a homepage photo
-- How to update office hours, address and social links in Site settings
+- How to update office hours, address and social links in Site settings, and that emptying a social link takes it off the site
 - The annual council rollover, step by step
 - Who to contact when something breaks
 
