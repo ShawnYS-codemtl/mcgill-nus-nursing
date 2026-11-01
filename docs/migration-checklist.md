@@ -23,7 +23,7 @@ Wix CDN URLs stop resolving when the site is decommissioned. Get these while the
 - [ ] By-laws PDF, linked from the Elections page. The `mcgillnus.ca` address 404s since the domain broke (2026-10-20); it is still at `nusnursing.wixsite.com/website/_files/ugd/0a9b8d_6c6e7a950bb946b382f21e47eec111e3.pdf`
 - [ ] NUS Council Structure diagram (PNG, ~1545×1996)
 - [ ] Logo variants — transparent PNG and the 400×120 header wordmark. Ask the club for vector originals.
-- [ ] All homepage gallery photos (~14) at the largest available size
+- [x] Homepage gallery photos — 11 of the 14, saved 2026-10-31 at Wix's full original size (up to 6794px) and imported into Homepage photos. The other three (JIIQ 2019, a 2019 frosh, CUCOH) are 960px Facebook copies from 2019 and were left out on purpose; they are only on Wix
 - [ ] Council member photos (23) — ask for originals; the CDN copies are cropped and compressed
 - [ ] Committee logos (~8)
 - [x] Full text of the land acknowledgement and Truth & Reconciliation commitment, **verbatim** — in `src/config/indigenous-relations.ts` (2026-10-21)
@@ -48,7 +48,8 @@ Several Google Drive links are load-bearing. If they sit in a graduating student
 - [ ] Populate content in Pages CMS: Posts, Council (2025–26 + incoming term), Resources (15), Committees (11), the six Pages, Homepage photos, Site settings
   - [x] Imported from Wix 2026-10-21, word for word: Council 2025–26 (23), Resources (15), Committees (11), the six Pages, and two Posts from the homepage LINKS block. Gaps are listed in `CLAUDE.md` §9
   - [ ] Council 2026–27 (then change **Current council term** in Site settings, which is already set to 2026-2027)
-  - [ ] Homepage photos, member photos and logos, from the club's originals
+  - [x] Homepage photos: 11 imported from Wix 2026-10-31 (see above). Captions and terms are blank, for the council to fill in
+  - [ ] Member photos and logos, from the club's originals
   - [ ] Drive links on the Governance page, once the PDFs are on Drive
 - [ ] Get new Sponsors copy from Laurence Carrière — the existing page is written in a departed coordinator's voice and lists 2024 events
 - [ ] Confirm with the council which content gets cut (Note-Taking Club, Calendar, and the stale Sponsors content are proposed for archival)
