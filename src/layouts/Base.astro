@@ -10,6 +10,7 @@
 // line such a picture shows at full size (found 2026-10-21).
 // tests/build.test.mjs checks every page that has an image.
 import 'astro:assets';
+import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
 import { ROUTES } from '../config/routes';
 
@@ -58,5 +59,6 @@ const { title, description, noindex = false } = Astro.props;
     <main>
       <slot />
     </main>
+    <Footer />
   </body>
 </html>

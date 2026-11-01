@@ -311,6 +311,36 @@ test('the nav and the "Page not found" page link only to pages that were built',
   assert.match(read('about/fees'), /<a href="\/about\/fees\/" aria-current="page">/, 'the nav should mark the current page');
 });
 
+/** The footer's contents, only if it comes straight after <main>. */
+const footer = (html) => html.match(/<\/main>\s*<footer>([\s\S]*?)<\/footer>/)?.[1];
+
+test('every page ends with the footer: Site settings\' contact details and a link to the Land Acknowledgement', () => {
+  const pages = [
+    ['the homepage', read('')],
+    ['/about/fees/', read('about/fees')],
+    ['the 404 page', readFileSync(path.join(outDir, '404.html'), 'utf8')],
+  ];
+  for (const [where, html] of pages) {
+    const text = footer(html);
+    assert.ok(text, `${where} should have the footer straight after <main>`);
+    assert.match(text, /Fixture Building, Room 12<br>Montreal, QC H0H 0H0/, `${where}: the address should keep its line break`);
+    assert.match(text, /Fixture hours: Tuesdays 2 to 4<br>Or by appointment/, `${where}: office hours`);
+    assert.match(text, /<a href="https:\/\/www\.instagram\.com\/fixture-nus\/">NUS on Instagram<\/a>/, `${where}: Instagram`);
+    assert.match(text, /<a href="\/#land-acknowledgement">Land Acknowledgement<\/a>/, `${where}: Land Acknowledgement link`);
+  }
+  assert.match(read(''), /<section id="land-acknowledgement">\s*<h2>Land Acknowledgement<\/h2>/, 'the footer links to this id');
+});
+
+test('a blank or unusable Site setting falls back to its default, and the build says so', () => {
+  const text = footer(read('about/fees'));
+  assert.match(text, /<a href="mailto:nus\.nursing@mail\.mcgill\.ca">nus\.nursing@mail\.mcgill\.ca<\/a>/);
+  assert.match(text, /<a href="https:\/\/www\.facebook\.com\/McGillNUS">NUS on Facebook<\/a>/);
+  assert.match(text, /<a href="https:\/\/www\.linkedin\.com\/company\/mcgillnus">NUS on LinkedIn<\/a>/);
+  assert.match(log, /contactEmail is "nus at mcgill" in Site settings, which isn't an email address/);
+  assert.match(log, /facebookUrl is "javascript:alert\('settings'\)" in Site settings, which isn't a web link/);
+  assert.match(log, /linkedinUrl is blank in Site settings/);
+});
+
 const headings = (html, level) =>
   [...html.matchAll(new RegExp(`<h${level}[^>]*>([\\s\\S]*?)</h${level}>`, 'g'))].map(([, text]) => plainText(text));
 

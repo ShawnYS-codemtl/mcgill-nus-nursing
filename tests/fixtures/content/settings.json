@@ -1,10 +1,10 @@
 {
   "currentTerm": "2025-2026",
-  "contactEmail": "nus.nursing@mail.mcgill.ca",
-  "officeAddress": "680 Rue Sherbrooke Ouest, Suite 1923\nMontreal, QC H3A 0B8",
-  "officeHours": "Office hours may vary.",
-  "instagramUrl": "https://www.instagram.com/mcgillnus/",
+  "contactEmail": "nus at mcgill",
+  "officeAddress": "Fixture Building, Room 12\nMontreal, QC H0H 0H0",
+  "officeHours": "Fixture hours: Tuesdays 2 to 4\nOr by appointment",
+  "instagramUrl": "https://www.instagram.com/fixture-nus/",
   "tiktokUrl": "https://www.tiktok.com/@mcgillnus",
-  "facebookUrl": "https://www.facebook.com/McGillNUS",
-  "linkedinUrl": "https://www.linkedin.com/company/mcgillnus"
+  "facebookUrl": "javascript:alert('settings')",
+  "linkedinUrl": ""
 }

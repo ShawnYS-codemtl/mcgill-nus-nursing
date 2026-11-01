@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { emailAddress, isWebLink } from './links';
 
 export interface Settings {
   currentTerm?: string;
@@ -21,6 +22,22 @@ const DEFAULTS: Record<Defaulted, string> = {
   tiktokUrl: 'https://www.tiktok.com/@mcgillnus',
   facebookUrl: 'https://www.facebook.com/McGillNUS',
   linkedinUrl: 'https://www.linkedin.com/company/mcgillnus',
+};
+
+// Every value here lands in the footer of every page, so one that's there but
+// unusable falls back to its default too: a `javascript:` link typed into Site
+// settings must never become a live script on the whole site.
+interface Check {
+  use: (value: string) => string | undefined;
+  needs: string;
+}
+const WEB_LINK: Check = { use: (value) => (isWebLink(value) ? value : undefined), needs: 'a web link (https://…)' };
+const CHECKS: Partial<Record<Defaulted, Check>> = {
+  contactEmail: { use: emailAddress, needs: 'an email address' },
+  instagramUrl: WEB_LINK,
+  tiktokUrl: WEB_LINK,
+  facebookUrl: WEB_LINK,
+  linkedinUrl: WEB_LINK,
 };
 
 const CONTENT_DIR = process.env.CONTENT_DIR ?? 'src/content';
@@ -47,7 +64,10 @@ function loadSettings(): Settings {
   const settings: Settings = { ...DEFAULTS };
   for (const key of Object.keys(DEFAULTS) as Defaulted[]) {
     const value = text(raw[key]);
-    if (value) settings[key] = value;
+    const check = CHECKS[key];
+    const usable = value && check ? check.use(value) : value;
+    if (usable) settings[key] = usable;
+    else if (value && check) warn(`${key} is "${value}" in Site settings, which isn't ${check.needs}, so the site uses "${DEFAULTS[key]}".`);
     else warn(`${key} is blank in Site settings, so the site uses "${DEFAULTS[key]}".`);
   }
 
