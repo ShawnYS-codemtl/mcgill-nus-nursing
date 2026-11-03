@@ -392,7 +392,7 @@ Found on the way: five Wix redirects pointed at `/news/` or `/submit/`, which we
 **The homepage is the newsletter** (branch `feature/homepage`), still unstyled. From the top:
 
 - **The lead post:** the pinned post, or else the newest, with its cover and summary. It has no "Latest" label, because a pinned post may not be the newest (decision 17).
-- **Featured:** the posts marked Featured, at most four, counting the lead. A fifth shows under More news, and the build log names it.
+- **Featured:** the posts marked Featured, at most four, counting the lead. A fifth shows under More news, and the build log names it. Each shows its date and summary, as under More news (added 2026-11-02).
 - **More news:** every other post. Each post appears on the homepage exactly once.
 - **Photos:** Homepage photos from the current council term, plus any with no term. The newest term with photos stands in until this term has some. Without photos the section isn't shown.
 - **The Land Acknowledgement and the Commitment to Truth & Reconciliation,** in full, last. `tests/build.test.mjs` holds its own copy of both texts, so editing either one in `src/config/` fails CI (decision 13).

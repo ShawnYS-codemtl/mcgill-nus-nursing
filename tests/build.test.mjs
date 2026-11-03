@@ -175,6 +175,18 @@ test('Featured holds four featured posts at most, the lead among them, and a fif
   assert.match(log, /"Fixture: fifth featured post" is marked Featured, but only 4 posts can be featured at once, so it shows under More news instead/);
 });
 
+test('every post under Featured and More news shows its date and summary', () => {
+  const sections = {
+    Featured: ['Has a cover, a body image, and blank optional fields.', 'Links straight to Instagram.', 'Its cover must be dropped.'],
+    'More news': ['The oldest of five featured posts, so it shows under More news instead.'],
+  };
+  for (const [heading, summaries] of Object.entries(sections)) {
+    const section = homepageSection(heading);
+    assert.equal(section.match(/<time datetime="\d{4}-\d{2}-\d{2}">/g)?.length, summaries.length, `${heading} should show one date per post`);
+    for (const summary of summaries) assert.ok(section.includes(`<p>${summary}</p>`), `${heading} is missing the summary "${summary}"`);
+  }
+});
+
 test('homepage photos are the current term\'s and those with no term, in list order', () => {
   const photos = homepageSection('Photos');
   assert.ok(photos, 'the homepage has no Photos section');
