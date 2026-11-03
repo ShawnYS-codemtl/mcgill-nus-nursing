@@ -56,6 +56,9 @@ const sizes = '(max-width: 42rem) 100vw, 42rem';
           {featured.map((post) => (
             <li>
               <a href={href(post)}>{post.data.title}</a>
+              <br />
+              <PostDate date={post.data.date} />
+              <p>{post.data.summary}</p>
             </li>
           ))}
         </ul>
