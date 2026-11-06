@@ -1,33 +1,101 @@
 ---
-// The main navigation, from src/config/nav.ts: nested lists, with the current
-// page marked for screen readers.
-import { NAV_ITEMS, NAV_LABEL } from '../config/nav';
+// The main navigation, from src/config/nav.ts: index-card tabs over the stack
+// of sheets (Figma Tab nav, 74:984). They are plain links styled as tabs, not
+// ARIA tabs, because each goes to another page. The current page is
+// aria-current="page"; on a page inside a section (a post, an About page), that
+// section's tab is aria-current="true". The current tab is taller, joined to
+// its sheet and underlined, so colour isn't the only cue.
+import { currentItem, NAV_ITEMS, NAV_LABEL, type NavItem } from '../config/nav';
 
 const here = Astro.url.pathname;
-const current = (href: string) => (href === here ? 'page' : undefined);
+const current = currentItem(here);
+const ariaCurrent = (item: NavItem) => (item.href === here ? 'page' : item === current ? 'true' : undefined);
 ---
 
-<nav aria-label={NAV_LABEL}>
+<nav aria-label={NAV_LABEL} class="desk">
   <ul>
     {
       NAV_ITEMS.map((item) => (
         <li>
-          <a href={item.href} aria-current={current(item.href)}>
+          <a href={item.href} aria-current={ariaCurrent(item)} data-section={item.section}>
             {item.label}
           </a>
-          {item.children && (
-            <ul>
-              {item.children.map((child) => (
-                <li>
-                  <a href={child.href} aria-current={current(child.href)}>
-                    {child.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
         </li>
       ))
     }
   </ul>
 </nav>
+
+<style>
+  nav {
+    margin-top: 14px;
+  }
+  ul {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 32px;
+    margin: 0;
+    padding: 0 0 0 8px;
+    list-style: none;
+  }
+  a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    background: var(--sheet);
+    box-shadow: var(--shadow-tab);
+    color: var(--on-sheet);
+    font: var(--text-label-md);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  /* Taller, joined to its sheet (which starts 4px above its bottom) and
+     drawn over it. */
+  a[aria-current] {
+    z-index: 1;
+    height: 36px;
+    margin-bottom: -4px;
+    padding-bottom: 4px;
+    text-decoration: underline;
+  }
+  /* Rise above the sheet, so the focus ring shows on all four sides. */
+  a:focus-visible {
+    z-index: 2;
+  }
+
+  /* Phones: Contact is the button on the window (Header.astro), and five tabs
+     wouldn't fit. */
+  @media (width < 48rem) {
+    li:has(> [data-section='contact']) {
+      display: none;
+    }
+  }
+  /* Compact below 390px, so "Get involved" still fits at 320. */
+  @media (width < 24.375rem) {
+    ul {
+      gap: 2px;
+      padding-left: 0;
+    }
+    a {
+      padding: 0 8px;
+      font: var(--text-label-sm);
+    }
+  }
+  /* Forced colours drop the backgrounds, so draw the tabs' edges. */
+  @media (forced-colors: active) {
+    a {
+      border: 1px solid CanvasText;
+      border-bottom: 0;
+    }
+  }
+  /* Laptops: the tabs start at the content column, as the headings do. */
+  @media (width >= 48rem) {
+    ul {
+      padding-left: 24px;
+    }
+  }
+</style>

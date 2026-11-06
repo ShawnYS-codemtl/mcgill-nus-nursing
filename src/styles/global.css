@@ -8,8 +8,9 @@
    colour or font").
 
    Components keep their own layout in scoped <style> blocks. This file holds
-   what every page shares: tokens, type, links, the focus ring, and the
-   defaults for Markdown from the CMS, which arrives with no classes. */
+   what every page shares: tokens, the section colours, the mat, type, links,
+   the focus ring, the defaults for Markdown from the CMS (which arrives with
+   no classes), and the prose sheet several pages render it on. */
 
 :root {
   /* Palette. The four tab colours never change with the season. */
@@ -83,28 +84,88 @@
   --season-tape: #6e8b5e;
 }
 
-/* Element defaults. The page stays on a white card surface until the mat,
-   sheets and cards arrive (Phase B, PR 2): ink and pen on the navy mat would
-   fail contrast. */
+/* Sections: the colour of each tab and of its sheet (src/config/nav.ts). They
+   never change with the season. --on-sheet is the text on a sheet and
+   --on-sheet-link its links; cards set ink and pen back. Mustard takes ink, the
+   others white (tests/contrast.test.mjs). Contact and the "Page not found"
+   page, which has no section, get the white front page. */
+[data-section='news'] {
+  --sheet: var(--color-oxblood);
+  --on-sheet: var(--color-card);
+  --on-sheet-link: var(--color-card);
+}
+[data-section='about'] {
+  --sheet: var(--color-mustard);
+  --on-sheet: var(--color-ink);
+  --on-sheet-link: var(--color-ink);
+}
+[data-section='involved'] {
+  --sheet: var(--color-forest);
+  --on-sheet: var(--color-card);
+  --on-sheet-link: var(--color-card);
+}
+[data-section='resources'] {
+  --sheet: var(--color-slate);
+  --on-sheet: var(--color-card);
+  --on-sheet-link: var(--color-card);
+}
+[data-section='contact'],
+main:not([data-section]) {
+  --sheet: var(--color-card);
+  --on-sheet: var(--color-ink);
+  --on-sheet-link: var(--color-pen);
+}
+
+/* Element defaults. The page is the navy cutting mat with its grid: 1px lines
+   every 26px, a stronger one every 130px (Figma's mat, node 26:52). */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
 html {
   color-scheme: light;
 }
 
 body {
-  max-width: 42rem;
-  margin: 0 auto;
-  padding: var(--space-6);
-  background: var(--color-card);
+  margin: 0;
+  background:
+    linear-gradient(var(--color-mat-grid-strong) 1px, transparent 1px) 0 5px / 100% 130px,
+    linear-gradient(90deg, var(--color-mat-grid-strong) 1px, transparent 1px) 5px 0 / 130px 100%,
+    linear-gradient(var(--color-mat-grid) 1px, transparent 1px) 0 5px / 100% 26px,
+    linear-gradient(90deg, var(--color-mat-grid) 1px, transparent 1px) 5px 0 / 26px 100%,
+    var(--color-mat);
   color: var(--color-ink);
   font: var(--text-body-md);
   overflow-wrap: break-word;
 }
 
+/* The desk: the tab row and the sheet under it share one column (Figma Tab nav,
+   74:984). 16px gutters on phones, 8px on the left below 390px, where the
+   tabs go compact, and a 720px sheet centred on the mat from 48rem. */
+.desk {
+  margin-inline: 16px;
+}
+@media (width < 24.375rem) {
+  .desk {
+    margin-left: 8px;
+  }
+}
+@media (width >= 48rem) {
+  .desk {
+    max-width: 45rem;
+    margin-inline: auto;
+  }
+}
+
+/* Headings take the colour of what they sit on: white on most sheets, ink on
+   mustard and on cards. */
 h1,
 h2,
 h3 {
   margin: var(--space-8) 0 var(--space-3);
-  color: var(--color-ink);
+  color: inherit;
 }
 h1 {
   font: var(--text-title-xl);
@@ -117,20 +178,24 @@ h3 {
 }
 
 /* Links are underlined: pen next to ink differs by colour alone. Components
-   whose links carry an arrow or external icon drop the underline themselves. */
+   whose links carry an arrow or external icon drop the underline themselves.
+   --link lets a sheet or card recolour the links inside it, Markdown included. */
 a {
-  color: var(--color-pen);
+  color: var(--link, var(--color-pen));
   text-decoration-thickness: 1px;
   text-underline-offset: 0.15em;
 }
 
 /* The two-tone focus ring: 2px ink inside, 2px white outside, so it shows on
    the mat, a card, and every tab colour. The outline survives forced-colours
-   mode, where the box-shadow is dropped. */
+   mode, where the box-shadow is dropped. !important because tabs, chips, the
+   badge and cards carry shadows of their own, which would otherwise replace
+   the white half and leave an ink line that vanishes on the mat and the dark
+   tabs. */
 :focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 0;
-  box-shadow: 0 0 0 4px var(--color-card);
+  outline: 2px solid var(--color-ink) !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 4px var(--color-card) !important;
 }
 
 /* Prose: Markdown from the CMS. 12px between blocks (Figma body/prose). */
@@ -155,4 +220,16 @@ hr {
   margin: var(--space-6) 0;
   border: 0;
   border-top: 1px solid var(--color-rule);
+}
+
+/* A sheet of prose: an h1 with the red margin line under it, then the text.
+   On Contact and "Page not found" it lies straight on the white front page
+   (Figma Prose sheet, Surface=Page). */
+.prose-sheet {
+  padding: 22px 18px 24px;
+}
+.prose-sheet h1 {
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-margin);
 }

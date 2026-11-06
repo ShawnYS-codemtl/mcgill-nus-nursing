@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-11-05
+**Last reviewed:** 2026-11-06
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -39,7 +39,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 Keep this current. A stale map is worse than none.
 
-Everything here is real and on disk today. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved, then the design tokens and fonts.
+Everything here is real and on disk today. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved, then the design tokens and fonts, then the window header, the tabs and the sheets.
 
 ```
 CLAUDE.md                Project context — read before making structural changes
@@ -60,6 +60,9 @@ src/
   assets/uploads/        Every image an editor has uploaded
   assets/fonts/          The two fonts (woff2) and their OFL licences.
                          Committed so the build fetches nothing
+  assets/header/         The three window scenes (fall, winter, summer) and
+                         the lanyard. The scenes are drawn by
+                         scripts/scenes.mjs: change them there, not here
   pages/                 Every URL on the site. File path = URL path.
     index.astro          The homepage: the lead post, Featured, More news,
                          the event photos, then the Land Acknowledgement
@@ -80,13 +83,20 @@ src/
     404.astro            "Page not found". Don't delete it: without it Cloudflare
                          answers every unknown address with the homepage
   layouts/
-    Base.astro           Page shell: the header with the nav, the page, then
-                         the footer. Also loads the stylesheet, the fonts,
-                         the rule that keeps images in the column, and the
-                         season (data-season on <html>)
+    Base.astro           Page shell: the window, the tabs, the page on its
+                         sheet (the other sections' sheets stacked behind it),
+                         then the footer. Also loads the stylesheet, the
+                         fonts, the rule that keeps images in the column, and
+                         the season (data-season on <html>)
   components/
+    Header.astro         The window: the season's view of Mont Royal, the
+                         lanyard and badge (the home link), the term label,
+                         and on phones the Contact button
+    Nav.astro            The tabs, from src/config/nav.ts. Contact is a tab
+                         on laptops only
+    AboutIndex.astro     The About pages as chips, at the top of every About
+                         page
     InfoPage.astro       Renders one informational page: heading, then text
-    Nav.astro            The main nav, from src/config/nav.ts
     Footer.astro         Every page's footer: email, address, office hours and
                          social links from Site settings, and a link to the
                          Land Acknowledgement on the homepage
@@ -118,20 +128,27 @@ src/
                          decorative
   config/                Developer-owned text, never exposed in the CMS
     routes.ts            Every address the code links to, in one place
-    nav.ts               Nav labels (UI strings, decision 6)
+    nav.ts               Nav labels (UI strings, decision 6), and which
+                         section (tab and sheet colour) each page belongs to
     indigenous-relations.ts  The Land Acknowledgement and Commitment to Truth &
                          Reconciliation, verbatim — see "Things not to change"
   styles/
     global.css           Design tokens (colours, season colours, spacing,
                          type, shadows), copied from Figma's 02 Foundations,
-                         plus the defaults every page shares: type, links,
-                         the focus ring, Markdown text. Components keep their
-                         own layout in scoped <style> blocks
+                         plus what every page shares: each section's colours,
+                         the mat, type, links, the focus ring, Markdown text
+                         and the prose sheet. Components keep their own
+                         layout in scoped <style> blocks
+scripts/
+  scenes.mjs             Draws the three window scenes into
+                         src/assets/header/. Run it by hand after editing it;
+                         the build doesn't
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
   build.test.mjs         Builds against fixtures; checks drafts, links, images,
-                         the homepage, the five pages, the nav, the footer,
-                         the council, resources and committees
+                         the homepage, the five pages, the tabs, the window
+                         scenes, the footer, the council, resources and
+                         committees
   council-term.test.mjs  The council term fallback
   season.test.mjs        Where each season starts, and the term labels
   contrast.test.mjs      Every colour pair the design uses passes WCAG AA,
@@ -160,6 +177,7 @@ astro.config.mjs         Framework config
 | A URL / adding a page | `src/pages/` and `src/config/routes.ts` (see [Adding a new page](#adding-a-new-page)) |
 | Old-URL redirects | `public/_redirects` |
 | Colours, fonts, spacing | `src/styles/global.css`; the font files in `src/assets/fonts/` and `fonts` in `astro.config.mjs` (see [Changing a colour or font](#changing-a-colour-or-font)) |
+| The view in the window | `scripts/scenes.mjs` (see [Changing a window scene](#changing-a-window-scene)) |
 
 ---
 
@@ -317,7 +335,7 @@ A developer job, not a CMS one. Every colour, size and shadow is a custom proper
 
 **A colour.** Change it in Figma's 02 Foundations board too (Palette, or Season for the sticky and tape), so the design file and the site agree. Then run `npm test`. `tests/contrast.test.mjs` checks each pair the design uses (text on cards, labels on each tab colour, the focus ring on every surface) against WCAG AA, and names the pair that fails. If your colour fails, pick another; don't loosen the test. A new pairing (text on a surface it never sat on before) gets a line in the test's list.
 
-**A season colour** lives in one of the three `:root[data-season=…]` blocks. To see each season, add `?season=winter` (or `fall`, `summer`) to any address.
+**A season colour** lives in one of the three `:root[data-season=…]` blocks. The window scenes use the sticky and tape colours too, so change them in `scripts/scenes.mjs` as well and redraw the scenes (see [Changing a window scene](#changing-a-window-scene)). To see each season, add `?season=winter` (or `fall`, `summer`) to any address.
 
 **A font.** The files are committed in `src/assets/fonts/` with their licences, because the build must fetch nothing (CLAUDE.md §4). To swap one:
 1. Get a woff2 with a latin subset. Google Fonts serves one: request `https://fonts.googleapis.com/css2?family=<Name>` from a browser, and download the `/* latin */` file it lists. Download the font's `OFL.txt` (or other licence) beside it; open-font licences require it.
@@ -325,6 +343,16 @@ A developer job, not a CMS one. Every colour, size and shadow is a custom proper
 3. Delete the old file and licence, and run `npm run verify`.
 
 Keep the two fonts under about 100KB together (they're 97KB now). Bricolage Grotesque is a variable font with weight and optical-size axes; keep both, and leave `font-optical-sizing` at `auto`. A single fixed cut would wrap titles differently from the Figma screens.
+
+### Changing a window scene
+
+The view in the window (Mont Royal from the Plateau, one drawing per season) is three SVG files in `src/assets/header/`, drawn by `scripts/scenes.mjs`. That script is their source. Editing an SVG by hand works once, but the next person to run the script wipes it out.
+
+1. Edit `scripts/scenes.mjs`. Its colours are near the top. Keep anything that matters (the mountain, the cross, the sun or moon) between x 540 and 900 of the 1440-wide drawing: narrow phones crop the rest.
+2. Run `node scripts/scenes.mjs`. It rewrites the three files and prints their sizes; keep each under about 22KB, because every visitor downloads one.
+3. Run `npm run dev` and look at every season at phone and laptop width: add `?season=fall`, `?season=winter` or `?season=summer` to the address.
+
+Don't export the scenes from Figma: its SVG export is about four times the size of the script's.
 
 ### Adding a field editors can fill in
 
@@ -437,6 +465,7 @@ Four things that will actually take the site down. Understand these before chang
 | Build log: "contactEmail is … which isn't an email address" | Site settings' Contact email holds something else, often a web link. The footer shows the default address instead | Correct it in Pages CMS → Site settings |
 | Build log: "… ignored, because it isn't an email address" | A council email or committee contact email holds something else, often a web link. The address is left off the page | Correct the email in Pages CMS |
 | Build log: "Resources whose link was never checked: …" or "… link last checked on …, over a year ago" | No one has set **Link last checked** on those resources. All fifteen arrived from Wix without it (2026-10-21) | Click each link; if it works, set Link last checked to today in Pages CMS. If it's dead, fix or hide the resource |
+| The window shows the wrong season, or the term label is a term behind | Each page is built with the season of the day it was built, and a tiny script in the page resets it from the visitor's date. With JavaScript off the script can't run, so a page nobody has saved since the season turned shows last season. Or the address still ends in `?season=…`, which forces a season for previews | Nothing to fix: it corrects itself with JavaScript on. Drop `?season=…` from the address. The term label follows the real date even under `?season=` |
 | Build log: "Committees with no short description …" | Those committees' cards show only a name. NPMP and VASC had none on Wix | Ask the council for a sentence each, and add it in Pages CMS |
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
 | Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed, or the `import 'astro:assets'` line in `src/layouts/Base.astro` was. Astro only adds its image stylesheet to pages that import `astro:assets`, so without that line a picture in a page's text shows at full size | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |

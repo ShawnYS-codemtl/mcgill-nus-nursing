@@ -445,3 +445,14 @@ The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary i
 - 404: more room between its links, a full stop after "sick", and the emoji hidden from screen readers.
 
 **Still with the council:** Part 3 of the document, about 40 fixes to the site's text for whoever edits it in Pages CMS (the two posts' real dates and the EN-FR summary, the Contact page's links and duplicated address, Fees, Resources, committee links, five slips in council entries, the Elections page suggestion from 2026-10-31). None holds up the build. The document also asked for the NUS logo file, and the covering email asked who holds the domain's GoDaddy login (§9). Neither answer is recorded here yet.
+
+### Status — 2026-11-06, the window and tabs
+
+**Styling PR 2 is built** (branch `feat/design-window`): the window header, the tabs over the stack of sheets, the About sub-index, the footer on the mat, and the 404 page, from the signed-off Figma components.
+
+- **The footer came forward from PR 4.** It sits on the mat this PR brings in, and unstyled it would have been ink on navy.
+- **Every page stays readable before its cards arrive** (PR 3–4): text on a sheet takes the sheet's colour (`--on-sheet`, white, or ink on mustard), and headings and links inherit it.
+- **The badge is text only** until the council sends the logo file, which the sign-off document asked for. The Figma badge shows an empty slot for it.
+- **Found and fixed:** a component's own `box-shadow` (tab, chip, badge) replaced the white half of the two-tone focus ring, leaving an ink line that vanished on the dark tabs. The ring is now `!important` in `global.css`.
+- **The scenes' source is `scripts/scenes.mjs`**, moved into the repo from a personal folder.
+- **The term label follows the visitor's real date**, not `?season=`, so a winter preview in November still says "Fall term".

@@ -13,15 +13,24 @@ import { NAV_ITEMS } from '../config/nav';
 ---
 
 <Base title="Page not found — McGill NUS" description="This page doesn't exist." noindex>
-  <h1>Page not found</h1>
-  <p>Looks like this page called in sick 🤒 Try one of these instead:</p>
-  <ul>
-    {
-      NAV_ITEMS.map((item) => (
-        <li>
-          <a href={item.href}>{item.label}</a>
-        </li>
-      ))
-    }
-  </ul>
+  <div class="prose-sheet">
+    <h1>Page not found</h1>
+    <p>Looks like this page called in sick. <span aria-hidden="true">🤒</span> Try one of these instead:</p>
+    <ul>
+      {
+        NAV_ITEMS.map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </Base>
+
+<style>
+  /* Room to tap the right one. */
+  li + li {
+    margin-top: 8px;
+  }
+</style>

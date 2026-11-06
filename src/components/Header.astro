@@ -1,0 +1,237 @@
+---
+// The window at the top of every page (CLAUDE.md decision 17): a view of Mont
+// Royal that changes with the season, the lanyard and badge (the home link),
+// the term label and, on phones, the Contact button. Figma: Header, 73:853.
+//
+// Phones: the homepage gets the full window and every other page a short
+// strip. From 48rem every page gets the full window, and Contact is a tab
+// instead (Nav.astro). The scenes are drawn by scripts/scenes.mjs.
+import { ROUTES } from '../config/routes';
+import { seasonOf, termLabel } from '../lib/season.mjs';
+
+const here = Astro.url.pathname;
+const home = here === ROUTES.home;
+
+// Built with the build date's label, then corrected from the visitor's date
+// before first paint, like the season in Base.astro. It inlines the two
+// functions' own source. It follows the real date, not ?season=.
+const termScript = `{${seasonOf}${termLabel}document.currentScript.previousElementSibling.textContent=termLabel(new Date())}`;
+---
+
+<header class:list={{ home }}>
+  <div class="window"><div class="pane"></div></div>
+  <div class="column">
+    <a class="badge" href={ROUTES.home}>
+      <span class="name">McGill NUS</span>
+      <span class="society">Nursing Undergraduate Society</span>
+    </a>
+    <p class="term">{termLabel(new Date())}</p>
+    <script is:inline set:html={termScript} />
+    <a class="contact" href={ROUTES.contact} aria-current={here === ROUTES.contact ? 'page' : undefined}>Contact</a>
+  </div>
+</header>
+
+<style>
+  header {
+    position: relative;
+    height: 236px;
+  }
+
+  /* The window: a frame, a pane with the scene and its mullions, and a sill. */
+  .window {
+    position: absolute;
+    inset: 0;
+    background: var(--color-window);
+    box-shadow: var(--shadow-card);
+  }
+  .pane {
+    position: absolute;
+    inset: 14px 14px auto;
+    height: 196px;
+    /* Wider than this the scene would crop; the frame fills the rest. */
+    max-width: 1252px;
+    margin-inline: auto;
+    overflow: hidden;
+    background: center / cover no-repeat;
+  }
+  :global(:root[data-season='fall']) .pane {
+    background-image: url('../assets/header/fall.svg');
+  }
+  :global(:root[data-season='winter']) .pane {
+    background-image: url('../assets/header/winter.svg');
+  }
+  :global(:root[data-season='summer']) .pane {
+    background-image: url('../assets/header/summer.svg');
+  }
+  .pane::before,
+  .pane::after {
+    content: '';
+    position: absolute;
+    background: var(--color-window);
+  }
+  .pane::before {
+    inset: 0 auto;
+    left: calc(50% - 4px);
+    width: 8px;
+  }
+  .pane::after {
+    inset: auto 0;
+    top: calc(50% - 4px);
+    height: 8px;
+  }
+  .window::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 26px;
+    background: var(--color-sill);
+    border: 1px solid var(--color-sill-edge);
+  }
+
+  /* The badge, lanyard and term label line up with the sheet's column. */
+  .column {
+    --badge-left: 20px;
+    position: absolute;
+    inset: 0;
+  }
+
+  /* The lanyard hangs left of the mountain, clear of the cross and the mast,
+     with its clip on the badge's slot. */
+  .column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(var(--badge-left) + 32px);
+    width: 44px;
+    height: 150px;
+    background: url('../assets/header/lanyard.svg') center bottom no-repeat;
+  }
+
+  .badge {
+    position: absolute;
+    top: 140px;
+    left: var(--badge-left);
+    display: flex;
+    flex-direction: column;
+    width: 218px;
+    padding: 14px 16px 14px 12px;
+    border-radius: var(--radius-badge);
+    background: var(--color-card);
+    box-shadow: var(--shadow-card);
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  /* The slot the lanyard's clip goes through. */
+  .badge::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 41px;
+    width: 26px;
+    height: 5px;
+    border-radius: var(--radius-clip);
+    background: var(--color-mat);
+  }
+  .name {
+    font: var(--text-brand-badge);
+  }
+  .society {
+    color: var(--color-ink-muted);
+    font: var(--text-label-xs);
+  }
+
+  .term {
+    position: absolute;
+    top: 96px;
+    right: 24px;
+    margin: 0;
+    padding: 8px 10px;
+    background: var(--color-card);
+    box-shadow: var(--shadow-lifted);
+    color: var(--color-ink);
+    font: var(--text-label-sm);
+    white-space: nowrap;
+  }
+  /* Washi tape: the season's colour with lighter stripes. */
+  .term::before {
+    content: '';
+    position: absolute;
+    top: -16.9px;
+    left: 42.5px;
+    width: 54px;
+    height: 22px;
+    background: repeating-linear-gradient(90deg, transparent 0 4px, rgb(255 255 255 / 0.35) 4px 7px, transparent 7px 9px)
+      var(--season-tape);
+    transform: rotate(-6deg);
+  }
+
+  .contact {
+    position: absolute;
+    top: 40px;
+    right: 22px;
+    padding: 8px 12px;
+    border-radius: var(--radius-control);
+    background: var(--color-card);
+    box-shadow: var(--shadow-lifted);
+    color: var(--color-ink);
+    font: var(--text-label-md);
+  }
+  /* On the Contact page: an ink chip, flat, with a thin white outline so its
+     shape shows against the fall and winter skies. */
+  .contact[aria-current] {
+    background: var(--color-ink);
+    box-shadow: 0 0 0 1px var(--color-card);
+    color: var(--color-card);
+  }
+
+  @media (width < 48rem) {
+    /* Every page but the homepage gets the strip: the whole view, small. */
+    header:not(.home) {
+      height: 136px;
+    }
+    header:not(.home) .window {
+      height: 74px;
+    }
+    header:not(.home) .pane {
+      inset: 10px 10px auto;
+      height: 48px;
+    }
+    header:not(.home) .pane::before {
+      left: calc(50% - 3px);
+      width: 6px;
+    }
+    header:not(.home) .pane::after {
+      display: none;
+    }
+    header:not(.home) .window::after {
+      height: 16px;
+    }
+    header:not(.home) .column::before {
+      height: 60px;
+    }
+    header:not(.home) .badge {
+      top: 50px;
+    }
+    header:not(.home) .term {
+      display: none;
+    }
+    header:not(.home) .contact {
+      top: 17px;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .column {
+      --badge-left: 4px;
+      max-width: 45rem;
+      margin-inline: auto;
+    }
+    .term {
+      right: 8px;
+    }
+    /* Contact is the fifth tab on laptops. */
+    .contact {
+      display: none;
+    }
+  }
+</style>

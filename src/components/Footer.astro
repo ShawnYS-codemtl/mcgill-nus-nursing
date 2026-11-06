@@ -45,3 +45,46 @@ const socials = [
     <a href={ROUTES.landAcknowledgement}>{LAND_ACKNOWLEDGEMENT.heading}</a>
   </p>
 </footer>
+
+<style>
+  /* On the mat, below the sheets (Figma Footer, 82:1274). On laptops its text
+     starts at the content column, like the tabs and cards. */
+  footer {
+    max-width: 44.5rem;
+    margin: 14px auto 0;
+    padding: 28px 20px 40px;
+    color: var(--color-card);
+    --link: var(--color-card);
+  }
+  address {
+    padding-top: 18px;
+    border-top: 1px solid var(--color-mat-grid-strong);
+    font-style: normal;
+  }
+  dl {
+    margin: 0;
+  }
+  dt {
+    font: var(--text-label-sm);
+  }
+  dd {
+    margin: 2px 0 0;
+  }
+  dd + dt {
+    margin-top: 18px;
+  }
+  dd:first-of-type a {
+    font-weight: 700;
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  p {
+    margin: 18px 0 0;
+  }
+</style>

@@ -33,3 +33,9 @@ test('seasonOf has no outside references, so its source can be inlined in the pa
   const inlined = new Function(`return ${seasonOf.toString()}`)();
   assert.equal(inlined(day(2027, 2, 1)), 'winter');
 });
+
+test('termLabel needs nothing but seasonOf, so the header can inline the two together', () => {
+  // As src/components/Header.astro pastes them into the page.
+  const inlined = new Function(`${seasonOf}${termLabel}return termLabel;`)();
+  assert.equal(inlined(day(2027, 1, 15)), 'Winter term · 2026–27');
+});
