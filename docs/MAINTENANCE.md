@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-11-01
+**Last reviewed:** 2026-11-05
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -39,7 +39,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 Keep this current. A stale map is worse than none.
 
-Directories marked *(planned)* do not exist yet. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved. Everything unmarked is real and on disk today.
+Everything here is real and on disk today. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved, then the design tokens and fonts.
 
 ```
 CLAUDE.md                Project context — read before making structural changes
@@ -58,6 +58,8 @@ src/
     settings.json        Address, office hours, socials, current council term
   content.config.ts      Validates every content file at build time (Zod)
   assets/uploads/        Every image an editor has uploaded
+  assets/fonts/          The two fonts (woff2) and their OFL licences.
+                         Committed so the build fetches nothing
   pages/                 Every URL on the site. File path = URL path.
     index.astro          The homepage: the lead post, Featured, More news,
                          the event photos, then the Land Acknowledgement
@@ -79,8 +81,9 @@ src/
                          answers every unknown address with the homepage
   layouts/
     Base.astro           Page shell: the header with the nav, the page, then
-                         the footer. Also loads the rule that keeps images
-                         in the column
+                         the footer. Also loads the stylesheet, the fonts,
+                         the rule that keeps images in the column, and the
+                         season (data-season on <html>)
   components/
     InfoPage.astro       Renders one informational page: heading, then text
     Nav.astro            The main nav, from src/config/nav.ts
@@ -107,6 +110,9 @@ src/
                          for content and Site settings alike
     council-term.mjs     Which council term to show when Site settings names
                          one with no entries yet
+    season.mjs           The season and term label for a date. Base.astro
+                         also inlines it into every page, to pick the season
+                         from the visitor's date
     image-alt.mjs        Images pasted into post or page text get their
                          filename as alt text from the CMS; this makes them
                          decorative
@@ -115,13 +121,21 @@ src/
     nav.ts               Nav labels (UI strings, decision 6)
     indigenous-relations.ts  The Land Acknowledgement and Commitment to Truth &
                          Reconciliation, verbatim — see "Things not to change"
-  styles/                (planned) — Phase 0 is deliberately unstyled
+  styles/
+    global.css           Design tokens (colours, season colours, spacing,
+                         type, shadows), copied from Figma's 02 Foundations,
+                         plus the defaults every page shares: type, links,
+                         the focus ring, Markdown text. Components keep their
+                         own layout in scoped <style> blocks
 tests/                   Run by `npm test` and by CI on every PR
   cms-contract.test.mjs  .pages.yml and src/content.config.ts still agree
   build.test.mjs         Builds against fixtures; checks drafts, links, images,
                          the homepage, the five pages, the nav, the footer,
                          the council, resources and committees
   council-term.test.mjs  The council term fallback
+  season.test.mjs        Where each season starts, and the term labels
+  contrast.test.mjs      Every colour pair the design uses passes WCAG AA,
+                         read from src/styles/global.css
   redirects.test.mjs     Every redirect is a valid 301 to a page (and heading)
                          that exists
   lib/headings.mjs       Works out a heading's #anchor the way Astro does
@@ -145,7 +159,7 @@ astro.config.mjs         Framework config
 | The Land Acknowledgement or T&R statement | `src/config/indigenous-relations.ts`, **and read decision 13 first** |
 | A URL / adding a page | `src/pages/` and `src/config/routes.ts` (see [Adding a new page](#adding-a-new-page)) |
 | Old-URL redirects | `public/_redirects` |
-| Colours, fonts, spacing | `src/styles/` + `tailwind.config` |
+| Colours, fonts, spacing | `src/styles/global.css`; the font files in `src/assets/fonts/` and `fonts` in `astro.config.mjs` (see [Changing a colour or font](#changing-a-colour-or-font)) |
 
 ---
 
@@ -297,6 +311,21 @@ A Pages CMS job. **Homepage photos** is one list; add a photo, give it a descrip
 
 **Site settings** in Pages CMS. Edit, save, done: they show in the footer of every page. To take a social network off the site, empty its link; there is no default to bring it back. These are facts about the club, not labels. If you're tempted to add a setting for button text or a nav label, it belongs in `src/config/` instead (decision 6).
 
+### Changing a colour or font
+
+A developer job, not a CMS one. Every colour, size and shadow is a custom property at the top of `src/styles/global.css` (`--color-ink`, `--space-4`, `--text-body-md`…). Change the value there and every page follows. Don't type a hex value into a component: use the token, or add one.
+
+**A colour.** Change it in Figma's 02 Foundations board too (Palette, or Season for the sticky and tape), so the design file and the site agree. Then run `npm test`. `tests/contrast.test.mjs` checks each pair the design uses (text on cards, labels on each tab colour, the focus ring on every surface) against WCAG AA, and names the pair that fails. If your colour fails, pick another; don't loosen the test. A new pairing (text on a surface it never sat on before) gets a line in the test's list.
+
+**A season colour** lives in one of the three `:root[data-season=…]` blocks. To see each season, add `?season=winter` (or `fall`, `summer`) to any address.
+
+**A font.** The files are committed in `src/assets/fonts/` with their licences, because the build must fetch nothing (CLAUDE.md §4). To swap one:
+1. Get a woff2 with a latin subset. Google Fonts serves one: request `https://fonts.googleapis.com/css2?family=<Name>` from a browser, and download the `/* latin */` file it lists. Download the font's `OFL.txt` (or other licence) beside it; open-font licences require it.
+2. Point `fonts` in `astro.config.mjs` at the new file, keeping `cssVariable` the same (`--font-body` or `--font-hand`), so nothing else changes.
+3. Delete the old file and licence, and run `npm run verify`.
+
+Keep the two fonts under about 100KB together (they're 97KB now). Bricolage Grotesque is a variable font with weight and optical-size axes; keep both, and leave `font-optical-sizing` at `auto`. A single fixed cut would wrap titles differently from the Figma screens.
+
 ### Adding a field editors can fill in
 
 Order matters. Do it backwards and the build breaks for everyone:
@@ -425,7 +454,7 @@ Four things that will actually take the site down. Understand these before chang
 | An old link from Instagram 404s | Missing redirect | See [Adding a redirect](#adding-a-redirect) |
 | CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished. Or it points at a `#anchor` on an informational page whose heading was renamed | Update the line in `public/_redirects` (and the redirect map) to the new address, or to one of the anchors the error lists, through a PR |
 | A mistyped address shows the homepage instead of "Page not found" | `src/pages/404.astro` is gone, so the build has no `404.html` and Cloudflare treats the site as a single-page app | Restore `src/pages/404.astro` |
-| Site loads but is unstyled | Build partially failed or CSS path broke | Check the Cloudflare deploy log first, always |
+| Site loads but is unstyled | Build partially failed, or `src/styles/global.css` isn't imported by `src/layouts/Base.astro` any more | Check the Cloudflare deploy log first, always |
 
 **Always start with the Cloudflare Pages deploy log.** It answers most questions in under a minute, and the build prints a content summary each run: published and draft counts, anything it dropped and why, and which pages are overdue a read-through.
 
