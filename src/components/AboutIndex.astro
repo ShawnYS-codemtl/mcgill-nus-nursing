@@ -1,0 +1,56 @@
+---
+// The About pages, as chips at the top of the About sheet (Figma About
+// sub-index, 76:1300). Base.astro shows it on every page in the About section.
+// The pages are About's children in src/config/nav.ts.
+import { NAV_ITEMS } from '../config/nav';
+
+const here = Astro.url.pathname;
+const pages = NAV_ITEMS.find(({ section }) => section === 'about')?.children ?? [];
+---
+
+<nav aria-label="About">
+  <ul>
+    {
+      pages.map(({ href, label }) => (
+        <li>
+          <a href={href} aria-current={href === here ? 'page' : undefined}>
+            {label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: var(--radius-control);
+    background: var(--color-card);
+    box-shadow: var(--shadow-lifted);
+    color: var(--color-ink);
+    font: var(--text-label-md);
+    text-decoration: none;
+  }
+  @media (forced-colors: active) {
+    a {
+      border: 1px solid CanvasText;
+    }
+  }
+  /* The page you're on: an ink chip, flat, its label underlined. */
+  a[aria-current] {
+    background: var(--color-ink);
+    box-shadow: none;
+    color: var(--color-card);
+    text-decoration: underline;
+  }
+</style>

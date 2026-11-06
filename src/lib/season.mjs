@@ -1,7 +1,9 @@
 // Plain JavaScript, like src/lib/council-term.mjs, so tests/season.test.mjs
 // can import it without a build. src/layouts/Base.astro also inlines
-// seasonOf's source into the page, so it must stay self-contained: no imports,
-// no references to anything outside its own body.
+// seasonOf's source into the page, and src/components/Header.astro inlines
+// seasonOf and termLabel together, so both must stay self-contained: no
+// imports, no references to anything outside their own bodies (termLabel may
+// call seasonOf, which is inlined beside it).
 
 /**
  * The season a date falls in, by McGill's terms: January–April is winter,

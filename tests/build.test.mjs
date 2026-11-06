@@ -49,6 +49,13 @@ const fixturePage = (name) => parse(readFileSync(fixturePageFile(name), 'utf8').
 /** Each fixture page's text holds one of these, so the test can tell where it ended up. */
 const marker = (name) => `${name.toUpperCase()}-BODY-MARKER`;
 
+/** The CSS a page loads: its <style> blocks and its linked stylesheets. */
+const pageCss = (html) =>
+  [
+    ...[...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(([, css]) => css),
+    ...[...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(([, href]) => readFileSync(path.join(outDir, href), 'utf8')),
+  ].join('\n');
+
 /** Every .html file in the build, as [relative path, contents]. */
 function allHtml(dir = outDir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -124,7 +131,7 @@ test('every image scales down to fit its column instead of showing at full size'
       assert.match(tag, /data-astro-image="constrained"/, `an image in ${file} isn't constrained: ${tag}`);
     }
     if (images.length) {
-      assert.match(html, /\[data-astro-image=constrained\]\)\{max-width:100%\}/, `${file} is missing the rule that keeps images inside the column`);
+      assert.match(pageCss(html), /\[data-astro-image=constrained\]\)\{max-width:100%\}/, `${file} is missing the rule that keeps images inside the column`);
     }
   }
 });
@@ -311,8 +318,8 @@ test('page headings become the anchors redirects point at, the way tests/redirec
 test('the nav and the "Page not found" page link only to pages that were built', () => {
   const built = (href) => pageExists(href.replace(/^\/|\/$/g, ''));
   const notFound = readFileSync(path.join(outDir, '404.html'), 'utf8');
-  const nav = notFound.match(/<nav[^>]*>([\s\S]*?)<\/nav>/)?.[1];
-  assert.ok(nav, 'every page should have the nav in its header');
+  const nav = notFound.match(/<nav aria-label="Main"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert.ok(nav, 'every page should have the main nav');
   const suggestions = notFound.match(/<main[^>]*>([\s\S]*)<\/main>/)[1];
 
   for (const [where, html] of [['the nav', nav], ['the 404 page', suggestions]]) {
@@ -320,11 +327,43 @@ test('the nav and the "Page not found" page link only to pages that were built',
     assert.ok(hrefs.length > 0, `${where} has no links`);
     for (const href of hrefs) assert.ok(built(href), `${where} links to ${href}, which wasn't built`);
   }
-  assert.match(read('about/fees'), /<a href="\/about\/fees\/" aria-current="page">/, 'the nav should mark the current page');
+});
+
+/** The aria-current value on the link to href in the nav with this label, or undefined when it has none. */
+function ariaCurrent(html, navLabel, href) {
+  const nav = html.match(new RegExp(`<nav aria-label="${navLabel}"[^>]*>([\\s\\S]*?)</nav>`))?.[1];
+  assert.ok(nav, `no "${navLabel}" nav`);
+  const link = nav.match(new RegExp(`<a href="${href}"([^>]*)>`))?.[1];
+  assert.notEqual(link, undefined, `the "${navLabel}" nav has no link to ${href}`);
+  return link.match(/aria-current="([^"]+)"/)?.[1];
+}
+
+test('the tabs mark the page you\'re on, and the section a page belongs to', () => {
+  assert.equal(ariaCurrent(read(''), 'Main', '/'), 'page');
+  assert.equal(ariaCurrent(read('news/published'), 'Main', '/'), 'true', 'a post belongs to News');
+  assert.equal(ariaCurrent(read('about/fees'), 'Main', '/about/'), 'true', 'Fees belongs to About');
+  assert.equal(ariaCurrent(read('about/fees'), 'About', '/about/fees/'), 'page', 'the About sub-index marks Fees');
+  assert.equal(ariaCurrent(read('about/fees'), 'Main', '/'), undefined);
+  assert.equal(ariaCurrent(read('contact'), 'Main', '/contact/'), 'page');
+  assert.match(read('contact'), /<a class="contact" href="\/contact\/" aria-current="page"/, 'the phone Contact button too');
+
+  const notFound = readFileSync(path.join(outDir, '404.html'), 'utf8');
+  assert.doesNotMatch(notFound.match(/<nav aria-label="Main"[^>]*>([\s\S]*?)<\/nav>/)[1], /aria-current/, '"Page not found" belongs to no section');
+});
+
+test('every season has its window scene', () => {
+  // A misspelt url() in Header.astro is only a warning at build time, and the
+  // window shows up empty.
+  const css = pageCss(read(''));
+  for (const season of ['fall', 'winter', 'summer']) {
+    const url = css.match(new RegExp(`url\\((/_astro/${season}\\.[\\w-]+\\.svg)\\)`))?.[1];
+    assert.ok(url, `the CSS has no window scene for ${season}`);
+    assert.ok(existsSync(path.join(outDir, url)), `the ${season} scene ${url} wasn't built`);
+  }
 });
 
 /** The footer's contents, only if it comes straight after <main>. */
-const footer = (html) => html.match(/<\/main>\s*<footer>([\s\S]*?)<\/footer>/)?.[1];
+const footer = (html) => html.match(/<\/main>\s*<footer[^>]*>([\s\S]*?)<\/footer>/)?.[1];
 
 test('every page ends with the footer: Site settings\' contact details and a link to the Land Acknowledgement', () => {
   const pages = [
@@ -335,16 +374,16 @@ test('every page ends with the footer: Site settings\' contact details and a lin
   for (const [where, html] of pages) {
     const text = footer(html);
     assert.ok(text, `${where} should have the footer straight after <main>`);
-    assert.match(text, /Fixture Building, Room 12<br>Montreal, QC H0H 0H0/, `${where}: the address should keep its line break`);
-    assert.match(text, /Fixture hours: Tuesdays 2 to 4<br>Or by appointment/, `${where}: office hours`);
-    assert.match(text, /<a href="https:\/\/www\.instagram\.com\/fixture-nus\/">NUS on Instagram<\/a>/, `${where}: Instagram`);
-    assert.match(text, /<a href="\/#land-acknowledgement">Land Acknowledgement<\/a>/, `${where}: Land Acknowledgement link`);
+    assert.match(text, /Fixture Building, Room 12<br[^>]*>Montreal, QC H0H 0H0/, `${where}: the address should keep its line break`);
+    assert.match(text, /Fixture hours: Tuesdays 2 to 4<br[^>]*>Or by appointment/, `${where}: office hours`);
+    assert.match(text, /<a href="https:\/\/www\.instagram\.com\/fixture-nus\/"[^>]*>NUS on Instagram<\/a>/, `${where}: Instagram`);
+    assert.match(text, /<a href="\/#land-acknowledgement"[^>]*>Land Acknowledgement<\/a>/, `${where}: Land Acknowledgement link`);
   }
   assert.match(read(''), /<section id="land-acknowledgement">\s*<h2>Land Acknowledgement<\/h2>/, 'the footer links to this id');
 });
 
 test('a contact email that isn\'t an address falls back to the default, and the build says so', () => {
-  assert.match(footer(read('about/fees')), /<a href="mailto:nus\.nursing@mail\.mcgill\.ca">nus\.nursing@mail\.mcgill\.ca<\/a>/);
+  assert.match(footer(read('about/fees')), /<a href="mailto:nus\.nursing@mail\.mcgill\.ca"[^>]*>nus\.nursing@mail\.mcgill\.ca<\/a>/);
   assert.match(log, /contactEmail is "nus at mcgill" in Site settings, which isn't an email address/);
 });
 
@@ -400,7 +439,7 @@ test('every council photo is held to the same 4:5 shape, with an empty alt becau
     assert.match(tag, /width="400" height="500"/, `a council photo isn't 4:5: ${tag}`);
     assert.match(tag, /data-astro-image-fit="cover"/, `a council photo isn't cropped to fill: ${tag}`);
   }
-  assert.match(html, /aspect-ratio:4\/5/, 'the rule that holds small photos to 4:5 is missing');
+  assert.match(pageCss(html), /aspect-ratio:4\/5/, 'the rule that holds small photos to 4:5 is missing');
 });
 
 test('resource categories come in a fixed order, and each resource heading\'s id is its filename', () => {

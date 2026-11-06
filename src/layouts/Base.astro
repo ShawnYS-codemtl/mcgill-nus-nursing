@@ -8,9 +8,11 @@
 import 'astro:assets';
 import { Font } from 'astro:assets';
 import '../styles/global.css';
+import AboutIndex from '../components/AboutIndex.astro';
 import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
 import Nav from '../components/Nav.astro';
-import { ROUTES } from '../config/routes';
+import { currentItem } from '../config/nav';
 import { seasonOf } from '../lib/season.mjs';
 
 interface Props {
@@ -20,6 +22,10 @@ interface Props {
 }
 
 const { title, description, noindex = false } = Astro.props;
+
+// The section picks the sheet's colour (src/styles/global.css). Contact and
+// "Page not found" lie on the white front page; only Contact has a tab.
+const section = currentItem(Astro.url.pathname)?.section;
 
 // The season paints the window, sticky and tape (decision 17). The page is
 // built with the build date's season, so it is right with JavaScript off; this
@@ -43,13 +49,115 @@ const seasonScript = `{const s=new URLSearchParams(location.search).get('season'
     <Font cssVariable="--font-hand" />
   </head>
   <body>
-    <header>
-      <a href={ROUTES.home}>McGill Nursing Undergraduate Society</a>
-      <Nav />
-    </header>
-    <main>
+    <Header />
+    <Nav />
+    <main class="desk" data-section={section}>
+      {section === 'about' && <AboutIndex />}
       <slot />
     </main>
     <Footer />
   </body>
 </html>
+
+<style>
+  /* The front sheet: the current section's, under its tab (Figma Tab nav,
+     74:984). The page's content sits on it. */
+  main {
+    --step: 4px;
+    --shade: rgb(0 0 0 / 0.4);
+    position: relative;
+    padding: 20px 12px;
+    border-radius: var(--radius-card);
+    background: var(--sheet);
+    box-shadow: var(--shadow-sheet);
+    color: var(--on-sheet);
+    --link: var(--on-sheet-link);
+  }
+
+  /* Forced colours drop the background and shadows: outline the sheet. */
+  @media (forced-colors: active) {
+    main {
+      border: 1px solid CanvasText;
+    }
+  }
+
+  /* The other sections' sheets, stacked behind it, each 4px further right and
+     2px higher, with its own shadow: copies of this box drawn as box-shadows,
+     nearest first, so they need no markup. z-index -1 puts them under the tabs. */
+  main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow:
+      var(--step) -2px 0 var(--b1),
+      var(--step) -5px 8px var(--shade),
+      calc(2 * var(--step)) -4px 0 var(--b2),
+      calc(2 * var(--step)) -7px 8px var(--shade),
+      calc(3 * var(--step)) -6px 0 var(--b3),
+      calc(3 * var(--step)) -9px 8px var(--shade),
+      calc(4 * var(--step)) -8px 0 var(--b4, transparent),
+      calc(4 * var(--step)) -11px 8px var(--shade4, transparent),
+      calc(5 * var(--step)) -10px 0 var(--b5, transparent),
+      calc(5 * var(--step)) -13px 8px var(--shade5, transparent);
+  }
+
+  /* Behind each sheet, the others in tab order. On phones Contact has no
+     sheet, and the white page has four behind it, 3px apart so they fit. */
+  main[data-section='news'] {
+    --b1: var(--color-mustard);
+    --b2: var(--color-forest);
+    --b3: var(--color-slate);
+  }
+  main[data-section='about'] {
+    --b1: var(--color-oxblood);
+    --b2: var(--color-forest);
+    --b3: var(--color-slate);
+  }
+  main[data-section='involved'] {
+    --b1: var(--color-oxblood);
+    --b2: var(--color-mustard);
+    --b3: var(--color-slate);
+  }
+  main[data-section='resources'] {
+    --b1: var(--color-oxblood);
+    --b2: var(--color-mustard);
+    --b3: var(--color-forest);
+  }
+  main[data-section='contact'],
+  main:not([data-section]) {
+    --b1: var(--color-oxblood);
+    --b2: var(--color-mustard);
+    --b3: var(--color-forest);
+    --b4: var(--color-slate);
+    --shade4: var(--shade);
+  }
+  @media (width < 48rem) {
+    main[data-section='contact'],
+    main:not([data-section]) {
+      --step: 3px;
+    }
+  }
+
+  @media (width >= 48rem) {
+    main {
+      padding: 1.5rem;
+    }
+    /* On laptops Contact is a tab, so its white sheet is at the back of every stack. */
+    main:not([data-section='contact']) {
+      --b4: var(--color-card);
+      --shade4: var(--shade);
+    }
+    main:not([data-section]) {
+      --b4: var(--color-slate);
+      --b5: var(--color-card);
+      --shade5: var(--shade);
+      /* "Page not found" has no tab of its own. Without this line its white
+         page would look joined to the white Contact tab. */
+      box-shadow:
+        inset 0 2px var(--color-ink-muted),
+        var(--shadow-sheet);
+    }
+  }
+</style>
