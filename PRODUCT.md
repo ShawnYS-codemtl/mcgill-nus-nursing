@@ -8,9 +8,9 @@ web
 
 ## Stack
 
-Astro (static output), Tailwind CSS, npm, hosted on **Cloudflare Pages** free tier. Content is Markdown/YAML/JSON in the repo, edited by council members through **Pages CMS** (a free hosted form editor that commits on Save). Documented with rationale in `CLAUDE.md` §5 and §8; not an open question. The CMS was Notion until 2026-10-11 (decision 1) and the host was Netlify until 2026-09-29 (decision 3); both reversals are explained there.
+Astro (static output), plain CSS with design tokens (no Tailwind; reasons in `CLAUDE.md` §5), npm, hosted on **Cloudflare Pages** free tier. Content is Markdown/YAML/JSON in the repo, edited by council members through **Pages CMS** (a free hosted form editor that commits on Save). Documented with rationale in `CLAUDE.md` §5 and §8; not an open question. The CMS was Notion until 2026-10-11 (decision 1) and the host was Netlify until 2026-09-29 (decision 3); both reversals are explained there.
 
-Phase 0 is scaffolded: the Astro project, the content collections, the Pages CMS config, and the post index and detail pages exist. Styling does not — Tailwind is not installed yet, and Phase 0 is deliberately unstyled.
+Every MVP page exists. Styling is arriving in steps: the design tokens, fonts and season switch are in (`src/styles/global.css`); the header, tabs, cards and sheets follow.
 
 Hard architectural constraint: the output is static files. No database, no backend server, no serverless functions, no site auth. A feature that appears to need a server is an escalation, not a build.
 
