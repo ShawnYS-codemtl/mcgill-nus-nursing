@@ -129,7 +129,7 @@ The requirement was "one post publishes to the web and generates the email." Spl
 ### MVP — must ship by October
 
 - `[MVP]` **Homepage as newsletter:** latest post in full or as a lead card, recent posts below, featured links block, land acknowledgement.
-- `[MVP]` News/post system, editable in the CMS: the homepage is the index (no separate `/news/` list until posts outgrow it), detail pages, dates, author (role, not person), optional cover image.
+- `[MVP]` News/post system, editable in the CMS: the homepage is the index (no separate `/news/` list until posts outgrow it: at about 10 posts the homepage shows the 6 newest and the rest move to `/news/`, agreed at sign-off 2026-11-05), detail pages, dates, author (role, not person), optional cover image.
 - `[MVP]` **Council roster**, editable in the CMS, filtered to the current term. Executive and General Council sections, photo/name/program/role/fun fact/email per member. Handles a VACANT row gracefully.
 - `[MVP]` **Resources directory**, editable in the CMS — the 15 existing entries, grouped by category, each with title, description, outbound link.
 - `[MVP]` Get Involved: committee/club cards, editable in the CMS, with detail pages for the ones that have real content.
@@ -410,3 +410,38 @@ The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary i
 - **The contact email is checked too:** one that isn't an address falls back to the default, with a note, as a blank one already did. The link and email rules moved to `src/lib/links.ts`, shared with `src/lib/content.ts`.
 
 **For the council:** the Contact page's text has the office address typed into it, and the footer now shows the one from Site settings. Moving the office means changing both.
+
+### Status — 2026-11-05, design sign-off
+
+**The club agreed to every recommendation** in the sign-off document (`NUS website design sign-off`, a Google Doc sent through the club's one contact): all ten questions in Part 1, and no objection to Part 2. The Figma screens are signed off, so styling PRs 2–4 can be built from them. The document is in a personal account (decision 10), so what it settled is written down here.
+
+**Part 1, as agreed:**
+
+1. On a laptop the page stays a sheet-wide column (720px sheet, 672px text), centred on the navy mat.
+2. Every laptop page has the full window across the top (236px, about 30% of the first screen); it stops growing above 1280px so the view never crops. On phones, pages other than the homepage keep the short strip.
+3. Homepage photos: three to a row on laptops, two on phones.
+4. Council on laptops: two cards side by side, each as wide as on a phone.
+5. The handwritten "Fun fact!" on council cards and "you?" in the open seat's empty photo frame stay. With the "latest!" / "pinned" sticky, they are the only handwriting on the site.
+6. Jump links under the heading on Council (Executive, General) **and on Resources** (one per category).
+7. Posts that are just a link: the title is the link, with the "opens somewhere else" icon right after its last word, then the summary, then the date.
+8. Washi tape on Featured post cards only, not on More news.
+9. No separate News page yet. At about 10 posts, the homepage shows the 6 newest and older ones move to `/news/` (§7).
+10. Long email addresses in page text get reworded links ("email the Opportunities Coordinator"), with no code to break addresses after the @. The five Contact page links are a content fix for the council (Part 3).
+
+**Part 2, going ahead:**
+
+- The lanyard hangs left of the mountain, clear of the cross and mast.
+- Contact is a white fifth tab on laptops, and stays the window button on phones, where it gets a thin white outline when current.
+- The current tab is taller, joined to its page, underlined and `aria-current`: colour alone doesn't mark it.
+- Tabs get a compact size below 390px, so "Get involved" fits at 320.
+- On laptops, 404's white page has a thin top line so it doesn't read as Contact.
+- On laptops, tabs, headings, cards and the footer share one left edge.
+- News, Get involved and Resources keep their h1, visually hidden: the tab already says the name.
+- Every post card keeps "Read the post →" as a cue; the title is the link.
+- The date sits above the title on the lead post, and under the summary on the others. Dates are written in full everywhere.
+- On phones, a council card with a long role puts the name and role under the photo; at 320 every card does.
+- On committee pages the Instagram icon sits at the card's right, and a long name wraps.
+- Text pages get a little more space above a heading that follows a paragraph.
+- 404: more room between its links, a full stop after "sick", and the emoji hidden from screen readers.
+
+**Still with the council:** Part 3 of the document, about 40 fixes to the site's text for whoever edits it in Pages CMS (the two posts' real dates and the EN-FR summary, the Contact page's links and duplicated address, Fees, Resources, committee links, five slips in council entries, the Elections page suggestion from 2026-10-31). None holds up the build. The document also asked for the NUS logo file, and the covering email asked who holds the domain's GoDaddy login (§9). Neither answer is recorded here yet.
