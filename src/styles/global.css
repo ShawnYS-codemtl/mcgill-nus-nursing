@@ -1,0 +1,158 @@
+/* The design tokens and element defaults for the whole site ("Desk by the
+   Window", CLAUDE.md §8 decision 17). Imported once, by src/layouts/Base.astro.
+
+   Tokens are copied from the Figma file's 02 Foundations board: each Figma
+   variable's WEB code syntax is the custom property here. Change a colour
+   here and in Figma together. tests/contrast.test.mjs reads this file, so a
+   colour that breaks a WCAG AA pair fails CI (MAINTENANCE.md, "Change a
+   colour or font").
+
+   Components keep their own layout in scoped <style> blocks. This file holds
+   what every page shares: tokens, type, links, the focus ring, and the
+   defaults for Markdown from the CMS, which arrives with no classes. */
+
+:root {
+  /* Palette. The four tab colours never change with the season. */
+  --color-mat: #1c2638;
+  --color-mat-grid: #253149;
+  --color-mat-grid-strong: #33415f;
+  --color-card: #ffffff;
+  --color-ink: #1a1f2b;
+  --color-ink-muted: #4a5263;
+  --color-pen: #1f3a6b;
+  --color-rule: #c5cedd;
+  --color-margin: #9e3b3b;
+  --color-oxblood: #8c2f39;
+  --color-mustard: #c99a2e;
+  --color-forest: #2f5d50;
+  --color-slate: #3d5a80;
+  --color-window: #f2f4f3;
+  --color-sill: #e2e6e4;
+  --color-sill-edge: #c9cfcc;
+
+  /* Size. Spacing and radii in px, as in Figma. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-clip: 3px;
+  --radius-card: 4px;
+  --radius-control: 6px;
+  --radius-badge: 10px;
+
+  /* Type. Figma's px sizes in rem (16px = 1rem), so text follows a visitor's
+     browser font-size setting. --line is the body line height and the ruled-
+     line pitch (24px), in rem for the same reason: the rules must track the
+     text. font-optical-sizing stays auto: Figma's titles break where browsers
+     do at auto, not at a fixed optical size. */
+  --line: 1.5rem;
+  --text-title-xl: 800 1.75rem / 2.125rem var(--font-body);
+  --text-title-lg: 700 1.25rem / 1.625rem var(--font-body);
+  --text-title-md: 700 1.125rem / 1.5rem var(--font-body);
+  --text-brand-badge: 800 1.125rem / 1.375rem var(--font-body);
+  --text-body-md: 500 1rem / var(--line) var(--font-body);
+  --text-body-strong: 700 1rem / var(--line) var(--font-body);
+  --text-label-md: 700 0.875rem / 1.125rem var(--font-body);
+  --text-label-sm: 600 0.8125rem / 1.125rem var(--font-body);
+  --text-label-xs: 500 0.75rem / 1rem var(--font-body);
+  --text-aside: 400 1.75rem / 1.875rem var(--font-hand);
+
+  /* Shadows (Figma effect styles shadow/*). */
+  --shadow-card: 0 6px 14px rgb(0 0 0 / 0.35);
+  --shadow-lifted: 0 4px 8px rgb(0 0 0 / 0.25);
+  --shadow-sheet: 0 -3px 8px rgb(0 0 0 / 0.4);
+  --shadow-tab: 0 -2px 4px rgb(0 0 0 / 0.35);
+}
+
+/* Season. Base.astro sets data-season on <html> from the build date, and an
+   inline script resets it from the visitor's date (src/lib/season.mjs). */
+:root[data-season='fall'] {
+  --season-sticky: #e8a867;
+  --season-tape: #a44a3f;
+}
+:root[data-season='winter'] {
+  --season-sticky: #c9d8e6;
+  --season-tape: #7d8fa3;
+}
+:root[data-season='summer'] {
+  --season-sticky: #c8d99a;
+  --season-tape: #6e8b5e;
+}
+
+/* Element defaults. The page stays on a white card surface until the mat,
+   sheets and cards arrive (Phase B, PR 2): ink and pen on the navy mat would
+   fail contrast. */
+html {
+  color-scheme: light;
+}
+
+body {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: var(--space-6);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font: var(--text-body-md);
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3 {
+  margin: var(--space-8) 0 var(--space-3);
+  color: var(--color-ink);
+}
+h1 {
+  font: var(--text-title-xl);
+}
+h2 {
+  font: var(--text-title-lg);
+}
+h3 {
+  font: var(--text-title-md);
+}
+
+/* Links are underlined: pen next to ink differs by colour alone. Components
+   whose links carry an arrow or external icon drop the underline themselves. */
+a {
+  color: var(--color-pen);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+/* The two-tone focus ring: 2px ink inside, 2px white outside, so it shows on
+   the mat, a card, and every tab colour. The outline survives forced-colours
+   mode, where the box-shadow is dropped. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px var(--color-card);
+}
+
+/* Prose: Markdown from the CMS. 12px between blocks (Figma body/prose). */
+p,
+ul,
+ol {
+  margin: 0 0 var(--space-3);
+}
+ul,
+ol {
+  padding-left: var(--space-6);
+}
+li > ul,
+li > ol {
+  margin-bottom: 0;
+}
+strong,
+b {
+  font-weight: 700;
+}
+hr {
+  margin: var(--space-6) 0;
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+}

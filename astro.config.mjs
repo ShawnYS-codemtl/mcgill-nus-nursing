@@ -1,12 +1,11 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import { decorativeFilenameAltsIntegration } from './src/lib/image-alt.mjs';
 
-// Phase 0 exists to validate one thing: that a council exec can publish from
-// Pages CMS unaided (CLAUDE.md §12). So it deliberately ships no styling, and
-// its only integration is a small accessibility fix (src/lib/image-alt.mjs).
 // Content lives in src/content/ (schemas in src/content.config.ts); images go
-// through Astro's built-in pipeline.
+// through Astro's built-in pipeline. The only integration is a small
+// accessibility fix (src/lib/image-alt.mjs). Styling is plain CSS:
+// src/styles/global.css, plus scoped <style> blocks in components.
 //
 // `site` is the Cloudflare Pages preview subdomain. It becomes
 // https://mcgillnus.ca at DNS cutover — see docs/migration-checklist.md.
@@ -16,6 +15,32 @@ export default defineConfig({
   // Images pasted into a post's text arrive with their filename as alt text;
   // this treats them as decoration instead. See src/lib/image-alt.mjs.
   integrations: [decorativeFilenameAltsIntegration()],
+  // Both fonts are committed woff2 files (src/assets/fonts/, with their OFL
+  // licences), so the build fetches nothing (CLAUDE.md §4). Each is Google
+  // Fonts' latin subset. Bricolage keeps its weight and optical-size axes:
+  // titles use the display cut, and font-optical-sizing: auto picks it by
+  // size, which is how the Figma screens break their lines. Astro writes the
+  // @font-face rules and size-matched fallbacks; <Font> in Base.astro.
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: 'Bricolage Grotesque',
+      cssVariable: '--font-body',
+      fallbacks: ['system-ui', 'sans-serif'],
+      options: {
+        variants: [{ src: ['./src/assets/fonts/BricolageGrotesque-latin.woff2'], weight: '200 800', style: 'normal' }],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: 'Gochi Hand',
+      cssVariable: '--font-hand',
+      fallbacks: ['cursive'],
+      options: {
+        variants: [{ src: ['./src/assets/fonts/GochiHand-latin.woff2'], weight: 400, style: 'normal' }],
+      },
+    },
+  ],
   image: {
     // Editors upload photos straight off a phone, often 4000px wide. Every
     // image, covers and images inside a post alike, scales down to fit the
@@ -25,7 +50,7 @@ export default defineConfig({
     layout: 'constrained',
     responsiveStyles: true,
     // The widths Astro generates for each image. The text column is 42rem
-    // (about 672px, set in src/layouts/Base.astro), so 1344px covers it on a
+    // (about 672px, set in src/styles/global.css), so 1344px covers it on a
     // high-density phone screen. Astro's default list runs to 6016px and
     // would encode a dozen sizes of every photo, slowing every build for
     // sizes nobody downloads. Revisit if the design adds a full-width image.
