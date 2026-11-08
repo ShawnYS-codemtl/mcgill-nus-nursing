@@ -456,3 +456,15 @@ The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary i
 - **Found and fixed:** a component's own `box-shadow` (tab, chip, badge) replaced the white half of the two-tone focus ring, leaving an ink line that vanished on the dark tabs. The ring is now `!important` in `global.css`.
 - **The scenes' source is `scripts/scenes.mjs`**, moved into the repo from a personal folder.
 - **The term label follows the visitor's real date**, not `?season=`, so a winter preview in November still says "Fall term".
+
+### Status — 2026-11-08, the homepage and post page
+
+**Styling PR 3 is built** (branch `feat/design-news`): the homepage's post cards, sticky note, taped photos, verbatim cards and empty state, and the post page's card, from the signed-off Figma components.
+
+- **The sticky is always true.** `getHomepagePosts` now also says whether the lead has the newest date. The sticky reads "latest!" if so, and "pinned" if a pinned post leads ahead of a newer one.
+- **The whole card is the title link.** "Read the post →" is a cue hidden from screen readers, so each post is still one link (the "exactly once" test is unchanged). Titles under Featured and More news are `h3`s.
+- **The lead's cover sits under the red line,** above the summary, as on the post page. The Figma component put it at the top of the card, where the sticky would cover it. No real post has a cover yet.
+- **The post page shows a cover whole.** The lead card crops it to 16:9; the post page doesn't, because a flyer's text matters.
+- **The sticky sits 2px left of the signed-off position,** so its tilted corner ends inside a phone screen instead of 1.5px past it. Nothing clips overflow, so a real overflow elsewhere still shows up as sideways scroll.
+- **Gallery images are sized for their real column** (194px on laptops, half the screen less the margins on phones), not the 672px text column. Browsers were fetching three to four times the pixels.
+- Checked in Chromium, Firefox and WebKit at 320, 390 and 1280, plus builds with no posts and with 12. At 320, "Fall by-election: U0 BScN Representative" no longer breaks mid-word.
