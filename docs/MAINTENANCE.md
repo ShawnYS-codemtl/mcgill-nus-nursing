@@ -1,6 +1,6 @@
 # MAINTENANCE
 
-**Last reviewed:** 2026-11-06
+**Last reviewed:** 2026-11-08
 **Maintained by:** _(role, not person — e.g. "Director of Logistics" or "NUS Webmaster")_
 
 ---
@@ -39,7 +39,7 @@ Fill this in and keep it accurate. Missing access is the most common reason a ha
 
 Keep this current. A stale map is worse than none.
 
-Everything here is real and on disk today. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved, then the design tokens and fonts, then the window header, the tabs and the sheets.
+Everything here is real and on disk today. Phase 0 built the publish loop (posts); the informational pages and a plain nav followed, then the council roster, the resources directory and Get Involved, then the design tokens and fonts, then the window header, the tabs and the sheets, then the homepage's cards and the post page.
 
 ```
 CLAUDE.md                Project context — read before making structural changes
@@ -104,8 +104,13 @@ src/
                          photo to the same 4:5 shape
     CommitteeCard.astro  One committee's card on /involved/
     CommitteeLogo.astro  A committee's logo, whole, in a square (card and page)
+    PostCard.astro       One post on the homepage: the lead's ruled card with
+                         its sticky note, or a compact card under Featured
+                         (taped) and More news
     PostDate.astro       A post's date in words, on the homepage and the
                          post's page
+    Icon.astro           The arrow and "opens somewhere else" icons that
+                         follow a link
   lib/
     content.ts           Soft checks: drops one bad value with a warning
                          instead of failing the whole build. Loads posts, the
@@ -136,8 +141,9 @@ src/
     global.css           Design tokens (colours, season colours, spacing,
                          type, shadows), copied from Figma's 02 Foundations,
                          plus what every page shares: each section's colours,
-                         the mat, type, links, the focus ring, Markdown text
-                         and the prose sheet. Components keep their own
+                         the mat, type, links, the focus ring, Markdown text,
+                         the white card, ruled lines and tape, and the prose
+                         sheet. Components keep their own
                          layout in scoped <style> blocks
 scripts/
   scenes.mjs             Draws the three window scenes into
@@ -476,6 +482,7 @@ Four things that will actually take the site down. Understand these before chang
 | CI stopped being required | The job in `ci.yml` was renamed, so the ruleset waits on a check that never reports | Make the ruleset's required check match the job name |
 | A "Workers Builds" check fails on every commit | A Cloudflare **Worker** is connected to the repo, usually one created by mistake on the Workers tab | Delete that Worker in Cloudflare (its address ends in `.workers.dev`); keep the `.pages.dev` project. See "If the Cloudflare project ever has to be recreated" |
 | Site stopped updating, but is still online | Monthly build allowance used up (500 on the free plan; every Save is one) | It resets monthly. It would take a lot of saving; check for something stuck in a commit loop |
+| The sticky note on the top post says "pinned", not "latest!" | The top post is pinned, and another post has a later date. The note only says "latest!" when it's true | Nothing is broken. If the pin is no longer needed, clear its **Keep at the top until** date in Pages CMS |
 | A pinned post won't drop off the top | Pins are checked at build time | Any Save triggers a build; it drops off then |
 | A post marked Featured shows under More news instead | More than four posts are marked Featured. The four that come first on the homepage keep the spot (the lead counts as one); the build log names the rest | Switch Featured off on a post that no longer needs it |
 | A photo disappeared from the homepage | Either its description is only spaces (the build log names it by its position in the list), or its Term isn't the current council term while at least one photo has the current term. Photos with no Term always show | Write a description, or change or clear its Term, in **Homepage photos**. See [Adding a photo to the homepage gallery](#adding-a-photo-to-the-homepage-gallery) |

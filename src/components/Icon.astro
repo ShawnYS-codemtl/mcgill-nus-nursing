@@ -1,0 +1,26 @@
+---
+// The two link icons (Figma Icon · arrow 76:1154, Icon · external 76:1158).
+// Decorative: the link's own words say where it goes. They draw in the text
+// colour, so set `color` where they sit.
+interface Props {
+  name: 'arrow' | 'external';
+}
+
+const paths = {
+  arrow: 'M4 10H16M11 15L16 10L11 5',
+  external: 'M8 4H4V16H16V12M16 9V4H11M16 4L9 11',
+};
+---
+
+<svg
+  width="18"
+  height="18"
+  viewBox="0 0 18 18"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"><path d={paths[Astro.props.name]}></path></svg
+>
