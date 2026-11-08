@@ -16,22 +16,42 @@ const { Content } = await render(post);
 ---
 
 <Base title={`${data.title} — McGill NUS`} description={data.summary}>
-  <article>
-    <h1>{data.title}</h1>
-    <p>
-      <PostDate date={data.date} />
-      {data.authorRole && <> · {data.authorRole}</>}
-    </p>
+  <article class="prose-sheet card">
+    <header>
+      <h1>{data.title}</h1>
+      <p>
+        <PostDate date={data.date} />
+        {data.authorRole && <> · {data.authorRole}</>}
+      </p>
+    </header>
 
     {
-      /* src/lib/content.ts has already dropped a cover with no description. */
+      /* src/lib/content.ts has already dropped a cover with no description.
+         Shown whole, not cropped like the homepage's: a flyer's text matters. */
       data.cover && data.coverAlt && (
-        <Image src={data.cover} alt={data.coverAlt} widths={[400, 800, 1200]} sizes="(max-width: 42rem) 100vw, 42rem" />
+        <Image
+          src={data.cover}
+          alt={data.coverAlt}
+          widths={[400, 800, 1200]}
+          sizes="(min-width: 48rem) 636px, calc(100vw - 92px)"
+        />
       )
     }
 
     <Content />
   </article>
-
-  <p><a href="/">Back to news</a></p>
 </Base>
+
+<style>
+  /* The date line sits under the title, above the red line, as on the lead card. */
+  header p {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font: var(--text-label-sm);
+  }
+  article > img {
+    display: block;
+    margin-bottom: var(--space-3);
+    border-radius: 2px;
+  }
+</style>

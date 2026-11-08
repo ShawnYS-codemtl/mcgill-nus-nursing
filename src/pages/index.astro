@@ -4,47 +4,27 @@
 // Acknowledgement and the Commitment to Truth & Reconciliation in full.
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import PostDate from '../components/PostDate.astro';
+import PostCard from '../components/PostCard.astro';
 import { LAND_ACKNOWLEDGEMENT, TRUTH_AND_RECONCILIATION } from '../config/indigenous-relations';
-import { ROUTES } from '../config/routes';
-import { getGallery, getHomepagePosts, type Post } from '../lib/content';
+import { getGallery, getHomepagePosts } from '../lib/content';
 
-const { lead, featured, more } = await getHomepagePosts();
+const { lead, leadIsNewest, featured, more } = await getHomepagePosts();
 const photos = await getGallery();
-
-const href = (post: Post) => post.data.externalLink ?? ROUTES.post(post.data.slug);
-
-// Same as a post's own page: the text column is 42rem (src/layouts/Base.astro).
-const widths = [400, 800, 1200];
-const sizes = '(max-width: 42rem) 100vw, 42rem';
 ---
 
 <Base title="McGill NUS — News" description="News and announcements from the McGill Nursing Undergraduate Society.">
-  <h1>News</h1>
+  {/* The News tab already says it. */}
+  <h1 class="visually-hidden">News</h1>
 
   {
     lead ? (
-      // No "Latest" label: a pinned post leads even when it isn't the newest.
-      <article>
-        <h2>
-          <a href={href(lead)}>{lead.data.title}</a>
-        </h2>
-        <p>
-          <PostDate date={lead.data.date} />
-          {lead.data.authorRole && <> · {lead.data.authorRole}</>}
-        </p>
-        {
-          /* src/lib/content.ts has already dropped a cover with no description. */
-          lead.data.cover && lead.data.coverAlt && (
-            <Image src={lead.data.cover} alt={lead.data.coverAlt} widths={widths} sizes={sizes} />
-          )
-        }
-        <p>{lead.data.summary}</p>
-      </article>
+      <PostCard post={lead} variant="lead" newest={leadIsNewest} />
     ) : (
       // The empty state is a real state, not an edge case: "nothing posted in a
       // month" will happen. See PRODUCT.md → Product Principles.
-      <p>No posts yet. Check back soon.</p>
+      <div class="card empty">
+        <p>No posts yet. Check back soon.</p>
+      </div>
     )
   }
 
@@ -52,13 +32,10 @@ const sizes = '(max-width: 42rem) 100vw, 42rem';
     featured.length > 0 && (
       <section>
         <h2>Featured</h2>
-        <ul>
+        <ul class="posts">
           {featured.map((post) => (
             <li>
-              <a href={href(post)}>{post.data.title}</a>
-              <br />
-              <PostDate date={post.data.date} />
-              <p>{post.data.summary}</p>
+              <PostCard post={post} variant="compact" taped />
             </li>
           ))}
         </ul>
@@ -70,13 +47,10 @@ const sizes = '(max-width: 42rem) 100vw, 42rem';
     more.length > 0 && (
       <section>
         <h2>More news</h2>
-        <ul>
+        <ul class="posts">
           {more.map((post) => (
             <li>
-              <a href={href(post)}>{post.data.title}</a>
-              <br />
-              <PostDate date={post.data.date} />
-              <p>{post.data.summary}</p>
+              <PostCard post={post} variant="compact" taped={false} />
             </li>
           ))}
         </ul>
@@ -88,24 +62,126 @@ const sizes = '(max-width: 42rem) 100vw, 42rem';
     photos.length > 0 && (
       <section>
         <h2>Photos</h2>
-        {photos.map(({ data }) => (
-          <figure>
-            <Image src={data.image} alt={data.alt} widths={widths} sizes={sizes} />
-            {data.caption && <figcaption>{data.caption}</figcaption>}
-          </figure>
-        ))}
+        <div class="gallery">
+          {photos.map(({ data }) => (
+            <figure>
+              <div class="print">
+                <Image
+                  src={data.image}
+                  alt={data.alt}
+                  widths={[200, 400, 600]}
+                  sizes="(min-width: 48rem) 194px, calc(50vw - 56px)"
+                />
+              </div>
+              {data.caption && <figcaption>{data.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
       </section>
     )
   }
 
   {/* Verbatim texts, never edited here or in the CMS: CLAUDE.md decision 13.
+      Plain cards: never tilted, taped, stickied or handwritten.
       The id is where every page's footer links (ROUTES.landAcknowledgement). */}
-  <section id="land-acknowledgement">
+  <section id="land-acknowledgement" class="card verbatim">
     <h2>{LAND_ACKNOWLEDGEMENT.heading}</h2>
     <p>{LAND_ACKNOWLEDGEMENT.text}</p>
   </section>
-  <section>
+  <section class="card verbatim">
     <h2>{TRUTH_AND_RECONCILIATION.heading}</h2>
     <p>{TRUTH_AND_RECONCILIATION.text}</p>
   </section>
 </Base>
+
+<style>
+  /* Section headings sit on the sheet, in its text colour. */
+  h2 {
+    font: var(--text-title-md);
+  }
+
+  .posts {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A blank ruled card (Figma Empty state, 82:1331). */
+  .empty {
+    padding: 22px 18px 16px;
+  }
+  .empty p {
+    margin: 0;
+    padding-bottom: calc(3 * var(--line));
+    background: var(--rules);
+  }
+
+  /* Taped photos (Figma Taped photo, 77:1310), two to a row, three from
+     48rem. Along a row they tilt left, then right; captions stay level. */
+  .gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (width >= 48rem) {
+    .gallery {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  figure {
+    --tilt: -2deg;
+    --tape-tilt: 5deg;
+    --tape-top: 9px;
+    position: relative;
+    margin: 0;
+    padding-top: 21px;
+  }
+  figure:nth-child(even) {
+    --tilt: 2deg;
+    --tape-tilt: -4deg;
+    --tape-top: 4px;
+  }
+  figure::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: var(--tape-top);
+    left: calc(50% - 32px);
+    width: 64px;
+    height: 22px;
+    background: var(--tape);
+    transform: rotate(var(--tape-tilt));
+  }
+  .print {
+    margin: 0 6px 8px;
+    padding: 6px;
+    background: var(--color-card);
+    box-shadow: var(--shadow-card);
+    transform: rotate(var(--tilt));
+  }
+  .print img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  figcaption {
+    font: var(--text-label-sm);
+    text-align: center;
+  }
+
+  .verbatim {
+    margin-top: 32px;
+    padding: 20px 18px;
+  }
+  .verbatim h2 {
+    margin: 0 0 8px;
+    font: var(--text-title-lg);
+  }
+  .verbatim p {
+    margin: 0;
+  }
+</style>

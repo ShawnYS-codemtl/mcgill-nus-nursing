@@ -1,0 +1,248 @@
+---
+// A post on the homepage (Figma Post card, 77:1271). The lead is a ruled
+// index card with the one sticky note; every other post is a compact card
+// under Featured or More news, taped under Featured. The title is the link and
+// covers the card; "Read the post" is only a cue, hidden from screen readers.
+// A post with an external link has no page here: its title carries the
+// external icon instead of the cue.
+import { Image } from 'astro:assets';
+import { ROUTES } from '../config/routes';
+import type { Post } from '../lib/content';
+import Icon from './Icon.astro';
+import PostDate from './PostDate.astro';
+
+type Props = { post: Post } & ({ variant: 'lead'; newest: boolean } | { variant: 'compact'; taped: boolean });
+
+const props = Astro.props;
+const { data } = props.post;
+const lead = props.variant === 'lead';
+const Heading = lead ? 'h2' : 'h3';
+const href = data.externalLink ?? ROUTES.post(data.slug);
+
+// The icon is held to the title's last word, so it never wraps onto a line alone.
+const split = data.title.lastIndexOf(' ') + 1;
+const [titleStart, lastWord] = [data.title.slice(0, split), data.title.slice(split)];
+---
+
+<article class:list={['card', props.variant, { taped: props.variant === 'compact' && props.taped }]}>
+  <header>
+    {
+      lead && (
+        <p class="date">
+          <PostDate date={data.date} />
+          {data.authorRole && <> · {data.authorRole}</>}
+        </p>
+      )
+    }
+    <Heading>
+      <a href={href}>
+        {
+          data.externalLink ? (
+            <>
+              {titleStart}
+              <span class="last-word">
+                {lastWord}
+                <Icon name="external" />
+              </span>
+            </>
+          ) : (
+            data.title
+          )
+        }
+      </a>
+    </Heading>
+  </header>
+  {
+    lead && (
+      <p class="sticky">
+        {props.newest ? 'latest!' : 'pinned'}
+        <svg width="30.28" height="16.15" viewBox="0 0 30.28 16.15" fill="none" aria-hidden="true">
+          <path
+            d="M29.28 1C19.28 3 9.28 7 1.28 15M3.28 6L1.28 15L10.28 14"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </p>
+    )
+  }
+  {
+    /* src/lib/content.ts has already dropped a cover with no description. */
+    lead && data.cover && data.coverAlt && (
+      <Image
+        src={data.cover}
+        alt={data.coverAlt}
+        widths={[400, 800, 1200]}
+        sizes="(min-width: 48rem) 636px, calc(100vw - 92px)"
+      />
+    )
+  }
+  <div class="body">
+    <p>{data.summary}</p>
+    {
+      (!lead || !data.externalLink) && (
+        <div class="row">
+          {!data.externalLink && (
+            <span class="cue" aria-hidden="true">
+              Read the post
+              <Icon name="arrow" />
+            </span>
+          )}
+          {!lead && (
+            <span class="date">
+              <PostDate date={data.date} />
+            </span>
+          )}
+        </div>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  article {
+    position: relative;
+    padding: 22px 18px 16px;
+  }
+
+  h2,
+  h3 {
+    margin: 0 0 8px;
+    font: var(--text-title-lg);
+  }
+
+  a {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  /* The whole card follows the title link. */
+  a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .last-word {
+    white-space: nowrap;
+  }
+  .last-word :global(svg) {
+    margin-left: 6px;
+    color: var(--color-pen);
+    vertical-align: -0.15em;
+  }
+
+  .body p {
+    margin: 0 0 8px;
+  }
+
+  /* The cue and the date share a row that wraps: at 320 the date drops under
+     the cue. */
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+  }
+  .cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-pen);
+    font: var(--text-body-strong);
+    white-space: nowrap;
+  }
+  .date {
+    color: var(--color-ink-muted);
+    font: var(--text-label-sm);
+  }
+  .row .date {
+    flex: 1 0 auto;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Featured cards are taped to the sheet, the strip centred on the top edge. */
+  .taped::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: calc(50% - 49px);
+    width: 96px;
+    height: 22px;
+    background: var(--tape);
+    transform: rotate(-4deg);
+  }
+
+  /* The lead: the red margin line and the rules run edge to edge, the text
+     18px in. */
+  .lead {
+    padding-inline: 0;
+  }
+  .lead header {
+    margin-bottom: 6px;
+    padding: 0 18px 6px;
+    border-bottom: 2px solid var(--color-margin);
+  }
+  /* Room for the sticky: a float as tall as the sticky reaches down the card
+     (70px from the head's top), so only the lines beside it are shortened.
+     Reserving it with padding would narrow every line of a long title, and at
+     320 words like "Representative" would break mid-word. */
+  .lead header::before {
+    content: '';
+    float: right;
+    width: 52px;
+    height: 70px;
+  }
+  .lead .date {
+    margin: 0 0 6px;
+  }
+  .lead h2 {
+    margin: 0;
+    font: var(--text-title-xl);
+  }
+  .lead img {
+    display: block;
+    width: calc(100% - 36px);
+    height: auto;
+    margin: 0 auto 6px;
+    border-radius: 2px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .lead .body {
+    padding-inline: 18px;
+    background: var(--rules);
+  }
+  .lead .body p {
+    margin: 0;
+  }
+
+  /* An aside, so it's handwritten and tilted (decision 17). Its tilted box
+     ends 0.5px inside a phone screen, 2px in from the signed-off position,
+     which hung 1.5px past it. */
+  .sticky {
+    position: absolute;
+    top: 4px;
+    right: -24px;
+    width: 92px;
+    height: 84px;
+    margin: 0;
+    padding: 10px;
+    background: var(--season-sticky);
+    box-shadow: var(--shadow-lifted);
+    color: var(--color-pen);
+    font: var(--text-aside);
+    white-space: nowrap;
+    transform: rotate(5deg);
+    pointer-events: none;
+  }
+  .sticky svg {
+    position: absolute;
+    top: 49px;
+    left: 12.7px;
+  }
+</style>

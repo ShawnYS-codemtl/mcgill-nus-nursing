@@ -158,8 +158,15 @@ test('an image whose description is only a filename is treated as decoration, an
 test('the pinned post leads the homepage, ahead of newer posts, with its cover', () => {
   const lead = read('').match(/<article[^>]*>([\s\S]*?)<\/article>/)?.[1];
   assert.ok(lead, 'the homepage should lead with one post');
-  assert.match(lead, /<h2>\s*<a href="\/news\/pinned-bad-link\/">/);
+  assert.match(lead, /<h2[^>]*>\s*<a href="\/news\/pinned-bad-link\/"/);
   assert.match(lead, /<img[^>]+alt="A fixture lead cover"/);
+});
+
+test('the lead\'s sticky note says "pinned" when it isn\'t the newest post, so it never claims "latest!" falsely', () => {
+  // The pinned fixture is dated June; "published" is dated October.
+  const home = read('');
+  assert.match(home.match(/<article[^>]*>([\s\S]*?)<\/article>/)[1], /class="sticky"[^>]*>\s*pinned\s*</);
+  assert.doesNotMatch(home, /latest!/);
 });
 
 test('every published post appears on the homepage exactly once, in feed order', () => {
@@ -174,7 +181,7 @@ test('every published post appears on the homepage exactly once, in feed order',
 });
 
 /** The contents of the homepage section under this <h2>, or undefined if there's none. */
-const homepageSection = (heading) => read('').match(new RegExp(`<h2>${heading}</h2>([\\s\\S]*?)</section>`))?.[1];
+const homepageSection = (heading) => read('').match(new RegExp(`<h2[^>]*>${heading}</h2>([\\s\\S]*?)</section>`))?.[1];
 
 test('Featured holds four featured posts at most, the lead among them, and a fifth goes under More news with a note in the log', () => {
   assert.deepEqual(hrefs(homepageSection('Featured')), ['/news/published/', 'https://www.instagram.com/mcgillnus/', '/news/cover-no-alt/']);
@@ -190,7 +197,7 @@ test('every post under Featured and More news shows its date and summary', () =>
   for (const [heading, summaries] of Object.entries(sections)) {
     const section = homepageSection(heading);
     assert.equal(section.match(/<time datetime="\d{4}-\d{2}-\d{2}">/g)?.length, summaries.length, `${heading} should show one date per post`);
-    for (const summary of summaries) assert.ok(section.includes(`<p>${summary}</p>`), `${heading} is missing the summary "${summary}"`);
+    for (const summary of summaries) assert.ok(section.includes(`>${summary}</p>`), `${heading} is missing the summary "${summary}"`);
   }
 });
 
@@ -202,7 +209,7 @@ test('homepage photos are the current term\'s and those with no term, in list or
     ['Fixture gallery photo', 'Second fixture photo']
   );
   assert.deepEqual(
-    [...photos.matchAll(/<figcaption>([\s\S]*?)<\/figcaption>/g)].map(([, caption]) => caption),
+    [...photos.matchAll(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/g)].map(([, caption]) => caption),
     ['FIXTURE-CAPTION'],
     'a blank caption should leave no empty <figcaption>'
   );
@@ -233,7 +240,7 @@ test('the Land Acknowledgement and the Commitment to Truth & Reconciliation clos
       "Embracing the principles of truth and reconciliation, we strive to confront historical injustices. In alignment with Joyce's Principle, we recognize the urgent need to address systemic inequalities in healthcare and health outcomes for Indigenous peoples. As we gather on this land, we are committed to fostering understanding, acknowledging past wrongs, and actively working towards a more just and equitable future.",
     ],
   ];
-  const sections = [...main(read('')).matchAll(/<section[^>]*>\s*<h2>([^<]*)<\/h2>\s*<p>([^<]*)<\/p>\s*<\/section>/g)].map(
+  const sections = [...main(read('')).matchAll(/<section[^>]*>\s*<h2[^>]*>([^<]*)<\/h2>\s*<p[^>]*>([^<]*)<\/p>\s*<\/section>/g)].map(
     ([, heading, text]) => [plainText(heading), plainText(text)]
   );
   assert.deepEqual(
@@ -379,7 +386,7 @@ test('every page ends with the footer: Site settings\' contact details and a lin
     assert.match(text, /<a href="https:\/\/www\.instagram\.com\/fixture-nus\/"[^>]*>NUS on Instagram<\/a>/, `${where}: Instagram`);
     assert.match(text, /<a href="\/#land-acknowledgement"[^>]*>Land Acknowledgement<\/a>/, `${where}: Land Acknowledgement link`);
   }
-  assert.match(read(''), /<section id="land-acknowledgement">\s*<h2>Land Acknowledgement<\/h2>/, 'the footer links to this id');
+  assert.match(read(''), /<section id="land-acknowledgement"[^>]*>\s*<h2[^>]*>Land Acknowledgement<\/h2>/, 'the footer links to this id');
 });
 
 test('a contact email that isn\'t an address falls back to the default, and the build says so', () => {

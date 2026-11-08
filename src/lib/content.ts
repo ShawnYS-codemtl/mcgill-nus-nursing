@@ -95,6 +95,8 @@ const FEATURED_LIMIT = 4;
 export interface HomepagePosts {
   /** The first post: pinned, or else the newest. Undefined when nothing is published. */
   lead?: Post;
+  /** No other post has a later date, so the lead's sticky can say "latest!" (it says "pinned" otherwise). */
+  leadIsNewest: boolean;
   featured: Post[];
   more: Post[];
 }
@@ -118,6 +120,7 @@ export async function getHomepagePosts(): Promise<HomepagePosts> {
   const [lead, ...rest] = posts;
   return {
     lead,
+    leadIsNewest: !!lead && rest.every((post) => post.data.date <= lead.data.date),
     featured: rest.filter((post) => featured.has(post)),
     more: rest.filter((post) => !featured.has(post)),
   };

@@ -67,6 +67,14 @@
   --shadow-lifted: 0 4px 8px rgb(0 0 0 / 0.25);
   --shadow-sheet: 0 -3px 8px rgb(0 0 0 / 0.4);
   --shadow-tab: 0 -2px 4px rgb(0 0 0 / 0.35);
+
+  /* Stationery, as backgrounds. Ruled lines: one 1px rule at the foot of every
+     line of text, so they line up with text set at --line. Washi tape (Figma
+     Tape, 73:394): the season's colour with white stripes, decoration only.
+     Each component sizes and places its own strip. */
+  --rules: repeating-linear-gradient(transparent 0 calc(var(--line) - 1px), var(--color-rule) 0 var(--line));
+  --tape: repeating-linear-gradient(90deg, transparent 0 4px, rgb(255 255 255 / 0.35) 0 7px, transparent 0 9px)
+    var(--season-tape);
 }
 
 /* Season. Base.astro sets data-season on <html> from the build date, and an
@@ -222,14 +230,57 @@ hr {
   border-top: 1px solid var(--color-rule);
 }
 
-/* A sheet of prose: an h1 with the red margin line under it, then the text.
-   On Contact and "Page not found" it lies straight on the white front page
-   (Figma Prose sheet, Surface=Page). */
+/* Text a screen reader reads but the page doesn't show, such as an h1 that
+   would repeat the current tab. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* An index card on a sheet: white, ink text, pen links. */
+.card {
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink);
+  --link: var(--color-pen);
+}
+/* Forced colours drop the background and shadow: outline the card. */
+@media (forced-colors: active) {
+  .card {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* A sheet of prose: the head (an h1, or a post's h1 and date line) with the
+   red margin line under it, then the text. On its own it lies straight on the
+   white front page, as on Contact and "Page not found" (Figma Prose sheet,
+   Surface=Page); with .card it's a card on a coloured sheet (Surface=Card).
+   12px between blocks, and 24px above a heading that follows text. */
 .prose-sheet {
   padding: 22px 18px 24px;
 }
 .prose-sheet h1 {
-  margin: 0 0 var(--space-3);
+  margin: 0;
+}
+.prose-sheet > :is(h1, header) {
+  margin-bottom: var(--space-3);
   padding-bottom: var(--space-3);
   border-bottom: 2px solid var(--color-margin);
+}
+.prose-sheet :is(h2, h3) {
+  margin: 0 0 var(--space-3);
+}
+.prose-sheet :is(p, ul, ol) + :is(h2, h3) {
+  margin-top: var(--space-6);
+}
+.prose-sheet > :last-child {
+  margin-bottom: 0;
 }
