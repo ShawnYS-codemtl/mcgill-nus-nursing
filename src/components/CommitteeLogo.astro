@@ -1,20 +1,41 @@
 ---
+// A committee's logo, whole, in a white square with a thin frame: 64px on its
+// card, 96px on its page. The 240px file covers both on a high-density screen.
 import { Image } from 'astro:assets';
 import type { Committee } from '../lib/content';
 
 interface Props {
   committee: Committee;
+  size: 64 | 96;
 }
 
-const { logo, logoAlt } = Astro.props.committee.data;
+const { committee, size } = Astro.props;
+const { logo, logoAlt } = committee.data;
 ---
 
-{logo && logoAlt && <Image src={logo} alt={logoAlt} width={240} height={240} fit="contain" />}
+{
+  logo && logoAlt && (
+    <Image
+      src={logo}
+      alt={logoAlt}
+      width={240}
+      height={240}
+      fit="contain"
+      sizes={`${size}px`}
+      style={`width: ${size}px`}
+    />
+  )
+}
 
 <style>
   /* fit="contain" shrinks the file without adding bars, and
      this rule keeps the box square whatever shape the file comes out. */
   img {
+    display: block;
+    flex: none;
     aspect-ratio: 1 / 1;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-control);
+    background: var(--color-card);
   }
 </style>

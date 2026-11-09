@@ -2,7 +2,8 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import CommitteeLogo from '../../components/CommitteeLogo.astro';
-import { ROUTES } from '../../config/routes';
+import EmailLink from '../../components/EmailLink.astro';
+import Icon from '../../components/Icon.astro';
 import { getCommitteesWithPages, type Committee } from '../../lib/content';
 
 export async function getStaticPaths() {
@@ -18,28 +19,74 @@ const hasText = !!committee.body?.trim();
 ---
 
 <Base title={`${data.name} — McGill NUS`} description={shortDescription || `${data.name}, at the McGill Nursing Undergraduate Society.`}>
-  <article>
-    <h1>{data.name}</h1>
-    {data.acceptingMembers && <p>Recruiting now</p>}
-    <CommitteeLogo committee={committee} />
+  <article class="prose-sheet card">
+    <header>
+      <h1>{data.name}</h1>
+      {data.acceptingMembers && <p class="recruiting">Recruiting now</p>}
+      <CommitteeLogo committee={committee} size={96} />
+    </header>
     {hasText ? <Content /> : shortDescription && <p>{shortDescription}</p>}
     {
       (data.instagram || data.contactEmail) && (
-        <ul>
+        <ul class="contact">
           {data.instagram && (
             <li>
-              <a href={data.instagram}>{data.name} on Instagram</a>
+              <a class="instagram" href={data.instagram}>
+                {data.name} on Instagram
+                <Icon name="external" />
+              </a>
             </li>
           )}
           {data.contactEmail && (
-            <li>
-              Email: <a href={`mailto:${data.contactEmail}`}>{data.contactEmail}</a>
+            <li class="email">
+              Email: <EmailLink address={data.contactEmail} />
             </li>
           )}
         </ul>
       )
     }
   </article>
-
-  <p><a href={ROUTES.involved}>Back to Get involved</a></p>
 </Base>
+
+<style>
+  /* The name, Recruiting and the logo read as the card's head, above the red
+     line. */
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  header p {
+    margin: 0;
+  }
+
+  .contact {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--color-rule);
+    list-style: none;
+  }
+  /* A long name wraps beside the icon, which stays at the card's right. */
+  .instagram {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    font: var(--text-body-strong);
+    text-decoration: none;
+  }
+  .instagram :global(svg) {
+    flex: none;
+    margin-top: 3px;
+  }
+  /* A wrapped address hangs under itself, not under "Email:". min-width: 0
+     lets an address too long even for that break mid-word, inside the card. */
+  .email {
+    display: flex;
+    gap: 0.25em;
+  }
+  .email :global(a) {
+    min-width: 0;
+  }
+</style>

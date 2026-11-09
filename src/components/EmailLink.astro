@@ -1,0 +1,12 @@
+---
+// An email address as a link, with a line-break chance after the @, so a long
+// address wraps there rather than mid-word.
+interface Props {
+  address: string;
+}
+
+const { address } = Astro.props;
+const at = address.indexOf('@') + 1;
+---
+
+<a href={`mailto:${address}`}>{address.slice(0, at)}<wbr />{address.slice(at)}</a>

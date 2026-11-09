@@ -404,10 +404,11 @@ test('a blank social link is left out of the footer quietly; one that isn\'t a w
 const headings = (html, level) =>
   [...html.matchAll(new RegExp(`<h${level}[^>]*>([\\s\\S]*?)</h${level}>`, 'g'))].map(([, text]) => plainText(text));
 
+/** The card (an <li>) whose <h{level}> reads `heading`. No card holds a list of its own. */
 const card = (html, level, heading) => {
-  const match = html.match(new RegExp(`<li[^>]*>\\s*<h${level}[^>]*>(?:(?!</li>)[\\s\\S])*?${heading}[\\s\\S]*?</li>`));
+  const match = [...html.matchAll(/<li[\s>][\s\S]*?<\/li>/g)].map(([li]) => li).find((li) => headings(li, level).includes(heading));
   assert.ok(match, `no card headed "${heading}"`);
-  return match[0];
+  return match;
 };
 
 test('the council page shows the current term only, Executive Council before General Council, each in order', () => {
@@ -434,7 +435,7 @@ test('a council email that isn\'t an address is dropped and logged; a mailto: on
   const html = read('about/council');
   assert.ok(!html.includes('example.com/mail'), 'the web link in an email field reached the page');
   assert.match(log, /U3 BScN Representative \(2025-2026\): "http:\/\/example\.com\/mail" ignored, because it isn't an email address/);
-  assert.match(html, /<a href="mailto:logistics\.nus@mail\.mcgill\.ca"[^>]*>logistics\.nus@mail\.mcgill\.ca<\/a>/);
+  assert.match(html, /<a href="mailto:logistics\.nus@mail\.mcgill\.ca"[^>]*>logistics\.nus@<wbr>mail\.mcgill\.ca<\/a>/, 'a long address may break after the @');
 });
 
 test('every council photo is held to the same 4:5 shape, with an empty alt because the name is beside it', () => {
@@ -443,7 +444,7 @@ test('every council photo is held to the same 4:5 shape, with an empty alt becau
   assert.equal(photos.length, 3, `expected three photos, got:\n${photos.join('\n')}`);
   for (const tag of photos) {
     assert.match(tag, /\salt(="")?[\s>]/, `a council photo has alt text: ${tag}`);
-    assert.match(tag, /width="400" height="500"/, `a council photo isn't 4:5: ${tag}`);
+    assert.match(tag, /width="192" height="240"/, `a council photo isn't 4:5 at twice its 96×120 size: ${tag}`);
     assert.match(tag, /data-astro-image-fit="cover"/, `a council photo isn't cropped to fill: ${tag}`);
   }
   assert.match(pageCss(html), /aspect-ratio:4\/5/, 'the rule that holds small photos to 4:5 is missing');
@@ -457,8 +458,24 @@ test('resource categories come in a fixed order, and each resource heading\'s id
   for (const [file, page] of allHtml()) assert.ok(!page.includes('HIDDEN-RESOURCE-MARKER'), `a hidden resource appears in ${file}`);
 });
 
+test('each "On this page" link on Council and Resources lands on the one section it names', () => {
+  for (const route of ['about/council', 'resources']) {
+    const html = read(route);
+    const nav = html.match(/<nav aria-label="On this page"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+    assert.ok(nav, `/${route}/ has no "On this page" links`);
+    const links = [...nav.matchAll(/<a href="#([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)].map(([, id, label]) => ({ id, label: plainText(label) }));
+    assert.deepEqual(links.map(({ label }) => label), headings(html, 2), `/${route}/ should link to every section, in order`);
+    for (const { id, label } of links) {
+      const count = html.match(new RegExp(`\\sid="${id}"`, 'g'))?.length ?? 0;
+      assert.equal(count, 1, `/${route}/ has ${count} elements with id "${id}"`);
+      const section = html.match(new RegExp(`<section id="${id}"[^>]*>\\s*<h2[^>]*>([\\s\\S]*?)</h2>`))?.[1];
+      assert.equal(plainText(section ?? ''), label, `#${id} on /${route}/ isn't the "${label}" section`);
+    }
+  }
+});
+
 test('a blank line in a resource description starts a new paragraph', () => {
-  assert.match(read('resources'), /<p>FIRST-PARAGRAPH-MARKER<\/p>\s*<p>SECOND-PARAGRAPH-MARKER<\/p>/);
+  assert.match(read('resources'), /<p[^>]*>FIRST-PARAGRAPH-MARKER<\/p>\s*<p[^>]*>SECOND-PARAGRAPH-MARKER<\/p>/);
 });
 
 test('a resource link that is neither https:// nor a page on this site is dropped, and the resource still shows', () => {
@@ -472,7 +489,7 @@ test('a resource link that is neither https:// nor a page on this site is droppe
 });
 
 test('resource links each have an accessible name that starts with the words on screen and names the resource', () => {
-  const links = [...read('resources').matchAll(/<a href="[^"]*" aria-label="([^"]*)">\s*([^<]*?)\s*<\/a>/g)].map(([, name, text]) => ({ name, text }));
+  const links = [...read('resources').matchAll(/<a href="[^"]*" aria-label="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map(([, name, text]) => ({ name, text: plainText(text) }));
   assert.deepEqual(
     links.map(({ text }) => text),
     ['Browse the folder', 'Learn more', 'Learn more'],
@@ -538,7 +555,7 @@ test('a committee logo without a description is left out, and the build says so'
 
 test('a committee page shows its Instagram and email, and drops an email that isn\'t an address', () => {
   const equity = read('involved/equity-committee');
-  assert.match(equity, /<a href="https:\/\/www\.instagram\.com\/equitynus\/"[^>]*>NUS Equity Committee on Instagram<\/a>/);
+  assert.match(equity, /<a [^>]*href="https:\/\/www\.instagram\.com\/equitynus\/"[^>]*>NUS Equity Committee on Instagram</);
   assert.match(equity, /<a href="mailto:equity\.nus@mail\.mcgill\.ca"[^>]*>/);
   assert.ok(!read('involved/logo-no-alt').includes('not-an-email'));
   assert.match(log, /contact email "not-an-email" ignored, because it isn't an email address/);

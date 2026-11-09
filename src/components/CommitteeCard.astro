@@ -1,5 +1,9 @@
 ---
+// A committee on /involved/ (Figma Committee card, 80:1308): the logo and the
+// name in one row, the description full width below. The name is the link, to
+// the committee's page (arrow) or straight out (external icon).
 import CommitteeLogo from './CommitteeLogo.astro';
+import Icon from './Icon.astro';
 import { ROUTES } from '../config/routes';
 import type { Committee } from '../lib/content';
 
@@ -8,13 +12,61 @@ interface Props {
 }
 
 const { data } = Astro.props.committee;
+
+// The icon is held to the name's last word, so it never wraps onto a line alone.
+const split = data.name.lastIndexOf(' ') + 1;
+const [nameStart, lastWord] = [data.name.slice(0, split), data.name.slice(split)];
 ---
 
-<li>
-  <h2>
-    <a href={data.externalLink ?? ROUTES.committee(data.slug)}>{data.name}</a>
-  </h2>
-  <CommitteeLogo committee={Astro.props.committee} />
+<li class="card">
+  <div class="head">
+    <CommitteeLogo committee={Astro.props.committee} size={64} />
+    <h2>
+      <a href={data.externalLink ?? ROUTES.committee(data.slug)}>
+        {nameStart}
+        <span class="last-word">
+          {lastWord}
+          <Icon name={data.externalLink ? 'external' : 'arrow'} />
+        </span>
+      </a>
+    </h2>
+  </div>
   {data.shortDescription.trim() && <p>{data.shortDescription}</p>}
-  {data.acceptingMembers && <p>Recruiting now</p>}
+  {data.acceptingMembers && <p class="recruiting">Recruiting now</p>}
 </li>
+
+<style>
+  li {
+    padding: 16px;
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  h2 {
+    margin: 0;
+    font: var(--text-title-md);
+  }
+  a {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  .last-word {
+    white-space: nowrap;
+  }
+  .last-word :global(svg) {
+    margin-left: 6px;
+    color: var(--color-pen);
+    vertical-align: -0.15em;
+  }
+  p {
+    margin: 12px 0 0;
+  }
+  p + .recruiting {
+    margin-top: 6px;
+  }
+</style>

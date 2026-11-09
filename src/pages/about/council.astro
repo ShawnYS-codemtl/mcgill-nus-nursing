@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import CouncilMember from '../../components/CouncilMember.astro';
+import JumpLinks from '../../components/JumpLinks.astro';
 import { getCouncil } from '../../lib/content';
 import { formatTerm } from '../../lib/council-term.mjs';
 
@@ -8,8 +9,8 @@ const council = await getCouncil();
 const heading = council ? `Council ${formatTerm(council.term)}` : 'Council';
 const sections = council
   ? [
-      { title: 'Executive Council', members: council.executive },
-      { title: 'General Council', members: council.general },
+      { id: 'executive-council', title: 'Executive Council', members: council.executive },
+      { id: 'general-council', title: 'General Council', members: council.general },
     ].filter(({ members }) => members.length)
   : [];
 ---
@@ -21,18 +22,39 @@ const sections = council
   <h1>{heading}</h1>
   {
     council ? (
-      sections.map(({ title, members }) => (
-        <section>
-          <h2>{title}</h2>
-          <ul>
-            {members.map((member) => (
-              <CouncilMember member={member} />
-            ))}
-          </ul>
-        </section>
-      ))
+      <>
+        <JumpLinks links={sections.map(({ id, title }) => ({ id, label: title }))} />
+        {sections.map(({ id, title, members }) => (
+          <section id={id}>
+            <h2>{title}</h2>
+            <ul class="card-list">
+              {members.map((member) => (
+                <CouncilMember member={member} />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </>
     ) : (
-      <p>This year's council hasn't been posted yet.</p>
+      <div class="card empty">
+        <p>This year's council hasn't been posted yet.</p>
+      </div>
     )
   }
 </Base>
+
+<style>
+  h1 {
+    margin: 0 0 16px;
+  }
+  h2 {
+    font: var(--text-title-md);
+  }
+  /* On laptops, two cards to a row, each as wide as on a phone. A row is as
+     tall as its taller card. */
+  @media (width >= 48rem) {
+    ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
