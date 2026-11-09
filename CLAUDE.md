@@ -491,4 +491,18 @@ The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary i
   - One long word in a committee's name pushed its card 185px past the screen. The name may now shrink beside the logo.
   - The lead post's cover and a post page's cover load straight away instead of lazily, since both are in the first screen. No post has a cover yet.
   - The term label's tape used its own copy of the tape pattern; it uses `--tape` now (pixel-identical).
-- **Found, for a follow-up PR:** the stationery doesn't follow a larger browser font size. At Chrome's "Large" (20px) the tab row runs about 50px past the sheet on a phone and the page scrolls sideways. At "Very large" (24px) the badge also grows out of the 236px header and covers the tabs, on laptops too, and the sticky's "latest!" runs off its note. Browser zoom is fine, which is what WCAG 1.4.4 asks for, but `global.css` sets type in rem precisely so that this setting works. The tabs' fit at 320 and the badge's place on the lanyard are signed-off choices, so changing them is a design decision, not a quick fix.
+- **Found, and fixed in the next PR:** the stationery didn't follow a larger browser text size. This was first measured by setting the page's own font size from script, which overstated it: a real browser setting also moves the rem breakpoints. See the next entry for the real numbers.
+
+### Status — 2026-11-08, larger text
+
+**The stationery now follows a larger browser text size** (branch `fix/large-text`, stacked on `docs/design-record`). Some visitors set a bigger default font in their browser: Chrome's "Large" is 20px and "Very large" 24px. Type here is in rem, so it grew, but the boxes around it were fixed px.
+
+- **Measured with the real setting** (Chrome's `Page.setFontSizes`, Firefox's font preference), which also moves the rem breakpoints: the compact tabs and the laptop layout switch at wider screens. Before the fix, in both browsers:
+  - **20px:** the sticky's "latest!" ran off its note at every width, and pushed the homepage 13px sideways at 390. At 320 the tabs ran 45px past the sheet (29px of sideways scroll), and the phone strip's badge ended 10px below the header.
+  - **24px:** the badge ended 37–47px below the header and covered the tabs by 23–33px at every width, laptops included. The tabs ran past the sheet at 320 (98px) and 390 (28px).
+- **The fixes,** all exactly the signed-off design at the default size: every box and line of text on 12 pages at 320, 390 and 1280 is identical to before, to 1/64px.
+  - **The header grows to fit the badge.** The badge is in the flow, 140px down (50px on the phone strip) with 30px (20px) under it, which is the old fixed height at 16px. The window keeps its height, so a bigger badge hangs below the sill. One `--badge-top` sets both the badge's place and the lanyard's length. On the strip it is "just under Contact", so the two still touch by 1px at any size instead of overlapping by 10px.
+  - **Tabs that don't fit move up to a second tier** (`flex-wrap: wrap-reverse`), instead of off the screen. A second tier was chosen over a tab row that scrolls sideways, which at 320 cut off the current page's own tab ("Resou…"). Tab heights are in rem, so labels never outgrow their tabs.
+  - **The sticky note is sized in rem,** so it grows with its handwriting, and the float that keeps the title clear grows with it.
+- **Checked:** at 16, 20 and 24px, at 320, 390, 1024 and 1280, in Chromium and Firefox, nothing scrolls sideways or overlaps beyond that 1px touch. All 65 tabs sit on the sheet's floor in Chromium, Firefox and WebKit at the default size. `npm run verify` passes.
+- **Left at 32px** (Firefox offers it; Chrome's largest preset is 24px): on a phone homepage the term label touches the badge, and at 320 a committee name whose last word is long scrolls `/involved/` 8px sideways (the last word is held to its icon, `MAINTENANCE.md` troubleshooting).

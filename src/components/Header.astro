@@ -34,13 +34,13 @@ const termScript = `{${seasonOf}${termLabel}document.currentScript.previousEleme
 <style>
   header {
     position: relative;
-    height: 236px;
   }
 
   /* The window: a frame, a pane with the scene and its mullions, and a sill. */
   .window {
     position: absolute;
-    inset: 0;
+    inset: 0 0 auto;
+    height: 236px;
     background: var(--color-window);
     box-shadow: var(--shadow-card);
   }
@@ -88,11 +88,15 @@ const termScript = `{${seasonOf}${termLabel}document.currentScript.previousEleme
     border: 1px solid var(--color-sill-edge);
   }
 
-  /* The badge, lanyard and term label line up with the sheet's column. */
+  /* The badge, lanyard and term label line up with the sheet's column. The
+     badge is in the flow, so the header is as tall as it needs: at the default
+     text size exactly the window, and with a larger browser text size the
+     badge hangs below the sill instead of covering the tabs. */
   .column {
     --badge-left: 20px;
-    position: absolute;
-    inset: 0;
+    --badge-top: 140px;
+    position: relative;
+    padding: var(--badge-top) 0 30px;
   }
 
   /* The lanyard hangs left of the mountain, clear of the cross and the mast,
@@ -103,14 +107,13 @@ const termScript = `{${seasonOf}${termLabel}document.currentScript.previousEleme
     top: 0;
     left: calc(var(--badge-left) + 32px);
     width: 44px;
-    height: 150px;
+    height: calc(var(--badge-top) + 10px);
     background: url('../assets/header/lanyard.svg') center bottom no-repeat;
   }
 
   .badge {
-    position: absolute;
-    top: 140px;
-    left: var(--badge-left);
+    position: relative;
+    margin-left: var(--badge-left);
     display: flex;
     flex-direction: column;
     width: 218px;
@@ -184,9 +187,13 @@ const termScript = `{${seasonOf}${termLabel}document.currentScript.previousEleme
   }
 
   @media (width < 48rem) {
-    /* Every page but the homepage gets the strip: the whole view, small. */
-    header:not(.home) {
-      height: 136px;
+    /* Every page but the homepage gets the strip: the whole view, small. Its
+       badge hangs just under the Contact button (17px down, 16px of padding,
+       a line of label-md), touching it as at the default size, so a larger
+       browser text size can't push the button onto the badge. */
+    header:not(.home) .column {
+      --badge-top: max(50px, 32px + 1.125rem);
+      padding-bottom: 20px;
     }
     header:not(.home) .window {
       height: 74px;
@@ -204,12 +211,6 @@ const termScript = `{${seasonOf}${termLabel}document.currentScript.previousEleme
     }
     header:not(.home) .window::after {
       height: 16px;
-    }
-    header:not(.home) .column::before {
-      height: 60px;
-    }
-    header:not(.home) .badge {
-      top: 50px;
     }
     header:not(.home) .term {
       display: none;
