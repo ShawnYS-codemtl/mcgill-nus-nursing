@@ -190,14 +190,15 @@ const [titleStart, lastWord] = [data.title.slice(0, split), data.title.slice(spl
     border-bottom: 2px solid var(--color-margin);
   }
   /* Room for the sticky: a float as tall as the sticky reaches down the card
-     (70px from the head's top), so only the lines beside it are shortened.
-     Reserving it with padding would narrow every line of a long title, and at
-     320 words like "Representative" would break mid-word. */
+     (70px from the head's top at the default text size, growing with the
+     sticky), so only the lines beside it are shortened. Reserving it with
+     padding would narrow every line of a long title, and at 320 words like
+     "Representative" would break mid-word. */
   .lead header::before {
     content: '';
     float: right;
-    width: 52px;
-    height: 70px;
+    width: calc(5.75rem - 40px);
+    height: calc(5.25rem - 14px);
   }
   .lead .date {
     margin: 0 0 6px;
@@ -225,15 +226,18 @@ const [titleStart, lastWord] = [data.title.slice(0, split), data.title.slice(spl
 
   /* An aside, so it's handwritten and tilted (decision 17). Its tilted box
      ends 0.5px inside a phone screen, 2px in from the signed-off position,
-     which hung 1.5px past it. */
+     which hung 1.5px past it. Sized in rem, so the note grows with its
+     handwriting at a larger browser text size. A taller note's tilted corner
+     reaches further right (sin 5° ÷ 2 of the extra height), so `right` takes
+     that back and the corner stays on screen. */
   .sticky {
     position: absolute;
     top: 4px;
-    right: -24px;
-    width: 92px;
-    height: 84px;
+    right: calc(-24px + 0.0436 * (5.25rem - 84px));
+    width: 5.75rem;
+    height: 5.25rem;
     margin: 0;
-    padding: 10px;
+    padding: 0.625rem;
     background: var(--season-sticky);
     box-shadow: var(--shadow-lifted);
     color: var(--color-pen);
@@ -244,7 +248,9 @@ const [titleStart, lastWord] = [data.title.slice(0, split), data.title.slice(spl
   }
   .sticky svg {
     position: absolute;
-    top: 49px;
-    left: 12.7px;
+    top: 3.0625rem;
+    left: 0.79375rem;
+    width: 1.8925rem;
+    height: auto;
   }
 </style>
