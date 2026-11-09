@@ -32,6 +32,7 @@ const { Content } = await render(post);
         <Image
           src={data.cover}
           alt={data.coverAlt}
+          loading="eager"
           widths={[400, 800, 1200]}
           sizes="(min-width: 48rem) 636px, calc(100vw - 92px)"
         />
