@@ -259,6 +259,39 @@ hr {
   }
 }
 
+/* A list of cards on a sheet, 12px apart: posts, council, committees,
+   resources. minmax(0, …) lets a column narrow past its longest word, which
+   then wraps (body's overflow-wrap); 1fr alone widens every card to fit it. */
+.card-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A committee looking for members, on its card and its page. */
+.recruiting {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+  background: var(--color-forest);
+  color: var(--color-card);
+  font: var(--text-label-sm);
+}
+
+/* What a list shows when it has nothing in it: a blank ruled card (Figma
+   Empty state, 82:1331). */
+.empty {
+  padding: 22px 18px 16px;
+}
+.empty p {
+  margin: 0;
+  padding-bottom: calc(3 * var(--line));
+  background: var(--rules);
+}
+
 /* A sheet of prose: the head (an h1, or a post's h1 and date line) with the
    red margin line under it, then the text. On its own it lies straight on the
    white front page, as on Contact and "Page not found" (Figma Prose sheet,

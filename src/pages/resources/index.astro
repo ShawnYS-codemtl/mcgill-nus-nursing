@@ -2,9 +2,16 @@
 // /resources/: the student services directory, by category. Entries are
 // edited in Pages CMS → Resources.
 import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import JumpLinks from '../../components/JumpLinks.astro';
 import { getResources } from '../../lib/content';
 
-const groups = await getResources();
+// Each category's anchor is prefixed, so it can't clash with an entry's, which
+// is its filename: a resource called "Governance" would take #governance.
+const groups = (await getResources()).map((group) => ({
+  ...group,
+  id: `category-${group.category.toLowerCase().replace(/\W+/g, '-')}`,
+}));
 
 const paragraphs = (text: string) =>
   text
@@ -17,36 +24,84 @@ const paragraphs = (text: string) =>
   title="Resources — McGill NUS"
   description="Support, guides and services for McGill nursing students, gathered in one place."
 >
-  <h1>Resources</h1>
+  <h1 class="visually-hidden">Resources</h1>
   {
     groups.length === 0 ? (
-      <p>No resources yet. Check back soon.</p>
+      <div class="card empty">
+        <p>No resources yet. Check back soon.</p>
+      </div>
     ) : (
-      groups.map(({ category, resources }) => (
-        <section>
-          <h2>{category}</h2>
-          <ul>
-            {resources.map(({ id, data }) => {
-              const label = data.linkLabel?.trim() || 'Learn more';
-              return (
-                <li>
-                  <h3 id={id}>{data.title}</h3>
-                  {paragraphs(data.description).map((paragraph) => (
-                    <p>{paragraph}</p>
-                  ))}
-                  {data.link && (
-                    <p>
-                      <a href={data.link} aria-label={`${label}: ${data.title}`}>
-                        {label}
-                      </a>
-                    </p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))
+      <>
+        <JumpLinks links={groups.map(({ id, category }) => ({ id, label: category }))} />
+        {groups.map(({ id, category, resources }) => (
+          <section id={id}>
+            <h2>{category}</h2>
+            <ul class="card-list">
+              {resources.map(({ id, data }) => {
+                const label = data.linkLabel?.trim() || 'Learn more';
+                const text = paragraphs(data.description);
+                return (
+                  <li class="card">
+                    <h3 id={id}>{data.title}</h3>
+                    {text.length > 0 && (
+                      <div class="text">
+                        {text.map((paragraph) => (
+                          <p>{paragraph}</p>
+                        ))}
+                      </div>
+                    )}
+                    {data.link && (
+                      <p>
+                        <a href={data.link} aria-label={`${label}: ${data.title}`}>
+                          {label}
+                          <Icon name={data.link.startsWith('/') ? 'arrow' : 'external'} />
+                        </a>
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
+      </>
     )
   }
 </Base>
+
+<style>
+  /* A category: its name over a thin rule, in the sheet's colour. */
+  h2 {
+    padding-bottom: 6px;
+    border-bottom: 1px solid currentColor;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+  }
+  h3 {
+    margin: 0;
+    /* A redirect to an entry (#student-mistreatment-policy) lands with the
+       card's top edge in view, not the heading against the window's. */
+    scroll-margin-top: 24px;
+  }
+  p {
+    margin: 0;
+  }
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: var(--text-body-strong);
+    text-decoration: none;
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+// Links to the sections further down the page (Figma Text link Kind=Jump,
+// 120:3617), on Council and Resources. They sit on the sheet, so they take its
+// text colour, as its headings do: pen would fail on mustard.
+import Icon from './Icon.astro';
+
+interface Props {
+  links: { id: string; label: string }[];
+}
+---
+
+<nav aria-label="On this page">
+  <ul>
+    {
+      Astro.props.links.map(({ id, label }) => (
+        <li>
+          <a href={`#${id}`}>
+            {label}
+            <Icon name="arrow" />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--on-sheet);
+    font: var(--text-body-strong);
+  }
+  a :global(svg) {
+    rotate: 90deg;
+  }
+</style>

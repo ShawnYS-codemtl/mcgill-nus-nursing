@@ -1,67 +1,182 @@
 ---
-// The words are the council's, edited in Pages CMS → Council.
+// One council seat (Figma Council member, 79:1304). The words are the
+// council's, edited in Pages CMS → Council.
 import { Image } from 'astro:assets';
 import { ROUTES } from '../config/routes';
 import type { CouncilMember } from '../lib/content';
+import EmailLink from './EmailLink.astro';
+import Icon from './Icon.astro';
 
 interface Props {
   member: CouncilMember;
 }
 
 const { data } = Astro.props.member;
+const funFact = !data.vacant && data.funFact;
 ---
 
-<li>
-  <h3>{data.role}</h3>
+<li class="card">
+  <div class="head">
+    {
+      data.vacant ? (
+        <div class="frame" aria-hidden="true">
+          you?
+        </div>
+      ) : (
+        data.photo && (
+          <div class="photo">
+            <Image src={data.photo} alt="" width={192} height={240} fit="cover" sizes="96px" />
+          </div>
+        )
+      )
+    }
+    <div class="who">
+      <h3>{data.role}</h3>
+      {
+        data.vacant ? (
+          <p class="open">Position open</p>
+        ) : (
+          <>
+            {data.name && <p class="name">{data.name}</p>}
+            {data.program && <p class="program">{data.program}</p>}
+          </>
+        )
+      }
+    </div>
+  </div>
   {
-    data.vacant ? (
-      <>
-        <p>Position open</p>
+    (data.roleDescription || funFact) && (
+      <dl>
         {data.roleDescription && (
-          <dl>
+          <>
             <dt>What this role does</dt>
             <dd>{data.roleDescription}</dd>
-          </dl>
+          </>
         )}
-        <p>
-          <a href={ROUTES.elections}>How to run for council</a>
-        </p>
-      </>
+        {funFact && (
+          <>
+            <dt class="aside">Fun fact!</dt>
+            <dd>{funFact}</dd>
+          </>
+        )}
+      </dl>
+    )
+  }
+  {
+    data.vacant ? (
+      <p class="run">
+        <a href={ROUTES.elections}>
+          How to run for council
+          <Icon name="arrow" />
+        </a>
+      </p>
     ) : (
-      <>
-        {data.photo && <Image src={data.photo} alt="" width={400} height={500} fit="cover" />}
-        {data.name && <p>{data.name}</p>}
-        {data.program && <p>{data.program}</p>}
-        {(data.roleDescription || data.funFact) && (
-          <dl>
-            {data.roleDescription && (
-              <>
-                <dt>What this role does</dt>
-                <dd>{data.roleDescription}</dd>
-              </>
-            )}
-            {data.funFact && (
-              <>
-                <dt>Fun fact</dt>
-                <dd>{data.funFact}</dd>
-              </>
-            )}
-          </dl>
-        )}
-        {data.email && (
-          <p>
-            <a href={`mailto:${data.email}`}>{data.email}</a>
-          </p>
-        )}
-      </>
+      data.email && (
+        <p>
+          <EmailLink address={data.email} />
+        </p>
+      )
     )
   }
 </li>
 
 <style>
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  p,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  /* Photo and name side by side. Once the name column would be under 150px
+     (a long role, or any card at 320), it wraps under the photo, so a word
+     like "Representative" never breaks mid-word. */
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 14px;
+  }
+  .who {
+    display: flex;
+    flex: 1 1 150px;
+    flex-direction: column;
+    gap: 2px;
+  }
+  h3 {
+    margin: 0;
+    font: var(--text-title-md);
+  }
+  .name,
+  .open {
+    font: var(--text-body-strong);
+  }
+  .open,
+  .program,
+  dt {
+    color: var(--color-ink-muted);
+  }
+  .program,
+  dt {
+    font: var(--text-label-sm);
+  }
+
+  /* The headshot, taped to the card. */
+  .photo {
+    position: relative;
+    flex: none;
+  }
+  .photo::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 24px;
+    width: 48px;
+    height: 18px;
+    background: var(--tape);
+    transform: rotate(-4deg);
+  }
   /* fit="cover" crops a large photo to 4:5, but Astro never enlarges, so a
-     photo smaller than 400×500 would keep its own shape without this rule. */
+     photo smaller than 192×240 would keep its own shape without this rule. */
   img {
+    display: block;
+    width: 96px;
     aspect-ratio: 4 / 5;
+    border-radius: 2px;
+  }
+
+  /* An open seat's empty photo frame. */
+  .frame {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 96px;
+    height: 120px;
+    border: 2px dashed var(--color-rule);
+    border-radius: 2px;
+  }
+  .frame,
+  .aside {
+    color: var(--color-pen);
+    font: var(--text-aside);
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .run a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: var(--text-body-strong);
+    text-decoration: none;
   }
 </style>

@@ -8,6 +8,7 @@
 // should add to them, reword them or reorder them.
 import { render } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import { currentItem } from '../config/nav';
 import { getInfoPage, type InfoPageName } from '../lib/content';
 
 interface Props {
@@ -17,10 +18,14 @@ interface Props {
 
 const page = await getInfoPage(Astro.props.name);
 const { Content } = await render(page);
+
+// On a coloured sheet the text is a card; Contact's white sheet is the page
+// itself, so its text lies straight on it (Figma Prose sheet, Surface=Page).
+const onCard = currentItem(Astro.url.pathname)?.section !== 'contact';
 ---
 
 <Base title={`${page.data.title} — McGill NUS`} description={page.data.metaDescription}>
-  <article>
+  <article class:list={['prose-sheet', { card: onCard }]}>
     <h1>{page.data.title}</h1>
     <Content />
   </article>

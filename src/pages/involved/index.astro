@@ -9,12 +9,14 @@ const committees = await getCommittees();
 ---
 
 <Base title="Get involved — McGill NUS" description="Committees and clubs run by and for McGill nursing students.">
-  <h1>Get involved</h1>
+  <h1 class="visually-hidden">Get involved</h1>
   {
     committees.length === 0 ? (
-      <p>No committees listed yet. Check back soon.</p>
+      <div class="card empty">
+        <p>No committees listed yet. Check back soon.</p>
+      </div>
     ) : (
-      <ul>
+      <ul class="card-list">
         {committees.map((committee) => (
           <CommitteeCard committee={committee} />
         ))}

@@ -32,7 +32,7 @@ const photos = await getGallery();
     featured.length > 0 && (
       <section>
         <h2>Featured</h2>
-        <ul class="posts">
+        <ul class="card-list">
           {featured.map((post) => (
             <li>
               <PostCard post={post} variant="compact" taped />
@@ -47,7 +47,7 @@ const photos = await getGallery();
     more.length > 0 && (
       <section>
         <h2>More news</h2>
-        <ul class="posts">
+        <ul class="card-list">
           {more.map((post) => (
             <li>
               <PostCard post={post} variant="compact" taped={false} />
@@ -98,24 +98,6 @@ const photos = await getGallery();
   /* Section headings sit on the sheet, in its text colour. */
   h2 {
     font: var(--text-title-md);
-  }
-
-  .posts {
-    display: grid;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  /* A blank ruled card (Figma Empty state, 82:1331). */
-  .empty {
-    padding: 22px 18px 16px;
-  }
-  .empty p {
-    margin: 0;
-    padding-bottom: calc(3 * var(--line));
-    background: var(--rules);
   }
 
   /* Taped photos (Figma Taped photo, 77:1310), two to a row, three from
