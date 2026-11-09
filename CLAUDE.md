@@ -468,3 +468,14 @@ The real homepage today: the 21st Century Fund leads, and the EN-FR dictionary i
 - **The sticky sits 2px left of the signed-off position,** so its tilted corner ends inside a phone screen instead of 1.5px past it. Nothing clips overflow, so a real overflow elsewhere still shows up as sideways scroll.
 - **Gallery images are sized for their real column** (194px on laptops, half the screen less the margins on phones), not the 672px text column. Browsers were fetching three to four times the pixels.
 - Checked in Chromium, Firefox and WebKit at 320, 390 and 1280, plus builds with no posts and with 12. At 320, "Fall by-election: U0 BScN Representative" no longer breaks mid-word.
+
+### Status — 2026-11-08, council, Get involved, resources and info pages
+
+**Styling PR 4 is built** (branch `feat/design-sections`): the council cards, the committee cards and pages, the resource cards, the five info pages, and the empty states of Council, Get involved and Resources, from the signed-off Figma components.
+
+- **Jump links** ("On this page") sit under the heading on Council and Resources (sign-off 6), in the sheet's text colour. A resource category's anchor is `#category-<name>`, so it can't clash with an entry's, which is its filename. A test checks that every jump link lands on the section it names.
+- **Headshots are taped to their card,** as in the Figma component, and requested at 192×240 for a 96×120 slot (they were 400×500). Committee logos keep their 240px file and show at 64px on a card, 96px on a page.
+- **Emails break after the @** (sign-off 10), through `EmailLink.astro`, on council cards and committee pages. The footer's address is unchanged.
+- **Contact takes the Page surface:** its text lies on the white sheet, not on a card.
+- **Found and fixed:** a list of cards is a grid, and a `1fr` column never narrows past its longest word, so one long word in a Wellbeing & Safety entry widened every card in that section by 36px at 320. The column is `minmax(0, 1fr)` now (`MAINTENANCE.md` troubleshooting).
+- Checked in Chromium, Firefox and WebKit at 320, 390 and 1280 on every page this PR touches, plus a build with no council, committees or resources. No sideways scroll anywhere. Every council name wraps under its photo at 320 and none do at 390, and no role breaks mid-word. `/resources/#student-mistreatment-policy`, where `/general-8` redirects, lands with its card's top edge 8px into the window.

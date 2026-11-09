@@ -96,14 +96,19 @@ src/
                          on laptops only
     AboutIndex.astro     The About pages as chips, at the top of every About
                          page
-    InfoPage.astro       Renders one informational page: heading, then text
+    InfoPage.astro       Renders one informational page: heading, then text,
+                         on a card (Contact's lies straight on its white page)
     Footer.astro         Every page's footer: email, address, office hours and
                          social links from Site settings, and a link to the
                          Land Acknowledgement on the homepage
     CouncilMember.astro  One council position, or an open seat. Holds every
-                         photo to the same 4:5 shape
+                         photo to the same 4:5 shape, taped to the card
     CommitteeCard.astro  One committee's card on /involved/
-    CommitteeLogo.astro  A committee's logo, whole, in a square (card and page)
+    CommitteeLogo.astro  A committee's logo, whole, in a square: 64px on its
+                         card, 96px on its page
+    JumpLinks.astro      "On this page" links to the sections below, on
+                         Council and Resources
+    EmailLink.astro      An email address as a link that may wrap after the @
     PostCard.astro       One post on the homepage: the lead's ruled card with
                          its sticky note, or a compact card under Featured
                          (taped) and More news
@@ -490,6 +495,7 @@ Four things that will actually take the site down. Understand these before chang
 | An old link from Instagram 404s | Missing redirect | See [Adding a redirect](#adding-a-redirect) |
 | CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished. Or it points at a `#anchor` on an informational page whose heading was renamed | Update the line in `public/_redirects` (and the redirect map) to the new address, or to one of the anchors the error lists, through a PR |
 | A mistyped address shows the homepage instead of "Page not found" | `src/pages/404.astro` is gone, so the build has no `404.html` and Cloudflare treats the site as a single-page app | Restore `src/pages/404.astro` |
+| A page scrolls sideways on a phone, and every card in one list is too wide | One card holds a word or address too long for the column, and a list's grid column was changed from `minmax(0, 1fr)` to `1fr`. A `1fr` column never narrows past its longest word, so it widens every card in the list | Keep `minmax(0, …)` on `.card-list` in `src/styles/global.css` and on the council's two columns in `src/pages/about/council.astro` |
 | Site loads but is unstyled | Build partially failed, or `src/styles/global.css` isn't imported by `src/layouts/Base.astro` any more | Check the Cloudflare deploy log first, always |
 
 **Always start with the Cloudflare Pages deploy log.** It answers most questions in under a minute, and the build prints a content summary each run: published and draft counts, anything it dropped and why, and which pages are overdue a read-through.
