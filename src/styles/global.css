@@ -1,9 +1,10 @@
 /* The design tokens and element defaults for the whole site ("Desk by the
    Window", CLAUDE.md §8 decision 17). Imported once, by src/layouts/Base.astro.
 
-   Tokens are copied from the Figma file's 02 Foundations board: each Figma
-   variable's WEB code syntax is the custom property here. Change a colour
-   here and in Figma together. tests/contrast.test.mjs reads this file, so a
+   This file is where every token's value lives. They were first copied from
+   the Figma file's 02 Foundations board, which is no longer the record:
+   DESIGN.md says where each token is used, without copying its value.
+   tests/contrast.test.mjs reads this file, so a
    colour that breaks a WCAG AA pair fails CI (MAINTENANCE.md, "Change a
    colour or font").
 

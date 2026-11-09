@@ -68,11 +68,13 @@ const [titleStart, lastWord] = [data.title.slice(0, split), data.title.slice(spl
     )
   }
   {
-    /* src/lib/content.ts has already dropped a cover with no description. */
+    /* src/lib/content.ts has already dropped a cover with no description.
+       Eager: it's in the first screen, where lazy loading only delays it. */
     lead && data.cover && data.coverAlt && (
       <Image
         src={data.cover}
         alt={data.coverAlt}
+        loading="eager"
         widths={[400, 800, 1200]}
         sizes="(min-width: 48rem) 636px, calc(100vw - 92px)"
       />

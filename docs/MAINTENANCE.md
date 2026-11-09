@@ -43,6 +43,8 @@ Everything here is real and on disk today. Phase 0 built the publish loop (posts
 
 ```
 CLAUDE.md                Project context — read before making structural changes
+DESIGN.md                How the site looks: every component, the design
+                         rules, and which token in global.css each one uses
 .pages.yml               Pages CMS config: the forms editors see. Must match
                          src/content.config.ts field for field.
 docs/MAINTENANCE.md      This file
@@ -344,7 +346,7 @@ A Pages CMS job. **Homepage photos** is one list; add a photo, give it a descrip
 
 A developer job, not a CMS one. Every colour, size and shadow is a custom property at the top of `src/styles/global.css` (`--color-ink`, `--space-4`, `--text-body-md`…). Change the value there and every page follows. Don't type a hex value into a component: use the token, or add one.
 
-**A colour.** Change it in Figma's 02 Foundations board too (Palette, or Season for the sticky and tape), so the design file and the site agree. Then run `npm test`. `tests/contrast.test.mjs` checks each pair the design uses (text on cards, labels on each tab colour, the focus ring on every surface) against WCAG AA, and names the pair that fails. If your colour fails, pick another; don't loosen the test. A new pairing (text on a surface it never sat on before) gets a line in the test's list.
+**A colour.** `global.css` is the only place its value is written. `DESIGN.md` names each token and says where it's used, never its value, so it only needs an edit if a colour's job changes. (The Figma file the tokens first came from is a workbench in a personal account and may be out of date; don't treat it as the record.) Then run `npm test`. `tests/contrast.test.mjs` checks each pair the design uses (text on cards, labels on each tab colour, the focus ring on every surface) against WCAG AA, and names the pair that fails. If your colour fails, pick another; don't loosen the test. A new pairing (text on a surface it never sat on before) gets a line in the test's list.
 
 **A season colour** lives in one of the three `:root[data-season=…]` blocks. The window scenes use the sticky and tape colours too, so change them in `scripts/scenes.mjs` as well and redraw the scenes (see [Changing a window scene](#changing-a-window-scene)). To see each season, add `?season=winter` (or `fall`, `summer`) to any address.
 
@@ -476,7 +478,7 @@ Four things that will actually take the site down. Understand these before chang
 | Build log: "contactEmail is … which isn't an email address" | Site settings' Contact email holds something else, often a web link. The footer shows the default address instead | Correct it in Pages CMS → Site settings |
 | Build log: "… ignored, because it isn't an email address" | A council email or committee contact email holds something else, often a web link. The address is left off the page | Correct the email in Pages CMS |
 | Build log: "Resources whose link was never checked: …" or "… link last checked on …, over a year ago" | No one has set **Link last checked** on those resources. All fifteen arrived from Wix without it (2026-10-21) | Click each link; if it works, set Link last checked to today in Pages CMS. If it's dead, fix or hide the resource |
-| The window shows the wrong season, or the term label is a term behind | Each page is built with the season of the day it was built, and a tiny script in the page resets it from the visitor's date. With JavaScript off the script can't run, so a page nobody has saved since the season turned shows last season. Or the address still ends in `?season=…`, which forces a season for previews | Nothing to fix: it corrects itself with JavaScript on. Drop `?season=…` from the address. The term label follows the real date even under `?season=` |
+| The window shows the wrong season, or the term label is a term behind | Each page is built with the season of the day it was built, and a tiny script in the page resets it from the visitor's date. With JavaScript off the script can't run, so a page nobody has saved since the season turned shows last season. Or the address, perhaps a link someone shared, still ends in `?season=…`, which forces a season for previews | Nothing to fix: it corrects itself with JavaScript on. Drop `?season=…` from the address. The term label follows the real date even under `?season=` |
 | Build log: "Committees with no short description …" | Those committees' cards show only a name. NPMP and VASC had none on Wix | Ask the council for a sentence each, and add it in Pages CMS |
 | Images broken on the live site | An unprocessed image path reached the HTML | See Landmine 4. `npm run verify` names the page |
 | Images show huge, wider than the page | The `image` block in `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) was removed or changed, or the `import 'astro:assets'` line in `src/layouts/Base.astro` was. Astro only adds its image stylesheet to pages that import `astro:assets`, so without that line a picture in a page's text shows at full size | Restore it. `tests/build.test.mjs` fails if any image isn't constrained |
@@ -495,7 +497,8 @@ Four things that will actually take the site down. Understand these before chang
 | An old link from Instagram 404s | Missing redirect | See [Adding a redirect](#adding-a-redirect) |
 | CI fails in `redirects.test.mjs` after an editor's save | A redirect points at a committee or post whose web address changed, or that was hidden or unpublished. Or it points at a `#anchor` on an informational page whose heading was renamed | Update the line in `public/_redirects` (and the redirect map) to the new address, or to one of the anchors the error lists, through a PR |
 | A mistyped address shows the homepage instead of "Page not found" | `src/pages/404.astro` is gone, so the build has no `404.html` and Cloudflare treats the site as a single-page app | Restore `src/pages/404.astro` |
-| A page scrolls sideways on a phone, and every card in one list is too wide | One card holds a word or address too long for the column, and a list's grid column was changed from `minmax(0, 1fr)` to `1fr`. A `1fr` column never narrows past its longest word, so it widens every card in the list | Keep `minmax(0, …)` on `.card-list` in `src/styles/global.css` and on the council's two columns in `src/pages/about/council.astro` |
+| A page scrolls sideways on a phone, and every card in one list is too wide, or one homepage photo is much wider than the other | One card or photo caption holds a word or address too long for the column, and a grid column was changed from `minmax(0, 1fr)` to `1fr`. A `1fr` column never narrows past its longest word, so it widens every card in the list, or squeezes the photo beside it | Keep `minmax(0, …)` on `.card-list` in `src/styles/global.css`, on the council's two columns in `src/pages/about/council.astro`, and on `.gallery` in `src/pages/index.astro` |
+| A committee card is wider than the screen | A word in the committee's name is too long to fit beside the logo, and `min-width: 0` was removed from the name's `h2` in `src/components/CommitteeCard.astro`. Without it the name refuses to shrink below its longest word | Restore it. The name's last word still can't break, because it's held to its icon, so a committee whose name ends in one very long word needs a shorter name |
 | Site loads but is unstyled | Build partially failed, or `src/styles/global.css` isn't imported by `src/layouts/Base.astro` any more | Check the Cloudflare deploy log first, always |
 
 **Always start with the Cloudflare Pages deploy log.** It answers most questions in under a minute, and the build prints a content summary each run: published and draft counts, anything it dropped and why, and which pages are overdue a read-through.
@@ -507,6 +510,7 @@ Four things that will actually take the site down. Understand these before chang
 | File | Audience | Purpose |
 |---|---|---|
 | `CLAUDE.md` | Coding agents, developers | Project context, scope, decisions. Read before structural work. |
+| `DESIGN.md` | Developers, designers, coding agents | The design record: how every component looks and behaves, the rules that come with the "Desk by the Window" direction, and which token in `src/styles/global.css` each part uses. Read before changing how anything looks. It names tokens but never copies their values, so it can't drift from the site. |
 | `MAINTENANCE.md` | You | Onboarding + runbook |
 | `docs/content-schema.md` | Developers | Every content field, and the rules the CMS and the build share |
 | `docs/information-architecture.md` | Developers | Sitemap, routing, redirects |
