@@ -125,6 +125,8 @@ Each role is a composite `font` token: weight, size, line height and family in o
 
 **The No Sideways Scroll Rule.** Every page is checked at 320, 390 and 1280 wide, in Chromium, Firefox and WebKit, with no horizontal scroll. Nothing clips overflow, so a real overflow still shows up.
 
+**The Larger Text Rule.** Some visitors set a bigger default text size in their browser (Chrome's "Large" is 20px, "Very large" 24px). Type and breakpoints are in rem, so they follow it. So a box that holds text is sized in rem or by its content, never a fixed px box around rem text. The header grows to fit the badge, the tabs grow with their labels and move up to a second tier when they don't fit, and the sticky note grows with its handwriting. At the default size all of this is exactly the signed-off design. To check a change, set Chrome's font size to Very large (Settings → Appearance) and look at 320, 390 and a laptop width.
+
 ## Elevation & Depth
 
 Depth is physical: paper lying on paper on a desk. Shadows show what is on top of what. Nothing moves or lifts on hover.
@@ -170,7 +172,7 @@ The signature. A white frame with crossbars and a sill around a flat-ink view of
 
 - **Scenes:** three SVGs in `src/assets/header/`, drawn by **`scripts/scenes.mjs`, which is their source.** To change a scene, edit the script and run `node scripts/scenes.mjs`. Never hand-edit the SVGs, and never export them from Figma (its export is about four times the size). Anything that matters stays between x 540 and 900 of the 1440-wide drawing, which survives the narrowest phone crop.
 - **Season:** `Base.astro` builds the page with the build date's season in `data-season` on `<html>`. An inline script resets it from the visitor's date before first paint (January–April winter, May–August summer, September–December fall; `src/lib/season.mjs`). With JavaScript off, the page shows the season it was built in. `?season=fall` (or `winter`, `summer`) previews any season.
-- **Lanyard and badge:** the lanyard hangs left of the mountain, clear of the cross and mast. The badge is the home link: "McGill NUS" over "Nursing Undergraduate Society". It is text only until the council sends the logo file.
+- **Lanyard and badge:** the lanyard hangs left of the mountain, clear of the cross and mast. The badge is the home link: "McGill NUS" over "Nursing Undergraduate Society". It is text only until the council sends the logo file. It sits in the header's flow, so the header is as tall as the badge needs: with a larger browser text size the badge hangs below the sill instead of covering the tabs. On the phone strip it hangs just under the Contact button. One value (`--badge-top`) places the badge and sets the lanyard's length.
 - **Term label:** a white label taped to the window ("Fall term · 2026–27"). It follows the visitor's real date, even under `?season=`. Hidden on the phone strip.
 - **Contact:** on phones, a white button on the window. On the Contact page it is an ink chip with a thin white outline. On laptops it is hidden, and Contact is the fifth tab instead.
 
@@ -180,7 +182,7 @@ Index-card dividers sticking up from the stack. They are plain links, not ARIA t
 
 - **Default:** the section's colour, its label in `--on-sheet`, `--text-label-md`, rounded top corners, `--shadow-tab`.
 - **Current:** taller, joined to its sheet and drawn over it, underlined, and `aria-current` (`page` on the page itself, `true` inside its section).
-- **Phones:** four tabs. Contact lives on the window. Below 390px the tabs go compact.
+- **Phones:** four tabs. Contact lives on the window. Below 390px the tabs go compact. If they still don't fit (a large browser text size on a narrow phone), the last tabs move up to a second tier above the first, never off the screen.
 
 ### Sheets (`src/layouts/Base.astro`)
 
@@ -201,7 +203,7 @@ The current section's sheet, under its tab, holding the page. The other sheets a
 
 ### The sticky note
 
-The one tilted, handwritten object near the top of the homepage: the season's sticky colour, pen ink, `--text-aside`, a hand-drawn arrow toward the post. It says **"latest!"** only when the lead has the newest date, and **"pinned"** when a pinned post leads ahead of a newer one, so it is always true. Space beside the title is reserved with a float, so only the lines next to the sticky are shortened.
+The one tilted, handwritten object near the top of the homepage: the season's sticky colour, pen ink, `--text-aside`, a hand-drawn arrow toward the post. It says **"latest!"** only when the lead has the newest date, and **"pinned"** when a pinned post leads ahead of a newer one, so it is always true. Space beside the title is reserved with a float, so only the lines next to the sticky are shortened. The note, its arrow and the float are sized in rem, so they grow with the handwriting at a larger browser text size.
 
 ### Taped photos (the homepage gallery)
 
